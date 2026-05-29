@@ -1,0 +1,364 @@
+require('dotenv').config()
+const userModel = require('../models/user')
+const bcrypt = require('bcrypt')
+const otpGenerator = require('otp-generator')
+const {brevo} = require('../utils/brevo')
+const {emailTemplate, resetPasswordTemplate} = require('../email')
+const jwt = require('jsonwebtoken')
+
+
+exports.createUser = async (req, res) => {
+    try {
+        const { firstName, lastName, email, password } = req.body;
+        
+        const otp = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false});
+        if(!password){
+          return res.status(400).json({
+            messasge: 'Please enter password'
+          })
+        }
+        console.log('OTP:', otp)
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt)
+
+        const user = await userModel.create({
+            firstName,
+            lastName,
+            email: email.toLowerCase(),
+            password: hashPassword,
+            otp
+        })
+        const users = await userModel.find()
+        const newUser = new userModel(user)
+        
+        brevo(newUser.email, newUser.firstName + ' ' + newUser.lastName, emailTemplate(newUser.firstName + ' ' + newUser.lastName, newUser.otp))
+
+        //Save changes to the database
+        await newUser.save()
+
+
+        res.status(201).json({
+            message: 'user created successfully',
+            data: user,
+            count: users.length
+        })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({
+            message: 'something went wrong'
+        });
+    }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await userModel.findOne({ email: email.toLowerCase() })
+    console.log(user)
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      })
+    }; 
+
+    if (user.otp !== otp) {
+      return res.status(400).json({
+        message: 'Invalid OTP Provided'
+      })
+    };
+
+    user.isVerified = true;
+    await user.save();
+    res.status(200).json({
+      message: 'OTP Verified successfully',
+      data: user
+    })
+  } catch (error) {
+    console.log(error.message),
+      res.status(500).json({
+        message: 'Something went wrong'
+      })
+  }
+};
+
+exports.userLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await userModel.findOne({ email: email.toLowerCase() })
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'Invalid Credentials' 
+      })
+    };
+
+    if (user.isLocked) {
+      return res.status(423).json({
+        message: 'Account locked. Please reset your password or contact support'
+      })
+    };
+
+    const correctPassword = await bcrypt.compare(password, user.password);
+
+    if (!correctPassword) {
+      user.loginAttempts += 1;
+
+      if (user.loginAttempts >= 5) {
+        user.isLocked = true;
+        console.log(user.loginAttempts);
+        await user.save();
+        return res.status(423).json({
+          message: 'Account locked after 5 failed login attempts'
+        })
+      };
+
+      await user.save();
+      return res.status(400).json({
+        message: 'Invalid Credentials'
+      })
+    };
+
+    
+    if (user.isVerified == false) {
+      return res.status(400).json({
+        message: 'Please verify your email'
+      })
+    };
+
+    user.loginAttempts = 0;
+    await user.save();
+
+    const token = jwt.sign(
+      { id: user._id},
+      process.env.SECRET_KEY,
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
+      message: 'Login sucessful',
+      token,
+      user
+    })
+  } catch (error) {
+    console.log(error.message),
+      res.status(500).json({
+        message: 'Something went wrong'
+      })
+  }
+}
+
+exports.forgotPassword = async(req, res)=>{
+  try {
+    //extract user email from the request body
+    const {email} = req.body;
+    //find the user
+    const user = await userModel.findOne({ email: email.toLowerCase()})
+    //check if user exists
+    if (user ==null){
+      return res.status(404).json({
+        message: 'Invalid credentials'
+      })
+    }
+
+    //Generate OTP
+    const OTP = Math.round(Math.random() * 1e4).toString().padStart(4,"0");
+    //Update the user with the new OTP
+    user.otp = OTP;
+    console.log(OTP)
+    
+    //set expiry date
+    user.otpExpires = Date.now() + ( 100 * 50 * 1000);
+    //create the data object for the email template
+    const data = {
+      name: user.firstName,
+      otp: OTP
+    }
+    //send the email to the user
+    brevo(email, user.firstName, resetPasswordTemplate(data));
+    //save the changes to the database
+    await user.save();
+    //send a success response
+    res.status(200).json({
+      message: 'Forgot password successful'
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+};
+
+exports.resetPassword = async(req, res)=>{
+  try {
+    //Extract the required field from the request body
+    const { email, password } = req.body;
+    
+    //Find the user
+    const user = await userModel.findOne({email: email.toLowerCase()})
+
+    //Check if user exists
+    if(user== null) {
+      return res.status(404).json({
+        message: 'Invalid credentials'
+      })
+    }
+    //Reset the user's password with the encrypted and updated password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt) 
+
+    user.password = hashPassword
+    user.loginAttempts = 0;
+    user.isLocked = false;
+    //save changes in the database
+    await user.save();
+    res.status(200).json({
+      message: 'password reset successfully'
+    })
+
+  } catch (error) {
+    res.status(404).json({
+      message: error.message
+    })
+  }
+};
+
+exports.changePassword = async(req, res)=>{
+  try {
+    //Extract the user ID from the request user object
+    const { id } = req.user;
+    //Extract the required field from the request body object
+    const { oldPassword, newPassword } = req.body;
+    //Find the user
+    const user = await userModel.findById(id);
+    //check if user exists
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      })
+    }
+    //Confirm the old password
+    const checkPassword = await bcrypt.compare(oldPassword, user.password);
+    if(!checkPassword) {
+      return res.status(400).json({
+        message: 'Old password is invalid'
+      })
+    }
+    //Encrypt and change to the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashPassword;
+    user.loginAttempts = 0;
+    user.isLocked = false;
+
+    //Save changes in the database
+    await user.save();
+
+    //send a success response
+    res.status(200).json({
+      message: 'Password changed successfully'
+    })
+    
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({
+      message: 'something went wrong'
+    })
+  }
+};
+
+exports.loginWithGoogle = async(req, res) =>{
+    try {
+        const token = await jwt.sign({
+            id: req.user._id
+    }, process.env.SECRET_KEY, {expiresIn: '1d'})
+
+    res.status(200).json({
+        message: 'Login successful',
+        data: req.user.firstName,
+        token
+    })
+    } catch (error) {
+        console.log(error.message)
+        res.status(500).json({
+            message: 'something went wrong'
+        })
+    }
+}
+
+exports.getAllUsers = async (req, res) => {
+  try {
+
+    // const checkCache = await client.get('users');
+
+    // if (checkCache) {
+    //   return res.status(200).json({
+    //     message: 'successfully retrieved all users',
+    //     data: JSON.parse(checkCache)
+    //   });
+    // }
+
+    const user = await userModel.find();
+// await client.set(
+//   'users',
+//   JSON.stringify(user),
+//   'EX',
+//   60
+// );
+
+    return res.status(200).json({
+      message: 'successfully retrieved all users',
+      data: user
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+exports.getOne = async (req, res) => {
+  try {
+    const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
+    if (!getUser) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
+    res.status(200).json({
+      message: 'One user fetched successfully',
+      data: getUser
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      message: 'Something went wrong'
+    });
+  }
+};
+
+
+exports.deleteUser = async(req, res) =>{
+  try {
+      const { id } = req.params;
+      const users = await userModel.findByIdAndDelete(id);
+      if (!users) {
+        return res.status(404).json({
+          message: 'User not found'
+        })
+      } 
+      //Send a success response
+      res.status(200).json({ 
+        message: 'User deleted successfully',
+        data: users
+      })
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+};
+

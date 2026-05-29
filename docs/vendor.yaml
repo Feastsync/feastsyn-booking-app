@@ -1,0 +1,224 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows vendors to be booked fordifferent events.
+paths:
+  /api/v1/vendor/register:
+    post: 
+      summary: this is the endpoint for vendor registration
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - firstName
+              - lastName
+              - stageName
+              - email
+              - phoneNumber
+              - password
+              - confirmPassword  
+            propertiies:
+              firstName:
+                type: string
+                description: The vendors's first name
+              lastName:
+                type: string
+                description: The vendors's last name
+              stageName:
+                type: string
+                description: The vendors's stage name
+              phoneNumber:
+                type: string
+                description: The vendors's phone number  
+              email:
+                type: string
+                description: The vendors's email address
+              password:
+                type: string
+                description: The vendors's password
+              confirmPassword:
+                type: string
+                description: Confirmation of the vendors's password  
+      responses:          
+        '201':
+          description: Vendor created successfully
+
+
+          
+  /api/v1/vendor/verify:
+    post: 
+      summary: this is the endpoint for vendor verification
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - otp  
+            propertiies:
+              email:
+                type: string
+                description: The vendors's email address
+              otp:
+                type: string
+                description: The one-time password for verification
+      responses:
+        '201':
+          description: Vendor verified successfully
+
+          
+  /api/v1/vendor/login:
+    post: 
+      summary: this is the endpoint for vendor login
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+            propertiies:
+              email:
+                type: string
+                description: The vendors's email address
+              password:
+                type: string
+                description: The vendors's password
+      responses:          
+        '201':
+          description: Vendor logged in successfully
+
+          
+  /api/v1/vendor/update/{id}:
+    post: 
+      summary: this is the endpoint for vendor's profile update
+      tags: [vendors]
+      parameters:
+        - in: path
+          name: id
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - stateOfResidence
+              - BankName
+              - accountNumber
+              - profilePicture
+              - mediaProof
+              - bio
+              - servicesOffered 
+            propertiies:
+              firstName:
+                type: string
+                description: The vendors's first name
+              lastName:
+                type: string
+                description: The vendors's last name
+              email:
+                type: string
+                description: The vendors's email address
+              password:
+                type: string
+                description: The vendors's password
+              confirmPassword:
+                type: string
+                description: Confirmation of the vendors's password  
+      responses:          
+        '201':
+          description: Vendor profile updated successfully
+
+
+          
+  /api/v1/vendor/forgot-password:
+    post: 
+      summary: this is the endpoint for forgot password
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - email
+            propertiies:
+              email:
+                type: string
+                description: The vendor's email address 
+      responses:          
+        '201':
+          description: Forgot password request submitted successfully
+
+          
+  /api/v1/vendor/reset-password:
+    post: 
+      summary: this is the endpoint for resetting password  
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+              - confirmPassword
+            propertiies:
+              email:
+                type: string
+                description: The vendor's email address
+              password:
+                type: string
+                description: The vendor's password 
+              confirmPassword:
+                type: string
+                description: Confirmation of the vendor's password
+      responses:          
+        '201':
+          description: Vendor's password reset successfully
+
+          
+  /api/v1/vendor/change-password:
+    post: 
+      summary: this is the endpoint for changing password
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+          schema:
+            type: object
+            required:
+              - email
+              - password
+              - confirmPassword  
+            propertiies:
+              email:
+                type: string
+                description: The vendor's email address
+              password:
+                type: string
+                description: The vendor's password
+              confirmPassword:
+                type: string
+                description: Confirmation of the vendor's password  
+      responses:          
+        '201':
+          description: Vendor's password changed successfully
+
+

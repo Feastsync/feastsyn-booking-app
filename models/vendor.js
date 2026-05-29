@@ -1,0 +1,156 @@
+const mongoose = require('mongoose');
+const vendorSchema = new mongoose.Schema({
+    firstName: {
+        type: String,
+        require: true,
+        trim: true
+    },
+    lastName: {
+        type: String,
+        require: true,
+        trim: true
+    },
+    stageName: {
+        type: String,
+        trim: true,
+        require: true
+    },
+    email: {
+        type: String,
+        require: true,
+        unique: true,
+        trim: true
+    },
+    role : {
+        type: String,
+        enum: ['vendor', 'admin'],
+        default: "vendor"
+    },
+    phoneNumber: {
+        type: String,
+        require: true,
+        unique: true
+    },
+    stateOfResidence: {
+        type: String,
+        enum: ['Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe','Zamfara','Abuja'],
+        require: true,
+        trim: true
+    },
+    password: {
+        type: String
+    },
+     bio: {
+        type: String,
+        maxlength: 500
+    },
+    servicesOffered: {
+        type: [String],
+        maxlength: 500
+    },
+    pricing: {
+        minimumPrice: Number,
+        maximumPrice: Number
+    },
+    category: {
+        type: String,
+        enum: [ 'MC', 'Live Band Artist', 'Photographer', 'Videographer', 'DJ'
+        ]
+    },
+    otp: {
+        type: String,
+        trim: true
+        },
+    otpExpires: {
+        type: Number,
+        default: () => {
+        return Date.now() + ( 100 * 60 * 1000)   
+    }
+},
+mainPhoto: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        mainPhotoId: {
+            type: String,
+            trim: true
+        }
+    },
+    photos: [
+        {
+            secureUrl:{
+                type: String,
+                trim: true
+            },
+            photoId: {
+                type: String,
+                trim: true
+            }
+        }
+    ],
+    videos: [
+        {
+            secureUrl:{
+                type: String,
+                trim: true
+            },
+            videoId: {
+                type: String,
+                trim: true
+            }
+        }
+    ],  
+    profilePicture: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        profileId: {
+            type: String,
+            trim: true
+        }
+    },
+    mediaProof: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        mediaId: {
+            type: String,
+            trim: true
+        }
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    isLocked: {
+        type: Boolean,
+        default: false
+    },
+    accountNumber: {
+        type: String,
+        trim: true
+    },
+    bankName: {
+        type: String,
+        enum: ['Access Bank', 'First Bank', 'GTBank', 'Zenith Bank', 'FCMB', 'UBA', 'EcoBank', 'Wema Bank', 'FCFBank', 'Heritage Bank'],
+        trim: true,
+        sparse : true
+    },
+    verificationStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+},
+{timestamps:true},
+);
+const vendorModel = mongoose.model('vendors', vendorSchema);
+
+module.exports = vendorModel
