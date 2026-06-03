@@ -170,4 +170,31 @@ paths:
         '201':
           description: User's password changed successfully
 
+          
+  /api/v1/user/all-users:
+    get: 
+      summary: this is the endpoint to retrieve all users
+      tags: [users]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: All users retrieved successfully
+        "500": 
+          description: Something went wrong  
 
+  /api/v1/user/one-user/{id}:
+    get: 
+      summary: this is the endpoint to retrieve one user
+      tags: [users]
+      parameters:
+        - in: path
+          name: id
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: user retrieved successfully found
+        "500": 
+          description: Something went wrong  
+  

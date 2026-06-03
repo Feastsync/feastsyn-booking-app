@@ -23,5 +23,5 @@ router.get('/google', profile)
 router.get('/google/callback', loginProfile)
 
 router.get('/all-vendors', authentication, getAllVendors)
-router.get('/one-vendor', authentication, getOneVendor)
+router.get('/one-vendor/:slug', authentication, getOneVendor)
 module.exports = router;

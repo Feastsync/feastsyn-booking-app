@@ -8,7 +8,6 @@ const mongoose = require('mongoose');
 
 exports.initializePayment = async (req, res) => {
     try{
-
         const userId = req.user.id;
         const {vendorId, bookingId} = req.params;
 
@@ -88,7 +87,7 @@ exports.initializePayment = async (req, res) => {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://www.google.com/'
+            redirect_url: 'https://www.feastsync.com/'
         }
 
         //Initialize payment using axios

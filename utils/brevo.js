@@ -6,7 +6,7 @@ brevoClient.setApiKey(BrevoClient.TransactionalEmailsApiApiKeys.apiKey, process.
 const brevo = async (userEmail, userName, html) => {
     const sendSmtpEmail = new BrevoClient.SendSmtpEmail()
     const data = {
-        htmlContent: `<html><head></head><body><p>Hello ${userName} ,</p>Welcome to backend!.</p></body></html>`,
+        htmlContent: `<html><head></head><body><p>Hello ${userName} ,</p>Welcome to Feastsync!.</p></body></html>`,
         sender: {
             email: process.env.USER_EMAIL,
             name: "Taiwo from FEASTSYNC",

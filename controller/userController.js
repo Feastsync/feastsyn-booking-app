@@ -11,7 +11,7 @@ exports.createUser = async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
         
-        const otp = otpGenerator.generate(6, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false});
+        const otp = otpGenerator.generate(4, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false});
         if(!password){
           return res.status(400).json({
             messasge: 'Please enter password'
@@ -29,14 +29,9 @@ exports.createUser = async (req, res) => {
             otp
         })
         const users = await userModel.find()
-        const newUser = new userModel(user)
         
-        brevo(newUser.email, newUser.firstName + ' ' + newUser.lastName, emailTemplate(newUser.firstName + ' ' + newUser.lastName, newUser.otp))
-
-        //Save changes to the database
-        await newUser.save()
-
-
+       brevo(user.email,`${user.firstName } ${user.lastName}`, emailTemplate(`${user.firstName} ${user.lastName}`, user.otp))
+ 
         res.status(201).json({
             message: 'user created successfully',
             data: user,
@@ -174,7 +169,7 @@ exports.forgotPassword = async(req, res)=>{
       otp: OTP
     }
     //send the email to the user
-    brevo(email, user.firstName, resetPasswordTemplate(data));
+    await brevo(email, user.firstName, resetPasswordTemplate(data));
     //save the changes to the database
     await user.save();
     //send a success response

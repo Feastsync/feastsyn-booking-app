@@ -221,4 +221,30 @@ paths:
         '201':
           description: Vendor's password changed successfully
 
+          
+  /api/v1/user/all-vendors:
+    get: 
+      summary: this is the endpoint to retrieve all vendors
+      tags: [users]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: All users retrieved successfully
+        "500": 
+          description: Something went wrong  
 
+  /api/v1/user/one-vendor/{slug}:
+    get: 
+      summary: this is the endpoint to retrieve one vendor
+      tags: [users]
+      parameters:
+        - in: path
+          name: slug
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: user retrieved successfully found
+        "500": 
+          description: Something went wrong 
