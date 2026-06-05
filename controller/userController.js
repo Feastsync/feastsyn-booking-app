@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 
 exports.createUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password , phoneNumber} = req.body;
         
         const otp = otpGenerator.generate(4, {upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false});
         if(!password){
@@ -26,7 +26,8 @@ exports.createUser = async (req, res) => {
             lastName,
             email: email.toLowerCase(),
             password: hashPassword,
-            otp
+            otp,
+            phoneNumber
         })
         const users = await userModel.find()
         
@@ -182,6 +183,41 @@ exports.forgotPassword = async(req, res)=>{
     })
   }
 };
+
+exports.resendOTP = async(req, res) => {
+   try {
+     const {email} = req.body;
+    //find the user trying to verify
+    const user = await userModel.findOne({ email: email.toLowerCase() })
+       if (!user) {
+        return res.status(404).json({
+            message: 'user not found'
+        })
+       }
+
+       const OTP = otpGenerator.generate(4, {upperCaseAlphabets:false, lowerCaseAlphabets:false, specialChars:false});
+       console.log(OTP)
+
+       const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+
+
+        user.otp = OTP;
+        user.otpExpiresAt = expiresAt;
+
+        //save changes to the database
+        await user.save()
+        await brevo(user.email, user.firstName, OTP, emailTemplate(user.firstName, OTP))
+
+        //send a success response
+        res.status(200).json({
+            message: 'OTP sent successfully'
+        })
+   } catch (error) {
+    res.status(500).json({
+        message: error.message
+    })
+   }
+}
 
 exports.resetPassword = async(req, res)=>{
   try {
