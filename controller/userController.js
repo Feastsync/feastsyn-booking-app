@@ -175,7 +175,8 @@ exports.forgotPassword = async(req, res)=>{
     await user.save();
     //send a success response
     res.status(200).json({
-      message: 'Forgot password successful'
+      message: 'Forgot password successful',
+      data: OTP 
     })
   } catch (error) {
     res.status(500).json({
