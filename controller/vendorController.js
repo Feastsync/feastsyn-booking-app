@@ -274,6 +274,41 @@ exports.forgotPassword = async(req, res)=>{
   }
 };
 
+exports.resendOTP = async(req, res) => {
+   try {
+     const {email} = req.body;
+    //find the vendor trying to verify
+    const vendor = await vendorModel.findOne({ email: email.toLowerCase() })
+       if (!vendor) {
+        return res.status(404).json({
+            message: 'vendor not found'
+        })
+       }
+
+       const OTP = otpGenerator.generate(4, {upperCaseAlphabets:false, lowerCaseAlphabets:false, specialChars:false});
+       console.log(OTP)
+
+       const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+
+
+        vendor.otp = OTP;
+        vendor.otpExpiresAt = expiresAt;
+
+        //save changes to the database
+        await vendor.save()
+        await brevo(vendor.email, vendor.firstName, OTP, emailTemplate(vendor.firstName, OTP))
+
+        //send a success response
+        res.status(200).json({
+            message: 'OTP sent successfully'
+        })
+   } catch (error) {
+    res.status(500).json({
+        message: error.message
+    })
+   }
+}
+
 exports.resetPassword = async(req, res)=>{
   try {
     //Extract the required field from the request body
