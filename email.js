@@ -1,159 +1,149 @@
+
 exports.emailTemplate = (firstName, lastName, otp) => {
-    return `
-    <!DOCTYPE html>
+  return `
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FeastSync OTP Verification</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify Your Email</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fc;
+        font-family: Arial, Helvetica, sans-serif;
+    }
 
-    <style>
+    .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
 
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
+    .header {
+        background: #6C63FF;
+        color: #ffffff;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .header h1 {
+        margin: 0;
+        font-size: 28px;
+    }
+
+    .content {
+        padding: 40px 30px;
+        text-align: center;
+        color: #333333;
+    }
+
+    .content h2 {
+        margin-bottom: 15px;
+    }
+
+    .content p {
+        line-height: 1.7;
+        color: #666666;
+    }
+
+    .otp-box {
+        margin: 30px auto;
+        background: #f5f5ff;
+        border: 2px dashed #6C63FF;
+        border-radius: 10px;
+        padding: 20px;
+        width: fit-content;
+    }
+
+    .otp-code {
+        font-size: 36px;
+        font-weight: bold;
+        letter-spacing: 8px;
+        color: #6C63FF;
+    }
+
+    .footer {
+        background: #fafafa;
+        padding: 25px;
+        text-align: center;
+        color: #999999;
+        font-size: 13px;
+    }
+
+    @media screen and (max-width: 600px) {
+        .container {
+            width: 95%;
         }
 
-        body{
-            width: 100%;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        .content {
+            padding: 30px 20px;
         }
 
-        .main-section{
-            width: 50%;
-            background-color: #ffffff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .header{
-            width: 100%;
-            background-color: #0f172a;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .content{
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .content h2{
-            color: #111827;
-        }
-
-        .content p{
-            color: #4b5563;
-            line-height: 1.7;
-        }
-
-        .otp-box{
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .otp{
-            background-color: #e2e8f0;
-            padding: 15px 40px;
-            border-radius: 8px;
+        .otp-code {
             font-size: 28px;
-            font-weight: bold;
             letter-spacing: 5px;
-            color: #0f172a;
         }
-
-        .footer{
-            width: 100%;
-            background-color: #f8fafc;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .footer p{
-            color: #6b7280;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        @media screen and (max-width: 768px){
-
-            .main-section{
-                width: 100%;
-            }
-
-        }
-
-    </style>
-
+    }
+</style>
 </head>
-
 <body>
 
-    <div class="main-section">
+<div class="container">
 
-        <div class="header">
-            <h1>FeastSync Booking App</h1>
-        </div>
-
-        <div class="content">
-
-            <h2>Email OTP Verification</h2>
-
-            <p>
-                Hello, ${firstName} ${lastName}
-            </p>
-
-            <p>
-                Below is your one-time passcode required to complete your authentication process.
-                This verification code will remain valid for 30 minutes.
-                Please do not share this code with anyone for security reasons.
-            </p>
-
-            <div class="otp-box">
-                <div class="otp">${otp}</div>
-            </div>
-
-            <p>
-                If you did not request this verification, please ignore this email or contact our support team immediately.
-            </p>
-
-            <p>
-                FeastSync helps users seamlessly connect and book entertainers for events with ease, speed, and trust.
-            </p>
-
-        </div>
-
-        <div class="footer">
-
-            <p>
-                Need help? Contact our support team or visit our Help Center for assistance.
-            </p>
-
-            <p>
-                © 2026 FeastSync Team. All rights reserved.
-            </p>
-
-        </div>
-
+    <div class="header">
+        <h1>FeastSync</h1>
+        <p>Event Booking App</p>
     </div>
+
+    <div class="content">
+        <h2>Email Verification</h2>
+
+        <p>
+            Hello ${firstName} ${lastName},
+        </p>
+
+        <p>
+            Thank you for joining FeastSync. Use the verification code below
+            to complete your account setup and start discovering talented
+            entertainers for your events.
+        </p>
+
+        <div class="otp-box">
+            <span class="otp-code">${otp}</span>
+        </div>
+
+        <p>
+            This code will expire in <strong>30 minutes</strong>.
+            Please do not share this code with anyone.
+        </p>
+
+        <p>
+            With FeastSync, you can browse entertainers, compare profiles,
+            and hire the perfect performer for your event with ease.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>
+            If you did not create an account, you can safely ignore this email.
+        </p>
+
+        <p>
+            © 2026 FeastSync Event Booking App. All rights reserved.
+        </p>
+    </div>
+
+</div>
 
 </body>
 </html>
-    `
-}
+  `
+};
 
 
 exports.resetPasswordTemplate = (data) => {

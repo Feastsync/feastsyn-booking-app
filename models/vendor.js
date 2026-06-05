@@ -15,6 +15,10 @@ const vendorSchema = new mongoose.Schema({
         trim: true,
         require: true
     },
+    slug: {
+        type: String,
+        unique: true
+    },
     email: {
         type: String,
         require: true,
@@ -45,12 +49,8 @@ const vendorSchema = new mongoose.Schema({
         maxlength: 500
     },
     servicesOffered: {
-        type: [String],
+        type: String,
         maxlength: 500
-    },
-    pricing: {
-        minimumPrice: Number,
-        maximumPrice: Number
     },
     category: {
         type: String,
@@ -67,6 +67,26 @@ const vendorSchema = new mongoose.Schema({
         return Date.now() + ( 100 * 60 * 1000)   
     }
 },
+coverPhoto: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        coverPhotoId: {
+            type: String,
+            trim: true
+        }
+    },
+    coverVideo: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        coverVideoId: {
+            type: String,
+            trim: true
+        }
+    }, 
 mainPhoto: {
         secureUrl:{
             type: String,
@@ -143,12 +163,29 @@ mainPhoto: {
         trim: true,
         sparse : true
     },
-    verificationStatus: {
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
+    averageRating: { 
+        type: Number,
+        default: 0
     },
-},
+    totalReviews: {
+        type: Number,
+        default: 0
+    },
+    reviews: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'review'
+        }
+    ],  
+    totalBookings: {
+        type: Number,
+        default: 0       
+   },
+responseRate: {
+        type: Number,
+        default: 100
+   }, 
+},    
 {timestamps:true},
 );
 const vendorModel = mongoose.model('vendors', vendorSchema);

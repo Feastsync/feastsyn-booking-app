@@ -3,6 +3,8 @@ const vendorModel = require('../models/vendor')
 const bcrypt = require('bcrypt')    
 const {brevo} = require('../utils/brevo')
 const fs = require('fs')
+const slugify = require('slugify')
+const crypto = require('crypto')
 const cloudinary = require('../utils/cloudinary')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
 const otpGenerator = require('otp-generator')
@@ -10,9 +12,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
 
 exports.createVendor = async (req, res) => {
-
     try {
-
         const { firstName, lastName, stageName, email, password, phoneNumber, confirmPassword} = req.body;
         // Generate OTP
         const otp = otpGenerator.generate(4, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
@@ -40,8 +40,8 @@ exports.createVendor = async (req, res) => {
             password: hashPassword,
             confirmPassword: hashPassword,
             stageName,
-            otp,
-            phoneNumber
+            phoneNumber,
+            otp
         });
 
         // Send Email
@@ -55,61 +55,89 @@ exports.createVendor = async (req, res) => {
         });
 
     } catch (error) {
-
+ 
         console.log(error.message);
 
         res.status(500).json({
             message: 'Something went wrong'
         });
-
     }
-
 };
 
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
+    const vendor = await vendorModel.findById(id);
+
+    if (!vendor) {
+    return res.status(404).json({
+        message: 'Vendor not found'
+    });
+}
+
+    let slug = vendor.slug;
+    if (!vendor.slug) {
+    const uniqueCode = crypto.randomBytes(4).toString("hex");
+
+  slug = `${slugify(vendor.stageName || req.body.stageName,{ lower: true, strict: true,})}-${uniqueCode}`;
+    vendor.slug = slug;
+  await vendor.save()
+} 
+  const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
     const { bankName, accountNumber, bio, servicesOffered, stateOfResidence } = req.body;
-
+    
     const uploadFile = async (file, resourceType = 'image') => {
 
       const uploaded = await cloudinary.uploader.upload(
         file.path,{ resource_type: resourceType });
-
       await fs.promises.unlink(file.path);
       return {
         secureUrl: uploaded.secure_url,
         publicId: uploaded.public_id
       };
     };
-
+    
     let profilePicture;
+    let coverPhoto;
+    let coverVideo;
     let mainPhoto;
     let photos = [];
     let videos = [];
 
-    //For single uploads
-    if (req.files.profilePicture) {
+    if (req.files?.profilePicture) {
       profilePicture = await uploadFile(
         req.files.profilePicture[0]
       );
     }
-    if (req.files.mainPhoto) {
+
+    if (req.files?.coverPhoto) {
+  coverPhoto = await uploadFile(
+    req.files.coverPhoto[0]
+  );
+}
+
+if (req.files?.coverVideo) {
+  coverVideo = await uploadFile(
+    req.files.coverVideo[0]
+  );
+}
+    //For single image upload
+    if (req.files?.mainPhoto) {
       mainPhoto = await uploadFile(
         req.files.mainPhoto[0]
       );
     }
     //For multiple image uploads
-    if (req.files.photos) {
+    if (req.files?.photos) {
       photos = await Promise.all(
         req.files.photos.map(file =>
           uploadFile(file)
         )
-      );
+      );  
     }
     //For multiple video uploads
-    if (req.files.videos) {
+    if (req.files?.videos) {
       videos = await Promise.all(
         req.files.videos.map(file =>
           uploadFile(file, 'video')
@@ -117,6 +145,9 @@ exports.updateVendor = async (req, res) => {
       );
     }
     const updatedVendor = await vendorModel.findByIdAndUpdate(id, {bankName, accountNumber, bio, servicesOffered, stateOfResidence,
+        ...(coverPhoto && { coverPhoto }),
+        ...(coverVideo && { coverVideo }),
+        ...(slug && { slug }),
         ...(profilePicture && { profilePicture }),
         ...(mainPhoto && { mainPhoto }),
         ...(photos.length && { photos }),
@@ -125,6 +156,7 @@ exports.updateVendor = async (req, res) => {
       //Send a success response
     res.status(200).json({
       message: 'Vendor information updated successfully',
+      vendorUrl: publicUrl,
       data: updatedVendor
     });
 
@@ -312,7 +344,7 @@ exports.resendOTP = async(req, res) => {
 exports.resetPassword = async(req, res)=>{
   try {
     //Extract the required field from the request body
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     
     //Find the vendor
     const vendor = await vendorModel.findOne({email: email.toLowerCase()})
@@ -324,11 +356,11 @@ exports.resetPassword = async(req, res)=>{
       })
     }
 
-    // if(Date.now() > vendor.otpExpires || otp !== vendor.otp) {
-    //   return res.status(400).json({
-    //     message: 'Invalid OTP'
-    //   })
-    // }
+    if(Date.now() > vendor.otpExpires || otp !== vendor.otp) {
+      return res.status(400).json({
+        message: 'Invalid OTP'
+      })
+    }
 
     //Reset the vendor's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
@@ -426,7 +458,7 @@ exports.getAllVendors = async (req, res) => {
     //   });
     // }
 
-    const vendor = await vendorModel.find().select('firstName lastName stageName profilePicture mainPhoto servicesOffered stateOfResidence');
+    const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
 // await client.set(
 //   'vendors',
 //   JSON.stringify(vendor),
@@ -447,18 +479,22 @@ exports.getAllVendors = async (req, res) => {
 };
 
 
-exports.getOneVendor = async(req, res) => {
-    try {
-        const getVendor = await vendorModel.findOne().select('firstName LastName profilePicture')
-        res.status(200).json({
-            message: 'One vendor gotten successfully',
-            data: getVendor
-        })
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
-            message: 'Something went wrong'
-        })
-        
+exports.getOneVendor = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const vendor = await vendorModel.findOne({ slug });
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
     }
-}
+    res.status(200).json({
+      data: vendor
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};

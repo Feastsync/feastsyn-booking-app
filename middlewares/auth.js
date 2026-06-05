@@ -11,7 +11,7 @@ const authentication = async (req, res, next) => {
         const validToken = await jwt.verify(token, process.env.SECRET_KEY, (err, data) => {
             if (err) {
                 console.log(err.message)
-                return res.status(500).json({
+                return res.status(401).json({
                     message: 'Token validation failed',
                     data: validToken
                 })
@@ -23,7 +23,7 @@ const authentication = async (req, res, next) => {
         console.log(error)
         next(error)
     }
-}
+} 
 
 const adminAuth = async (req, res, next) => {
     if(req.user.role !== 'admin'){
