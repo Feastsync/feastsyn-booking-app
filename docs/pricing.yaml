@@ -1,0 +1,107 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows vendors to view, create, and manage pricing and packages.
+paths:
+  /api/v1/pricing:
+    post: 
+      summary: this is the endpoint for creating a new pricing package
+      tags: [pricing]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - minimumPrice
+                - bookingFee
+                - packageDescription
+                - pacakageName
+              properties:
+                minimumPrice:
+                  type: string
+                  description: The vendor's minimum price
+                bookingFee:
+                  type: string
+                  description: The booking fee
+                packageDescription:
+                  type: string
+                  description: The description of the package
+                pacakageName:
+                  type: string
+                  description: The name of the package
+      responses:          
+        '201':
+          description: vendor's pricing package created successfully
+
+  /api/v1/all-pricing:
+    get: 
+      summary: this is the endpoint to retrieve all pricing packages
+      tags: [pricing]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      responses:
+        "201":
+          description: All pricing packages retrieved successfully
+        "500": 
+          description: Something went wrong  
+
+  /api/v1/one-pricing/{pricingId}:
+    get: 
+      summary: this is the endpoint to retrieve one pricing package
+      tags: [pricing]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters:
+        - in: path
+          name: pricingId
+      responses:
+        "201":
+          description: Pricing package retrieved successfully
+        "500": 
+          description: Something went wrong
+
+  /api/v1/new-pricing/{pricingId}:
+    put: 
+      summary: this is the endpoint to update a pricing package
+      tags: [pricing]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters:
+        - in: path
+          name: pricingId
+      responses:
+        "201":
+          description: Pricing package updated successfully
+        "500": 
+          description: Something went wrong
+
+  /api/v1/delete-pricing/{pricingId}:
+    delete: 
+      summary: this is the endpoint to delete a pricing package
+      tags: [pricing]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters:
+        - in: path
+          name: pricingId
+      responses:
+        "201":
+          description: Pricing package updated successfully
+        "500": 
+          description: Something went wrong                
+

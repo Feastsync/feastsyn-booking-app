@@ -1,6 +1,5 @@
 const Redis = require('ioredis');
-const  client  = new Redis("redis://default:ByPUQCgAnLBqXeTNzZ0x60eUuGSrXMxI@turboclear-touch-trick-47832.db.redis.io:17624"
-)
+const  client  = new Redis(process.env.REDIS_CLIENT_URL);
 
 
 client.on('error', (err) => {

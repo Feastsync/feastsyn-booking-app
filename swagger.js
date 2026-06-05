@@ -9,12 +9,12 @@ const options = {
             description: 'swagger documentation'
         },
         servers: [
-            // {
-            //     url: 'https://splita-z88o.onrender.com',
-            //     description: 'The hosted route'
-            // },
             {
-                url: 'http://localhost:2500',
+                url: 'https://feastsyn-booking-app.onrender.com',
+                description: 'The hosted route'
+            },
+            {
+                url: 'http://localhost:4900',
                 description: 'localhost route'
             }
         ],
@@ -31,7 +31,8 @@ const options = {
     
     apis: [
         './docs/user.yaml',
-        './docs/group.yaml'
+        './docs/vendor.yaml',
+        './docs/pricing.yaml'
     ]
     
 }

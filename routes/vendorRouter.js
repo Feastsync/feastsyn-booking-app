@@ -9,6 +9,8 @@ router.post('/sign-up', signupVendorValidator,createVendor);
 router.put('/update-profile/:id', upload.fields([
   { name: 'profilePicture', maxCount: 1 },
   { name: 'mainPhoto', maxCount: 1 },
+  { name: 'coverPhoto', maxCount: 1 },
+  { name: 'coverVideo', maxCount: 1 },
   { name: 'photos', maxCount: 3 },
   { name: 'videos', maxCount: 2 }
 ]), updateVendor);
@@ -23,5 +25,5 @@ router.get('/google', profile)
 router.get('/google/callback', loginProfile)
 
 router.get('/all-vendors', authentication, getAllVendors)
-router.get('/one-vendor', authentication, getOneVendor)
+router.get('/one-vendor/:slug', authentication, getOneVendor)
 module.exports = router;
