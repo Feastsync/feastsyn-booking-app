@@ -32,7 +32,7 @@ passport.use(new GoogleStrategy({
 
     } catch (error) {
       console.log('Error signing up with google', error.message)
-       return cb(null, error) 
+       return cb(error, null) 
     }
   }
 ));

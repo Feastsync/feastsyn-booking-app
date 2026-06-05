@@ -2,9 +2,11 @@ require('dotenv').config();
 const PORT = process.env.PORT
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const swagger = require('./swagger');
 const swaggerUi = require('swagger-ui-express');
 const session = require('express-session')
+
 
 
 const {passport} = require('./middlewares/userPassport')
@@ -28,9 +30,10 @@ const limiter = rateLimit({
 
 
 app.use(express.json());
+app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 
-
+""
 app.use(session({
   secret: 'dabest',
   resave: false,

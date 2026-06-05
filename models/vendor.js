@@ -49,7 +49,7 @@ const vendorSchema = new mongoose.Schema({
         maxlength: 500
     },
     servicesOffered: {
-        type: [String],
+        type: String,
         maxlength: 500
     },
     category: {

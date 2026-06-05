@@ -12,30 +12,34 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - firstName
-              - lastName
-              - email
-              - password
-              - confirmPassword  
-            propertiies:
-              firstName:
-                type: string
-                description: The user's first name
-              lastName:
-                type: string
-                description: The user's last name
-              email:
-                type: string
-                description: The user's email address
-              password:
-                type: string
-                description: The user's password
-              confirmPassword:
-                type: string
-                description: Confirmation of the user's password  
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+                - phoneNumber
+                - password
+                - confirmPassword  
+              properties:
+                firstName:
+                  type: string
+                  description: The user's first name 
+                lastName:
+                  type: string
+                  description: The user's last name
+                email:
+                  type: string
+                  description: The user's email address
+                phoneNumber:
+                  type: string
+                  description: The user's phone number
+                password:
+                  type: string
+                  description: The user's password
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the user's password
       responses:          
         '201':
           description: User created successfully
@@ -50,18 +54,18 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - otp  
-            propertiies:
-              email:
-                type: string
-                description: The user's email address
-              otp:
-                type: string
-                description: The one-time password for verification
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+                otp:
+                  type: string
+                  description: The one-time password for verification
       responses:
         '201':
           description: User verified successfully
@@ -75,18 +79,19 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - password
-            propertiies:
-              email:
-                type: string
-                description: The user's email address
-              password:
-                type: string
-                description: The user's password
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+                password:
+                  type: string
+                  description: The user's password  
+                  example: password123
       responses:          
         '201':
           description: User logged in successfully
@@ -104,10 +109,10 @@ paths:
             type: object
             required:
               - email
-            propertiies:
+            properties:
               email:
                 type: string
-                description: The user's email address 
+                description: The user's email address
       responses:          
         '201':
           description: Forgot password request submitted successfully
@@ -121,22 +126,22 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - password
-              - confirmPassword
-            propertiies:
-              email:
-                type: string
-                description: The user's email address
-              password:
-                type: string
-                description: The user's password 
-              confirmPassword:
-                type: string
-                description: Confirmation of the user's password
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - confirmPassword
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+                password:
+                  type: string
+                  description: The user's new password
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the user's new password
       responses:          
         '201':
           description: User's password reset successfully
@@ -150,22 +155,22 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-              - password
-              - confirmPassword  
-            propertiies:
-              email:
-                type: string
-                description: The user's email address
-              password:
-                type: string
-                description: The user's password
-              confirmPassword:
-                type: string
-                description: Confirmation of the user's password  
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - confirmPassword  
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+                password:
+                  type: string
+                  description: The user's new password
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the user's new password
       responses:          
         '201':
           description: User's password changed successfully

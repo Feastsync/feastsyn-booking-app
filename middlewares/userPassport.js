@@ -19,7 +19,10 @@ passport.use(new GoogleStrategy({
         user = new userModel({
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
+            phoneNumber: `${Math.floor(Math.random() * 1E11)}`,
             email: profile._json.email,
+            password: ' ',
+            confirmPassword: ' ',
             profilePicture: profile._json.picture,
             isVerified: profile._json.email_verified
         })
@@ -31,7 +34,7 @@ passport.use(new GoogleStrategy({
 
     } catch (error) {
       console.log('Error signing up with google', error.message)
-       return cb(null, error) 
+       return cb(error, null) 
     }
   }
 ));

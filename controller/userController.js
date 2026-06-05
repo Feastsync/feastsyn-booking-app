@@ -162,7 +162,7 @@ exports.forgotPassword = async(req, res)=>{
     console.log(OTP)
     
     //set expiry date
-    user.otpExpires = Date.now() + ( 100 * 50 * 1000);
+    user.otpExpires = Date.now() + ( 10 * 60 * 1000);
     //create the data object for the email template
     const data = {
       name: user.firstName,
@@ -186,7 +186,7 @@ exports.forgotPassword = async(req, res)=>{
 exports.resetPassword = async(req, res)=>{
   try {
     //Extract the required field from the request body
-    const { email, password } = req.body;
+    const {otp, password, email} = req.body;
     
     //Find the user
     const user = await userModel.findOne({email: email.toLowerCase()})
@@ -197,6 +197,13 @@ exports.resetPassword = async(req, res)=>{
         message: 'Invalid credentials'
       })
     }
+
+    if(Date.now() > user.otpExpires || otp !== user.otp) {
+      return res.status(400).json({
+        message: 'Invalid OTP'
+      })
+    }
+
     //Reset the user's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt) 
@@ -211,11 +218,12 @@ exports.resetPassword = async(req, res)=>{
     })
 
   } catch (error) {
-    res.status(404).json({
+    res.status(500).json({
       message: error.message
     })
   }
-};
+
+}
 
 exports.changePassword = async(req, res)=>{
   try {
@@ -293,7 +301,7 @@ exports.getAllUsers = async (req, res) => {
     //   });
     // }
 
-    const user = await userModel.find();
+    const user = await userModel.find().select('firstName lastName email phoneNumber');
 // await client.set(
 //   'users',
 //   JSON.stringify(user),

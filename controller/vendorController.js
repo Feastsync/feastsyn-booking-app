@@ -74,18 +74,16 @@ exports.updateVendor = async (req, res) => {
         message: 'Vendor not found'
     });
 }
-     const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
     let slug = vendor.slug;
-   if (!slug) {
-  const uniqueCode = crypto.randomBytes(4).toString("hex");
+    if (!vendor.slug) {
+    const uniqueCode = crypto.randomBytes(4).toString("hex");
 
-  slug = `${slugify(
-    vendor.stageName || req.body.stageName,{ lower: true, strict: true,})}-${uniqueCode}`;
-  // Save it if this is the first time generating it
-  vendor.slug = slug;
+  slug = `${slugify(vendor.stageName || req.body.stageName,{ lower: true, strict: true,})}-${uniqueCode}`;
+    vendor.slug = slug;
+  await vendor.save()
 } 
-
+  const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
     const { bankName, accountNumber, bio, servicesOffered, stateOfResidence } = req.body;
     
@@ -107,31 +105,31 @@ exports.updateVendor = async (req, res) => {
     let photos = [];
     let videos = [];
 
-    if (req.files.profilePicture) {
+    if (req.files?.profilePicture) {
       profilePicture = await uploadFile(
         req.files.profilePicture[0]
       );
     }
 
-    if (req.files.coverPhoto) {
+    if (req.files?.coverPhoto) {
   coverPhoto = await uploadFile(
     req.files.coverPhoto[0]
   );
 }
 
-if (req.files.coverVideo) {
+if (req.files?.coverVideo) {
   coverVideo = await uploadFile(
     req.files.coverVideo[0]
   );
 }
     //For single image upload
-    if (req.files.mainPhoto) {
+    if (req.files?.mainPhoto) {
       mainPhoto = await uploadFile(
         req.files.mainPhoto[0]
       );
     }
     //For multiple image uploads
-    if (req.files.photos) {
+    if (req.files?.photos) {
       photos = await Promise.all(
         req.files.photos.map(file =>
           uploadFile(file)
@@ -139,7 +137,7 @@ if (req.files.coverVideo) {
       );  
     }
     //For multiple video uploads
-    if (req.files.videos) {
+    if (req.files?.videos) {
       videos = await Promise.all(
         req.files.videos.map(file =>
           uploadFile(file, 'video')
@@ -158,6 +156,7 @@ if (req.files.coverVideo) {
       //Send a success response
     res.status(200).json({
       message: 'Vendor information updated successfully',
+      vendorUrl: publicUrl,
       data: updatedVendor
     });
 
@@ -310,7 +309,7 @@ exports.forgotPassword = async(req, res)=>{
 exports.resetPassword = async(req, res)=>{
   try {
     //Extract the required field from the request body
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
     
     //Find the vendor
     const vendor = await vendorModel.findOne({email: email.toLowerCase()})
@@ -322,11 +321,11 @@ exports.resetPassword = async(req, res)=>{
       })
     }
 
-    // if(Date.now() > vendor.otpExpires || otp !== vendor.otp) {
-    //   return res.status(400).json({
-    //     message: 'Invalid OTP'
-    //   })
-    // }
+    if(Date.now() > vendor.otpExpires || otp !== vendor.otp) {
+      return res.status(400).json({
+        message: 'Invalid OTP'
+      })
+    }
 
     //Reset the vendor's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
@@ -424,7 +423,7 @@ exports.getAllVendors = async (req, res) => {
     //   });
     // }
 
-    const vendor = await vendorModel.find().select('firstName lastName stageName profilePicture mainPhoto servicesOffered stateOfResidence');
+    const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
 // await client.set(
 //   'vendors',
 //   JSON.stringify(vendor),
