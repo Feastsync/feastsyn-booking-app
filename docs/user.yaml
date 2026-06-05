@@ -105,14 +105,14 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-            properties:
-              email:
-                type: string
-                description: The user's email address
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
       responses:          
         '201':
           description: Forgot password request submitted successfully
@@ -130,12 +130,16 @@ paths:
               type: object
               required:
                 - email
+                - otp
                 - password
                 - confirmPassword
               properties:
                 email:
                   type: string
                   description: The user's email address
+                otp:
+                  type: string
+                  description: The one-time password for resetting password  
                 password:
                   type: string
                   description: The user's new password
