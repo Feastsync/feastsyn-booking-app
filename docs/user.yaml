@@ -206,4 +206,17 @@ paths:
           description: user retrieved successfully found
         "500": 
           description: Something went wrong  
+
+
+  /api/v1/user/logout:
+    post: 
+      summary: this is the endpoint for logging out
+      tags: [users]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Logged out successfully
+        "500": 
+          description: Something went wrong        
   

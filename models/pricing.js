@@ -5,6 +5,10 @@ const pricingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'vendors',
     },
+    bookingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'bookings',
+    },
     minimumPrice: {
         type: Number,
         required: true

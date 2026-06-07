@@ -1,8 +1,9 @@
-const { initializePayment } = require('../controller/paymentController');
+const { initializePayment, verifyPayment, getAllPaymentByUser } = require('../controller/paymentController');
 const { authentication } = require('../middlewares/auth');
 const router = require('express').Router();
 
-router.post('/initialize-booking/:bookingId', authentication, initializePayment);
-router.post('/initialize/:vendorId', authentication, initializePayment);
+router.post('/initialize-booking/:vendorId/:bookingId', authentication, initializePayment);
+router.post('/verify-payment/:vendorId', authentication, verifyPayment);
+router.get('/all-payment-by-user', authentication, getAllPaymentByUser);
 
 module.exports = router;
