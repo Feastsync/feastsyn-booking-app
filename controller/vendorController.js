@@ -261,7 +261,6 @@ exports.vendorLogout = async (req, res) => {
   });
 };
 
-
 exports.forgotPassword = async(req, res)=>{
   try {
     //extract vendor email from the request body

@@ -166,14 +166,14 @@ paths:
             schema:
               type: object
               required:
-                - email
-                - password
+                - oldPassword
+                - newPassword
                 - confirmPassword  
               properties:
-                email:
+                oldPassword:
                   type: string
-                  description: The user's email address
-                password:
+                  description: The user's current password
+                newPassword:
                   type: string
                   description: The user's new password
                 confirmPassword:
