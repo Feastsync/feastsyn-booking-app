@@ -220,6 +220,10 @@ paths:
     post: 
       summary: this is the endpoint for changing password
       tags: [vendors]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
       requestBody:
         required: true
         content: 
