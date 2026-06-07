@@ -143,6 +143,13 @@ exports.userLogin = async (req, res) => {
   }
 }
 
+exports.userLogout = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully"
+  });
+};
+
 exports.forgotPassword = async(req, res)=>{
   try {
     //extract user email from the request body

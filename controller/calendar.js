@@ -1,28 +1,4 @@
-const Booking = require('../models/booking');
- const AvailabilityBlock = require('../models/availabiltyBlock');
-// const calendarModel = require('../models/calendarModel');
-
-// exports.createCalendarEntry = async (req, res, next) => {
-//     try {
-//         const { eventDate, startTime, endTime, eventLocation, totalAmount } = req.body;
-//         const calendarEntry = new calendarModel({
-//             eventDate,
-//             startTime,
-//             endTime,
-//             eventLocation,
-//             totalAmount
-//         });
-//         await calendarEntry.save();
-//         res.status(201).json({
-//             message: 'Calendar entry created successfully',
-//             data: calendarEntry
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-
+const booking = require('../models/booking');
 
 exports.getCalendar = async (req, res) => {
   try {
@@ -37,7 +13,7 @@ exports.getCalendar = async (req, res) => {
       bookingDate: { $gte: startDate, $lt: endDate },
       bookingStatus: 'confirmed'
     });
-
+    
      const blocks = await AvailabilityBlock.find({
        vendorId,
        blockedDate: { $gte: startDate, $lt: endDate }

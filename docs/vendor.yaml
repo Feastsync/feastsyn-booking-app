@@ -117,7 +117,8 @@ paths:
                 - stateOfResidence
                 - BankName
                 - accountNumber
-                - mediaProof
+                - photoCatalogue
+                - videoCatalogue
                 - bio
                 - profilePicture
                 - coverPhoto
@@ -145,10 +146,14 @@ paths:
                   type: string
                   format: binary
                   description: The vendor's cover video
-                mediaProof:
+                photoCatalogue:
                   type: string
                   format: binary
-                  description: Proof of media coverage
+                  description: A catalogue of photos
+                videoCatalogue:
+                  type: string
+                  format: binary
+                  description: A catalogue of videos
                 bio:
                   type: string
                   description: The vendor's biography
@@ -266,3 +271,15 @@ paths:
           description: vendor retrieved successfully found
         "500": 
           description: Something went wrong 
+
+  /api/v1/vendor/logout:
+    post: 
+      summary: this is the endpoint for logging out
+      tags: [vendors]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Logged out successfully
+        "500": 
+          description: Something went wrong        

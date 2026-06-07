@@ -11,6 +11,15 @@ const bookingSchema = new mongoose.Schema({
         ref: 'vendors',
         required: true
     },
+    pricingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'pricing'
+    },
+    packageName: {
+        type: String,
+        required: true,
+        enum: ['basic', 'standard', 'premium', 'addMorePackages']
+    },
     bookingTitle: {
         type: String,
         required: true

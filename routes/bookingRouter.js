@@ -3,6 +3,6 @@ const router = express.Router();
 const { createBooking, updateBookingStatus } = require('../controller/bookingController');
 
 router.post('/create', createBooking);
-router.put('/update/:bookingId', updateBookingStatus);
+// router.put('/update/:bookingId', updateBookingStatus);
 
 module.exports = router;
