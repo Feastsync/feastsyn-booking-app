@@ -64,7 +64,14 @@ const bookingSchema = new mongoose.Schema({
         enum: ['unpaid','paid','refunded'],
         default: 'unpaid'
     },
-
+    startTime: {
+    type: String,
+    required: true
+  },
+  endTime: {
+    type: String,
+    required: true
+ }
 }, { timestamps: true });
 
 const bookingModel = mongoose.model('bookings', bookingSchema);
