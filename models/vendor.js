@@ -16,8 +16,8 @@ const vendorSchema = new mongoose.Schema({
         require: true
     },
     slug: {
-        type: String,
-        unique: true
+        type: String, 
+        trim: true,
     },
     email: {
         type: String,

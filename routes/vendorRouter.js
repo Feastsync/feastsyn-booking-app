@@ -5,7 +5,7 @@ const {upload} = require('../middlewares/multer');
 const {signupVendorValidator, resetPasswordValidator, changePasswordValidator} = require('../middlewares/validator');
 const router = require('express').Router();
 
-router.post('/sign-up', signupVendorValidator,createVendor);
+router.post('/sign-up', signupVendorValidator, createVendor);
 router.put('/update-profile/:id', upload.fields([
   { name: 'profilePicture', maxCount: 1 },
   { name: 'coverPhoto', maxCount: 1 },

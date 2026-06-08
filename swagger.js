@@ -28,11 +28,13 @@ const options = {
         }
     }
 },
-    
+ 
     apis: [
         './docs/user.yaml',
         './docs/vendor.yaml',
-        './docs/pricing.yaml'
+        './docs/pricing.yaml', 
+        './docs/booking.yaml',
+        './docs/payment.yaml'
     ]
     
 }

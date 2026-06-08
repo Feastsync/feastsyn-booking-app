@@ -1,0 +1,45 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows users to make payments to vendors for different events.
+paths:
+  /api/v1/payment/initialize:
+    post: 
+      summary: this is the endpoint for initializing a payment
+      tags: [payments]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+                - phoneNumber
+                - password
+                - confirmPassword  
+              properties:
+                firstName:
+                  type: string
+                  description: The user's first name 
+                lastName:
+                  type: string
+                  description: The user's last name
+                email:
+                  type: string
+                  description: The user's email address
+                phoneNumber:
+                  type: string
+                  description: The user's phone number
+                password:
+                  type: string
+                  description: The user's password
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the user's password
+      responses:          
+        '201':
+          description: User created successfully
