@@ -1,4 +1,4 @@
-const { createUser, verifyEmail, userLogin, forgotPassword, resendOTP, resetPassword, loginWithGoogle, changePassword, getAllUsers, deleteUser } = require('../controller/userController');
+const { createUser, verifyEmail, userLogin, userLogout, forgotPassword, resendOTP, resetPassword, loginWithGoogle, changePassword, getAllUsers, deleteUser } = require('../controller/userController');
 const { authentication, adminAuth } = require('../middlewares/auth');
 const { profile, loginProfile } = require('../middlewares/userPassport');
 const {signupUserValidator, resetPasswordValidator, changePasswordValidator} = require('../middlewares/validator');
@@ -8,6 +8,7 @@ const router = require('express').Router();
 router.post('/register', signupUserValidator, createUser);
 router.post('/verify', verifyEmail);
 router.post('/login', userLogin);
+router.post('/logout', authentication, userLogout);
 
 router.post('/forgot-password', forgotPassword);
 router.post('/resendOTP', resendOTP);

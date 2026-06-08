@@ -143,6 +143,13 @@ exports.userLogin = async (req, res) => {
   }
 }
 
+exports.userLogout = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully"
+  });
+};
+
 exports.forgotPassword = async(req, res)=>{
   try {
     //extract user email from the request body
@@ -175,7 +182,8 @@ exports.forgotPassword = async(req, res)=>{
     await user.save();
     //send a success response
     res.status(200).json({
-      message: 'Forgot password successful'
+      message: 'Forgot password successful',
+      data: OTP 
     })
   } catch (error) {
     res.status(500).json({
@@ -254,6 +262,7 @@ exports.resetPassword = async(req, res)=>{
     })
 
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       message: error.message
     })

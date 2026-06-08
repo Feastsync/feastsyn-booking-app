@@ -187,7 +187,7 @@ exports.getAllPaymentByUser = async(req, res)=>{
         const allPayments = await paymentModel.find({userId}).sort({createdAt: -1});
         //Send a success response
         res.status(200).json({
-            message: 'All payments by User',
+            message: 'All payments by User retrieved successfully',
             data: allPayments
         })
     } catch (error) {

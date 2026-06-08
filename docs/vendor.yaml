@@ -117,7 +117,8 @@ paths:
                 - stateOfResidence
                 - BankName
                 - accountNumber
-                - mediaProof
+                - photoCatalogue
+                - videoCatalogue
                 - bio
                 - profilePicture
                 - coverPhoto
@@ -145,10 +146,14 @@ paths:
                   type: string
                   format: binary
                   description: The vendor's cover video
-                mediaProof:
+                photoCatalogue:
                   type: string
                   format: binary
-                  description: Proof of media coverage
+                  description: A catalogue of photos
+                videoCatalogue:
+                  type: string
+                  format: binary
+                  description: A catalogue of videos
                 bio:
                   type: string
                   description: The vendor's biography
@@ -215,6 +220,10 @@ paths:
     post: 
       summary: this is the endpoint for changing password
       tags: [vendors]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
       requestBody:
         required: true
         content: 
@@ -222,19 +231,19 @@ paths:
             schema:
               type: object
               required:
-                - email
-                - password
+                - oldPassword
+                - newPassword
                 - confirmPassword  
               properties:
-                email:
+                oldPassword:
                   type: string
-                  description: The vendor's email address
-                password:
+                  description: The vendor's current password
+                newPassword:
                   type: string
-                  description: The vendor's password
+                  description: The vendor's new password
                 confirmPassword:
                   type: string
-                  description: Confirmation of the vendor's password  
+                  description: Confirmation of the vendor's new password
       responses:          
         '201':
           description: Vendor's password changed successfully
@@ -266,3 +275,15 @@ paths:
           description: vendor retrieved successfully found
         "500": 
           description: Something went wrong 
+
+  /api/v1/vendor/logout:
+    post: 
+      summary: this is the endpoint for logging out
+      tags: [vendors]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Logged out successfully
+        "500": 
+          description: Something went wrong        

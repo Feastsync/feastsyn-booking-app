@@ -105,14 +105,14 @@ paths:
         required: true
         content: 
           application/json:
-          schema:
-            type: object
-            required:
-              - email
-            properties:
-              email:
-                type: string
-                description: The user's email address
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
       responses:          
         '201':
           description: Forgot password request submitted successfully
@@ -130,12 +130,16 @@ paths:
               type: object
               required:
                 - email
+                - otp
                 - password
                 - confirmPassword
               properties:
                 email:
                   type: string
                   description: The user's email address
+                otp:
+                  type: string
+                  description: The one-time password for resetting password  
                 password:
                   type: string
                   description: The user's new password
@@ -151,6 +155,10 @@ paths:
     post: 
       summary: this is the endpoint for changing password
       tags: [users]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
       requestBody:
         required: true
         content: 
@@ -158,14 +166,14 @@ paths:
             schema:
               type: object
               required:
-                - email
-                - password
+                - oldPassword
+                - newPassword
                 - confirmPassword  
               properties:
-                email:
+                oldPassword:
                   type: string
-                  description: The user's email address
-                password:
+                  description: The user's current password
+                newPassword:
                   type: string
                   description: The user's new password
                 confirmPassword:
@@ -202,4 +210,17 @@ paths:
           description: user retrieved successfully found
         "500": 
           description: Something went wrong  
+
+
+  /api/v1/user/logout:
+    post: 
+      summary: this is the endpoint for logging out
+      tags: [users]
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Logged out successfully
+        "500": 
+          description: Something went wrong        
   

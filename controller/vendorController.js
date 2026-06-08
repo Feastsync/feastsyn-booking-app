@@ -101,9 +101,8 @@ exports.updateVendor = async (req, res) => {
     let profilePicture;
     let coverPhoto;
     let coverVideo;
-    let mainPhoto;
-    let photos = [];
-    let videos = [];
+    let videoCatalogue = [];
+    let photoCatalogue = [];
 
     if (req.files?.profilePicture) {
       profilePicture = await uploadFile(
@@ -122,24 +121,16 @@ if (req.files?.coverVideo) {
     req.files.coverVideo[0]
   );
 }
-    //For single image upload
-    if (req.files?.mainPhoto) {
-      mainPhoto = await uploadFile(
-        req.files.mainPhoto[0]
+    //For multiple image uploads
+    if (req.files?.photoCatalogue) {
+      photoCatalogue = await uploadFile(
+        req.files.photoCatalogue[0]
       );
     }
-    //For multiple image uploads
-    if (req.files?.photos) {
-      photos = await Promise.all(
-        req.files.photos.map(file =>
-          uploadFile(file)
-        )
-      );  
-    }
     //For multiple video uploads
-    if (req.files?.videos) {
-      videos = await Promise.all(
-        req.files.videos.map(file =>
+    if (req.files?.videoCatalogue) {
+      videoCatalogue = await Promise.all(
+        req.files.videoCatalogue.map(file =>
           uploadFile(file, 'video')
         )
       );
@@ -149,9 +140,8 @@ if (req.files?.coverVideo) {
         ...(coverVideo && { coverVideo }),
         ...(slug && { slug }),
         ...(profilePicture && { profilePicture }),
-        ...(mainPhoto && { mainPhoto }),
-        ...(photos.length && { photos }),
-        ...(videos.length && { videos }) },
+        ...(photoCatalogue.length && { photoCatalogue }),
+        ...(videoCatalogue.length && { videoCatalogue }) },
       { new: true });
       //Send a success response
     res.status(200).json({
@@ -264,6 +254,12 @@ exports.vendorLogin = async (req, res) => {
   }
 };
 
+exports.vendorLogout = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully"
+  });
+};
 
 exports.forgotPassword = async(req, res)=>{
   try {

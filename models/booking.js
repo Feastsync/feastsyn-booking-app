@@ -11,6 +11,15 @@ const bookingSchema = new mongoose.Schema({
         ref: 'vendors',
         required: true
     },
+    pricingId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'pricing'
+    },
+    packageName: {
+        type: String,
+        required: true,
+        enum: ['basic', 'standard', 'premium', 'addMorePackages']
+    },
     bookingTitle: {
         type: String,
         required: true
@@ -47,24 +56,12 @@ const bookingSchema = new mongoose.Schema({
     },
     bookingStatus: {
         type: String,
-        enum: [
-            'pending',
-            'confirmed',
-            'completed',
-            'cancelled',
-            'disputed',
-            'accept',
-            'decline'
-        ],
+        enum: ['pending','confirmed','completed','cancelled','disputed'],
         default: 'pending'
     },
     paymentStatus: {
         type: String,
-        enum: [
-            'unpaid',
-            'paid',
-            'refunded'
-        ],
+        enum: ['unpaid','paid','refunded'],
         default: 'unpaid'
     },
     startTime: {

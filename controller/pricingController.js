@@ -33,10 +33,7 @@ exports.createPricing = async (req, res) => {
 exports.getAllVendorPricing = async (req, res) => {
     try {
         const { id } = req.user;
-        const pricing = await pricingModel.find({
-            vendorId: id
-        });
-
+        const pricing = await pricingModel.find({ vendorId: id});
         res.status(200).json({
             message: 'Pricing packages retrieved successfully',
             totalPackages: pricing.length,
@@ -89,8 +86,7 @@ exports.updatePricing = async (req, res) => {
                 message: 'Unauthorized'
             });
         }
-        const updatedPricing = await pricingModel.findByIdAndUpdate(
-            id,
+        const updatedPricing = await pricingModel.findByIdAndUpdate( id,
             req.body,
             addMorePackages,
             { new: true }

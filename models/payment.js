@@ -25,13 +25,11 @@ const paymentSchema = new mongoose.Schema({
     },
     reference: {
         type: String,
-        required: true,
-        unique: true,
-        trim: true
+        required: true
     },
     vendorName: {
         type: String,
-        required: true,
+        required: true, 
         trim: true
     },
     paymentMethod: {
