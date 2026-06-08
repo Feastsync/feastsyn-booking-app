@@ -185,6 +185,10 @@ responseRate: {
         type: Number,
         default: 100
    }, 
+   bufferTime: {
+    type: Number,
+    default: 60 // in minutes
+}
 },    
 {timestamps:true},
 );

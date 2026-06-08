@@ -52,7 +52,9 @@ const bookingSchema = new mongoose.Schema({
             'confirmed',
             'completed',
             'cancelled',
-            'disputed'
+            'disputed',
+            'accept',
+            'decline'
         ],
         default: 'pending'
     },
@@ -65,7 +67,14 @@ const bookingSchema = new mongoose.Schema({
         ],
         default: 'unpaid'
     },
-
+    startTime: {
+    type: String,
+    required: true
+  },
+  endTime: {
+    type: String,
+    required: true
+ }
 }, { timestamps: true });
 
 const bookingModel = mongoose.model('bookings', bookingSchema);
