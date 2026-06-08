@@ -16,6 +16,7 @@ const router = require('./routes/userRouter');
 const pricingRouter = require('./routes/pricingRouter');
 const paymentRouter = require('./routes/paymentRouter');
 const calendarRouter = require('./routes/calendarRouter');
+const bookingRouter = require('./routes/bookingRouter');
 
 const rateLimit = require('express-rate-limit');
 
@@ -48,7 +49,7 @@ app.use('/api/v1/vendor', vendorRouter);
 app.use('/api/v1', pricingRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/schedule', calendarRouter);
- 
+app.use('/api/v1/bookings', bookingRouter);
 
  app.use((req, res) => {
   res.status(404).json({
