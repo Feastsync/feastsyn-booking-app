@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows users to book a vendor's services
+paths:
+  /api/v1/bookings:
+    post:
+      summary: this is the endpoint for creating a new booking
+      tags: [bookings]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - pricingId
+                - vendorId
+                - bookingDate
+                - bookingTitle
+                - eventType
+                - eventLocation
+              properties:
+                pricingId:
+                  type: string
+                  description: The ID of the pricing package
+                vendorId:
+                  type: string
+                  description: The ID of the vendor
+                bookingDate:
+                  type: string
+                  format: date
+                  description: The date of the booking
+                bookingTitle:
+                  type: string
+                  description: The title of the booking
+                eventType:
+                  type: string
+                  description: The type of the event
+                eventLocation:
+                  type: string
+                  description: The location of the event
+      responses:          
+        '201':
+          description: Booking created successfully
