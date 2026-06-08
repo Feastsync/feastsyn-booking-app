@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API documentation for the FeastSync Booking App, which allows vendors to be booked fordifferent events.
 paths:
-  /api/v1/vendor/register:
+  /api/v1/vendor/sign-up:
     post: 
       summary: this is the endpoint for vendor registration
       tags: [vendors]
