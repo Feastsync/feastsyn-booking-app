@@ -41,7 +41,7 @@ exports.createVendor = async (req, res) => {
             confirmPassword: hashPassword,
             stageName,
             phoneNumber,
-            otp
+            otp 
         });
 
         // Send Email
@@ -57,7 +57,6 @@ exports.createVendor = async (req, res) => {
     } catch (error) {
  
         console.log(error.message);
-
         res.status(500).json({
             message: 'Something went wrong'
         });
