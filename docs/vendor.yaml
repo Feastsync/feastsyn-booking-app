@@ -231,19 +231,19 @@ paths:
             schema:
               type: object
               required:
-                - email
-                - password
+                - oldPassword
+                - newPassword
                 - confirmPassword  
               properties:
-                email:
+                oldPassword:
                   type: string
-                  description: The vendor's email address
-                password:
+                  description: The vendor's current password
+                newPassword:
                   type: string
-                  description: The vendor's password
+                  description: The vendor's new password
                 confirmPassword:
                   type: string
-                  description: Confirmation of the vendor's password  
+                  description: Confirmation of the vendor's new password
       responses:          
         '201':
           description: Vendor's password changed successfully
