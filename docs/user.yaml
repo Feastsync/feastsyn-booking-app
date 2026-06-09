@@ -117,7 +117,46 @@ paths:
         '201':
           description: Forgot password request submitted successfully
 
-          
+  /api/v1/user/verify-reset-otp:
+    post: 
+      summary: this is the endpoint for reset password otp
+      tags: [users]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - otp
+              properties:
+                otp:
+                  type: string
+                  description: The user's reset otp
+      responses:          
+        '201':
+          description: OTP verified successfully   
+
+  /api/v1/user/resend-otp:
+    post: 
+      summary: this is the endpoint to resend otp
+      tags: [users]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+      responses:          
+        '201':
+          description: OTP resent successfully   
+                              
   /api/v1/user/reset-password:
     post: 
       summary: this is the endpoint for resetting password  
@@ -130,16 +169,12 @@ paths:
               type: object
               required:
                 - email
-                - otp
                 - password
                 - confirmPassword
               properties:
                 email:
                   type: string
-                  description: The user's email address
-                otp:
-                  type: string
-                  description: The one-time password for resetting password  
+                  description: The user's email address 
                 password:
                   type: string
                   description: The user's new password
