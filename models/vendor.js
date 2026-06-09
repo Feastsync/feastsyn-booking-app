@@ -87,7 +87,7 @@ videoCatalogue: {
             type: String,
             trim: true 
         },
-        videocatalogueId: {
+        videoCatalogueId: {
             type: String,
             trim: true
         }
