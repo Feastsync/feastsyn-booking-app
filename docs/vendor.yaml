@@ -182,27 +182,7 @@ paths:
       responses:          
         '201':
           description: Forgot password request submitted successfully
-
-
-  /api/v1/vendor/verify-reset-otp:
-    post: 
-      summary: this is the endpoint for reset password otp
-      tags: [vendors]
-      requestBody:
-        required: true
-        content: 
-          application/json:
-            schema:
-              type: object
-              required:
-                - otp
-              properties:
-                otp:
-                  type: string
-                  description: The vendor's reset otp
-      responses:          
-        '201':
-          description: OTP verified successfully   
+  
 
   /api/v1/vendor/resend-otp:
     post: 
@@ -237,12 +217,16 @@ paths:
               type: object
               required:
                 - email
+                - otp
                 - password
                 - confirmPassword
               properties:
-                email:
+              email:
                 type: string
                 description: The vendor's email address
+              otp: 
+                type: string
+                description: One time password
               password:
                 type: string
                 description: The vendor's password 
