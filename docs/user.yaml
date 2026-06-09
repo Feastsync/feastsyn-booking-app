@@ -196,13 +196,10 @@ paths:
         "500": 
           description: Something went wrong  
 
-  /api/v1/user/one-user/{id}:
+  /api/v1/user/one-user:
     get: 
       summary: this is the endpoint to retrieve one user
       tags: [users]
-      parameters:
-        - in: path
-          name: id
       security:
         - bearerAuth: []
       responses:

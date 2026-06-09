@@ -3,6 +3,7 @@ const vendorModel = require('../models/vendor')
 const bcrypt = require('bcrypt')    
 const {brevo} = require('../utils/brevo')
 const fs = require('fs')
+const path = require('path')
 const slugify = require('slugify')
 const crypto = require('crypto')
 const cloudinary = require('../utils/cloudinary')
@@ -50,8 +51,14 @@ exports.createVendor = async (req, res) => {
         const vendors = await vendorModel.find();
         res.status(201).json({
             message: 'Vendor created successfully',
-            data: vendor,
-            count: vendors.length
+            data: {
+              firstName: vendor.firstName,
+              lastName: vendor.lastName,
+              stageName: vendor.stageName,
+              email: vendor.email.toLowerCase(),
+              phoneNumber: vendor.phoneNumber,
+              _id: vendor._id
+            }
         });
 
     } catch (error) {
@@ -66,67 +73,108 @@ exports.createVendor = async (req, res) => {
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
+
     const vendor = await vendorModel.findById(id);
 
     if (!vendor) {
-    return res.status(404).json({
+      return res.status(404).json({
         message: 'Vendor not found'
-    });
-}
+      });
+    }
 
     let slug = vendor.slug;
+
     if (!vendor.slug) {
-    const uniqueCode = crypto.randomBytes(4).toString("hex");
+      const uniqueCode = crypto.randomBytes(6).toString('hex');
 
-  slug = `${slugify(vendor.stageName || req.body.stageName,{ lower: true, strict: true,})}-${uniqueCode}`;
-    vendor.slug = slug;
-  await vendor.save()
-} 
-  const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+      slug = `${slugify(
+        vendor.stageName || req.body.stageName,
+        {
+          lower: true,
+          strict: true
+        }
+      )}-${uniqueCode}`;
 
-    const { bankName, accountNumber, bio, servicesOffered, stateOfResidence } = req.body;
-    
+      vendor.slug = slug;
+      await vendor.save();
+    }
+
+    const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+
+    const {
+      bankName,
+      accountNumber,
+      bio,
+      servicesOffered,
+      stateOfResidence
+    } = req.body;
+
+    // Upload helper
     const uploadFile = async (file, resourceType = 'image') => {
+      const absolutePath = path.resolve(file.path);
+
+      console.log('Uploading:', absolutePath);
+
+      if (!fs.existsSync(absolutePath)) {
+        throw new Error(`File not found: ${absolutePath}`);
+      }
 
       const uploaded = await cloudinary.uploader.upload(
-        file.path,{ resource_type: resourceType });
-      await fs.promises.unlink(file.path);
+        absolutePath,
+        {
+          resource_type: resourceType
+        }
+      );
+
+      // Delete local file after upload
+      await fs.promises.unlink(absolutePath);
+
       return {
         secureUrl: uploaded.secure_url,
         publicId: uploaded.public_id
       };
     };
-    
+
     let profilePicture;
     let coverPhoto;
     let coverVideo;
-    let videoCatalogue = [];
     let photoCatalogue = [];
+    let videoCatalogue = [];
 
+    // Profile Picture
     if (req.files?.profilePicture) {
       profilePicture = await uploadFile(
-        req.files.profilePicture[0]
+        req.files.profilePicture[0],
+        'image'
       );
     }
 
+    // Cover Photo
     if (req.files?.coverPhoto) {
-  coverPhoto = await uploadFile(
-    req.files.coverPhoto[0]
-  );
-}
-
-if (req.files?.coverVideo) {
-  coverVideo = await uploadFile(
-    req.files.coverVideo[0]
-  );
-}
-    //For multiple image uploads
-    if (req.files?.photoCatalogue) {
-      photoCatalogue = await uploadFile(
-        req.files.photoCatalogue[0]
+      coverPhoto = await uploadFile(
+        req.files.coverPhoto[0],
+        'image'
       );
     }
-    //For multiple video uploads
+
+    // Cover Video
+    if (req.files?.coverVideo) {
+      coverVideo = await uploadFile(
+        req.files.coverVideo[0],
+        'video'
+      );
+    }
+
+    // Multiple Photos
+    if (req.files?.photoCatalogue) {
+      photoCatalogue = await Promise.all(
+        req.files.photoCatalogue.map(file =>
+          uploadFile(file, 'image')
+        )
+      );
+    }
+
+    // Multiple Videos
     if (req.files?.videoCatalogue) {
       videoCatalogue = await Promise.all(
         req.files.videoCatalogue.map(file =>
@@ -134,23 +182,36 @@ if (req.files?.coverVideo) {
         )
       );
     }
-    const updatedVendor = await vendorModel.findByIdAndUpdate(id, {bankName, accountNumber, bio, servicesOffered, stateOfResidence,
-        ...(coverPhoto && { coverPhoto }),
-        ...(coverVideo && { coverVideo }),
+
+    const updatedVendor = await vendorModel.findByIdAndUpdate(
+      id,
+      {
+        bankName,
+        accountNumber,
+        bio,
+        servicesOffered,
+        stateOfResidence,
+
         ...(slug && { slug }),
         ...(profilePicture && { profilePicture }),
+        ...(coverPhoto && { coverPhoto }),
+        ...(coverVideo && { coverVideo }),
         ...(photoCatalogue.length && { photoCatalogue }),
-        ...(videoCatalogue.length && { videoCatalogue }) },
-      { new: true });
-      //Send a success response
-    res.status(200).json({
+        ...(videoCatalogue.length && { videoCatalogue })
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
       message: 'Vendor information updated successfully',
       vendorUrl: publicUrl,
       data: updatedVendor
     });
 
   } catch (error) {
-    res.status(500).json({
+    console.error(error);
+
+    return res.status(500).json({
       message: error.message
     });
   }
@@ -177,12 +238,19 @@ exports.verifyVendorEmail = async (req, res) => {
     await vendor.save();
     res.status(200).json({
       message: 'OTP Verified successfully',
-      data: vendor
+      data: {
+        firstName: vendor.firstName,
+        lastName: vendor.lastName,
+        stageName: vendor.stageName,
+        email: vendor.email.toLowerCase(),
+        phoneNumber: vendor.phoneNumber,
+        _id: vendor._id,
+        otp
+      }
     })
   } catch (error) {
-    console.log(error.message),
       res.status(500).json({
-        message: 'Something went wrong'
+        message: error.message
       })
   }
 };
@@ -243,7 +311,14 @@ exports.vendorLogin = async (req, res) => {
     res.status(200).json({
       message: 'Login sucessful',
       token,
-      vendor
+      vendor: {
+        firstName: vendor.firstName,
+        lastName: vendor.lastName,
+        stageName: vendor.stageName,
+        email: vendor.email.toLowerCase(),
+        phoneNumber: vendor.phoneNumber,
+        _id: vendor._id
+      }
     })
   } catch (error) {
     console.log(error.message),
@@ -422,24 +497,6 @@ exports.changePassword = async(req, res)=>{
   }
 };
 
-exports.loginWithGoogle = async(req, res) =>{
-    try {
-        const token = await jwt.sign({
-            id: req.vendor._id
-    }, process.env.SECRET_KEY, {expiresIn: '1d'})
-
-    res.status(200).json({
-        message: 'Login successful',
-        data: req.vendor.firstName,
-        token
-    })
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
-            message: 'something went wrong'
-        })
-    }
-}
 
 exports.getAllVendors = async (req, res) => {
   try {

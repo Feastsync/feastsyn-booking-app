@@ -1,19 +1,24 @@
 const bookingModel = require('../models/booking');
 const vendorModel = require('../models/vendor');
+const pricingModel = require('../models/pricing');
 
 exports.createBooking = async (req, res) => {
   try {
-    // Logged in user
+
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'Please login first'
+      });
+    }
     const userId = req.user.id;
-    const { vendorId, pricingId, bookingTitle, eventType, eventLocation, bookingDate} = req.body;
-    // Validate required fields
-    if (!vendorId || !pricingId || !bookingTitle || !eventType || !eventLocation || !bookingDate ) {
+
+    const { vendorId, pricingId, eventType, eventLocation, eventDate, duration, guestCount, additionalDetails} = req.body;
+    if ( !vendorId || !pricingId || !eventType || !eventLocation || !eventDate || !duration || !guestCount || !additionalDetails ) {
       return res.status(400).json({
         message: 'All required fields must be provided'
       });
     }
 
-     // Check vendor
     const vendor = await vendorModel.findById(vendorId);
     if (!vendor) {
       return res.status(404).json({
@@ -21,46 +26,49 @@ exports.createBooking = async (req, res) => {
       });
     }
     // Check package
-    const selectedPackage = vendorModel.packages.id(pricingId);
-    if (!selectedPackage) {
-      return res.status(404).json({
-        message: 'Package not found'
-      });
-    }
+const selectedPackage = await pricingModel.findOne({
+    _id: pricingId,
+    vendorId: vendorId
+});
 
-    // Check if vendor is already booked
+if (!selectedPackage) {
+    return res.status(404).json({
+        message: 'Package not found'
+    });
+}
     const existingBooking = await bookingModel.findOne({
       vendorId,
-      bookingDate,
-      bookingStatus: { $in: ['pending', 'confirmed'] }
+      eventDate: new Date(eventDate),
+      bookingStatus: {
+        $in: ['pending', 'confirmed']
+      }
     });
-
     if (existingBooking) {
       return res.status(400).json({
         message: 'Vendor is already booked on this date'
       });
     }
-    // Create booking
     const booking = await bookingModel.create({
       userId,
       vendorId,
       packageId: pricingId,
-      packageName: selectedPackage.name,
-      bookingTitle,
       eventType,
       eventLocation,
-      bookingDate,
-      totalAmount: selectedPackage.price
+      eventDate: new Date(eventDate),
+      duration,
+      guestCount,
+      pricingId,
+      additionalDetails,
+      totalAmount: selectedPackage.packagePrice
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Booking created successfully',
       data: booking
     });
 
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message
     });
   }

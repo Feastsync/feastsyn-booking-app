@@ -10,6 +10,11 @@ const vendorSchema = new mongoose.Schema({
         require: true,
         trim: true
     },
+    bookingFee: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     stageName: {
         type: String,
         trim: true,
@@ -64,8 +69,28 @@ const vendorSchema = new mongoose.Schema({
     otpExpires: {
         type: Number,
         default: () => {
-        return Date.now() + ( 100 * 60 * 1000)   
+        return Date.now() + ( 10 * 60 * 1000)   
     }
+},
+photoCatalogue: {
+        secureUrl:{
+            type: String,
+            trim: true 
+        },
+        photoCatalogueId: {
+            type: String,
+            trim: true
+        }
+},
+videoCatalogue: {
+    secureUrl:{
+            type: String,
+            trim: true 
+    },
+    videoCatalogueId: {
+            type: String,
+            trim: true
+        }
 },
 coverPhoto: {
         secureUrl:{
@@ -86,57 +111,13 @@ coverPhoto: {
             type: String,
             trim: true
         }
-    }, 
-mainPhoto: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        mainPhotoId: {
-            type: String,
-            trim: true
-        }
-    },
-    photos: [
-        {
-            secureUrl:{
-                type: String,
-                trim: true
-            },
-            photoId: {
-                type: String,
-                trim: true
-            }
-        }
-    ],
-    videos: [
-        {
-            secureUrl:{
-                type: String,
-                trim: true
-            },
-            videoId: {
-                type: String,
-                trim: true
-            }
-        }
-    ],  
+    },   
     profilePicture: {
         secureUrl:{
             type: String,
             trim: true 
         },
-        profileId: {
-            type: String,
-            trim: true
-        }
-    },
-    mediaProof: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        mediaId: {
+        profilePictureId: {
             type: String,
             trim: true
         }
@@ -154,7 +135,7 @@ mainPhoto: {
         default: false
     },
     accountNumber: {
-        type: String,
+        type: String, 
         trim: true
     },
     bankName: {

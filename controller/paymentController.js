@@ -2,14 +2,15 @@ const userModel = require('../models/user');
 const vendorModel = require('../models/vendor');
 const paymentModel = require('../models/payment');
 const bookingModel = require('../models/booking');
+const pricingModel = require('../models/pricing');
 const otpGenerator = require('otp-generator');
 const axios = require('axios');
 const mongoose = require('mongoose');
 
 exports.initializePayment = async (req, res) => {
-    try{
+    try {
         const userId = req.user.id;
-        const {vendorId, bookingId} = req.params;
+        const { vendorId, bookingId } = req.params;
 
         let booking;
         let selectedVendorId = vendorId;
@@ -23,6 +24,7 @@ exports.initializePayment = async (req, res) => {
             }
 
             booking = await bookingModel.findOne({ _id: bookingId, userId });
+
             if (!booking) {
                 return res.status(404).json({
                     message: 'Booking not found for this user'
@@ -36,9 +38,19 @@ exports.initializePayment = async (req, res) => {
             }
 
             selectedVendorId = booking.vendorId;
-            amount = Number(booking.totalAmount);
-        }
 
+            if (booking.pricingId) {
+                const pricing = await pricingModel.findById(booking.pricingId);
+
+                if (!pricing) {
+                    return res.status(404).json({
+                        message: 'Pricing package not found'
+                    });
+                }
+
+                amount = pricing.packagePrice;
+            }
+        }
         if (!mongoose.Types.ObjectId.isValid(selectedVendorId)) {
             return res.status(400).json({
                 message: 'Invalid vendor ID'
@@ -46,40 +58,52 @@ exports.initializePayment = async (req, res) => {
         }
 
         const user = await userModel.findById(userId);
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 message: 'User not found'
-            })
+            });
         }
 
         const vendor = await vendorModel.findById(selectedVendorId);
-        if(!vendor){
+        if (!vendor) {
             return res.status(404).json({
                 message: 'Vendor not found'
-            })
-        };
+            });
+        }
 
-        amount = amount || Number(vendor.bookingFee || vendor.pricing?.minimumPrice);
+        if (!amount) {
+            if (vendor.bookingFee != null) {
+                amount = vendor.bookingFee;
+            } else {
+                return res.status(400).json({
+                    message: 'Vendor booking fee has not been set'
+                });
+            }
+        }
+
         if (!amount || amount <= 0) {
             return res.status(400).json({
-                message: 'Vendor booking fee has not been set'
+                message: 'Invalid payment amount'
             });
         }
 
         const vendorName = vendor.stageName || `${vendor.firstName} ${vendor.lastName}`;
 
-            //Generate references
-        const ref = otpGenerator.generate(12, {specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false})
+        const ref = otpGenerator.generate(12, {
+            specialChars: false,
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false
+        });
+
         const reference = `TCA-FEASTSYNC-${ref}`;
 
-        //Create payment data obaject
         const paymentData = {
-            amount, 
+            amount,
             currency: 'NGN',
             reference,
             customer: {
                 email: user.email,
-                name: user.firstName + ' ' + user.lastName
+                name: `${user.firstName} ${user.lastName}`
             },
             metadata: {
                 userId,
@@ -88,18 +112,20 @@ exports.initializePayment = async (req, res) => {
                 bookingId: booking?._id?.toString()
             },
             redirect_url: 'https://www.feastsync.com/'
-        }
+        };
 
-        //Initialize payment using axios
-        const response = await axios.post('https://api.korapay.com/merchant/api/v1/charges/initialize', paymentData, {
-            headers: {
-                Authorization: `Bearer ${process.env.KORA_API_KEY}`
+        const response = await axios.post(
+            'https://api.korapay.com/merchant/api/v1/charges/initialize',
+            paymentData,
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
+                }
             }
-        })
+        );
 
-        //Create a payment record in our database
         const payment = new paymentModel({
-            amount: paymentData.amount,
+            amount,
             currency: paymentData.currency,
             reference,
             userId,
@@ -107,69 +133,69 @@ exports.initializePayment = async (req, res) => {
             bookingId: booking?._id,
             vendorName,
             paymentMethod: 'korapay'
-        })
+        });
 
         await payment.save();
 
-        //send a success response
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Payment initialized successfully',
             data: response.data?.data,
             payment
-        })
+        });
 
     } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
+        console.log(error.message);
+
+        return res.status(500).json({
             message: 'Error initializing payment'
-        })
+        });
     }
 };
-exports.verifyPayment = async (req, res)=>{
-    try {
-        //Extract the reference from the query params
-        const {reference} = req.query
-        //verify the status of the payment from kora
-        const {data} = await axios.get(`https://api.korapay.com/merchant/api/v1/charges/${reference}`, {
-            headers: {
-                Authorization: `Bearer ${process.env.KORA_API_KEY}`
-            }
-        });
-         //update the payment in our app
-            const payment = await paymentModel.findOne({reference})
-            if(!payment){
-                return res.status(404).json({
-                    message: 'Payment not found'
-                })
-            }
-        //Check the status update
-        if(data?.status === true && data?.data.status === 'success'){
-           
-            //Update the status of the payment
-            payment.status = data?.data.status;
-            await payment.save()
-            
-            //send a success response
-            return res.status(200).json({
-                message: 'Payment verified successfully',
-                data: payment
-            })
-        }else {
-            payment.status = data?.data.status
-            await payment.save();
 
-             //Send a success response
-        return res.status(200).json({
-            message: 'payment verifification failed',
-            data: payment
-        })
+exports.verifyPayment = async (req, res) => {
+    try {
+        const { reference } = req.query;
+
+        const { data } = await axios.get(
+            `https://api.korapay.com/merchant/api/v1/charges/${reference}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
+                }
+            }
+        );
+
+        const payment = await paymentModel.findOne({ reference });
+
+        if (!payment) {
+            return res.status(404).json({
+                message: 'Payment not found'
+            });
         }
-       
+
+        const koraStatus = data?.data?.status;
+
+        if (koraStatus === 'success') {
+            payment.paymentStatus = 'successful';
+        } else if (koraStatus === 'failed') {
+            payment.paymentStatus = 'failed';
+        } else {
+            payment.paymentStatus = 'pending';
+        }
+
+        await payment.save();
+
+        return res.status(200).json({
+            message: 'Payment verified successfully',
+            data: payment
+        });
+
     } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
+        console.log(error?.response?.data || error.message);
+
+        return res.status(500).json({
             message: 'Error fetching payment'
-        })
+        });
     }
 };
 exports.getAllPaymentByUser = async(req, res)=>{
