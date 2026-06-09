@@ -50,8 +50,14 @@ exports.createVendor = async (req, res) => {
         const vendors = await vendorModel.find();
         res.status(201).json({
             message: 'Vendor created successfully',
-            data: vendor,
-            count: vendors.length
+            data: {
+              firstName: vendor.firstName,
+              lastName: vendor.lastName,
+              stageName: vendor.stageName,
+              email: vendor.email.toLowerCase(),
+              phoneNumber: vendor.phoneNumber,
+              _id: vendor._id
+            }
         });
 
     } catch (error) {
@@ -150,6 +156,7 @@ if (req.files?.coverVideo) {
     });
 
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       message: error.message
     });
@@ -177,7 +184,14 @@ exports.verifyVendorEmail = async (req, res) => {
     await vendor.save();
     res.status(200).json({
       message: 'OTP Verified successfully',
-      data: vendor
+      data: {
+        firstName: vendor.firstName,
+        lastName: vendor.lastName,
+        stageName: vendor.stageName,
+        email: vendor.email.toLowerCase(),
+        phoneNumber: vendor.phoneNumber,
+        _id: vendor._id
+      }
     })
   } catch (error) {
     console.log(error.message),
@@ -243,7 +257,14 @@ exports.vendorLogin = async (req, res) => {
     res.status(200).json({
       message: 'Login sucessful',
       token,
-      vendor
+      vendor: {
+        firstName: vendor.firstName,
+        lastName: vendor.lastName,
+        stageName: vendor.stageName,
+        email: vendor.email.toLowerCase(),
+        phoneNumber: vendor.phoneNumber,
+        _id: vendor._id
+      }
     })
   } catch (error) {
     console.log(error.message),
@@ -422,24 +443,6 @@ exports.changePassword = async(req, res)=>{
   }
 };
 
-exports.loginWithGoogle = async(req, res) =>{
-    try {
-        const token = await jwt.sign({
-            id: req.vendor._id
-    }, process.env.SECRET_KEY, {expiresIn: '1d'})
-
-    res.status(200).json({
-        message: 'Login successful',
-        data: req.vendor.firstName,
-        token
-    })
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
-            message: 'something went wrong'
-        })
-    }
-}
 
 exports.getAllVendors = async (req, res) => {
   try {

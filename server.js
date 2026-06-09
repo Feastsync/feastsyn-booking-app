@@ -8,9 +8,6 @@ const swaggerUi = require('swagger-ui-express');
 const session = require('express-session')
 
 
-
-const {passport} = require('./middlewares/userPassport')
-const {passport: vendorPassport} = require('./middlewares/vendorPassport')
 const vendorRouter = require('./routes/vendorRouter');
 const router = require('./routes/userRouter');
 const pricingRouter = require('./routes/pricingRouter');
@@ -30,19 +27,15 @@ const limiter = rateLimit({
 	// store: ... , // Redis, Memcached, etc. See below.
 });
 
-
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 
-""
 app.use(session({
   secret: 'dabest',
   resave: false,
   saveUninitialized: false
  }))
- app.use(passport.initialize());
- app.use(passport.session())
 
  app.use('/api/v1/user', router);
 app.use('/api/v1/vendor', vendorRouter);
