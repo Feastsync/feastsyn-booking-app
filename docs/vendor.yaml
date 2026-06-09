@@ -125,7 +125,7 @@ paths:
                 stateOfResidence:
                   type: string
                   description: The vendor's state of residence
-                BankName:
+                bankName:
                   type: string
                   description: The vendor's bank name
                 accountNumber:
