@@ -24,4 +24,4 @@ router.post('/change-password', authentication, changePasswordValidator, changeP
 
 router.get('/all-vendors', authentication, getAllVendors)
 router.get('/one-vendor/:slug', authentication, getOneVendor)
-module.exports = router;
+module.exports = router; 
