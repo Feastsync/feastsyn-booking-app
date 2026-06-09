@@ -26,22 +26,25 @@ exports.createUser = async (req, res) => {
             lastName,
             email: email.toLowerCase(),
             password: hashPassword,
-            otp,
             phoneNumber
         })
-        const users = await userModel.find()
+    
         
        brevo(user.email,`${user.firstName } ${user.lastName}`, emailTemplate(`${user.firstName} ${user.lastName}`, user.otp))
  
         res.status(201).json({
             message: 'user created successfully',
-            data: user,
-            count: users.length
+            data: {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email.toLowerCase(),
+              phoneNumber: user.phoneNumber,
+              _id: user._id
+            }
         })
     } catch (error) {
-        console.log(error.message)
         res.status(500).json({
-            message: 'something went wrong'
+            message: error.message
         });
     }
 };
@@ -57,22 +60,30 @@ exports.verifyEmail = async (req, res) => {
       })
     }; 
 
+
     if (user.otp !== otp) {
       return res.status(400).json({
         message: 'Invalid OTP Provided'
       })
     };
 
-    user.isVerified = true;
+   if (user.isVerified) {
+  return res.status(400).json({
+    message: 'User already verified'
+  });
+}
+
+  user.isVerified = true;
     await user.save();
     res.status(200).json({
       message: 'OTP Verified successfully',
-      data: user
+      data: {
+        email: user.email.toLowerCase(),
+        }
     })
   } catch (error) {
-    console.log(error.message),
       res.status(500).json({
-        message: 'Something went wrong'
+        message: error.message
       })
   }
 };
@@ -124,21 +135,22 @@ exports.userLogin = async (req, res) => {
     user.loginAttempts = 0;
     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id},
-      process.env.SECRET_KEY,
-      { expiresIn: '1d' }
-    );
+    const token = jwt.sign({ id: user._id}, process.env.SECRET_KEY, { expiresIn: '1d' });
 
     res.status(200).json({
       message: 'Login sucessful',
       token,
-      user
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email.toLowerCase(),
+        phoneNumber: user.phoneNumber,
+        _id: user._id
+      }
     })
   } catch (error) {
-    console.log(error.message),
       res.status(500).json({
-        message: 'Something went wrong'
+        message: error.message
       })
   }
 }
@@ -167,10 +179,9 @@ exports.forgotPassword = async(req, res)=>{
     const OTP = Math.round(Math.random() * 1e4).toString().padStart(4,"0");
     //Update the user with the new OTP
     user.otp = OTP;
-    console.log(OTP)
     
     //set expiry date
-    user.otpExpires = Date.now() + ( 10 * 60 * 1000);
+    user.otpExpires = Date.now() + ( 5 * 60 * 1000);
     //create the data object for the email template
     const data = {
       name: user.firstName,
@@ -183,7 +194,9 @@ exports.forgotPassword = async(req, res)=>{
     //send a success response
     res.status(200).json({
       message: 'Forgot password successful',
-      data: OTP 
+      data: {
+        firstName: user.firstName
+      }
     })
   } catch (error) {
     res.status(500).json({
@@ -244,7 +257,7 @@ exports.resetPassword = async(req, res)=>{
 
     if(Date.now() > user.otpExpires || otp !== user.otp) {
       return res.status(400).json({
-        message: 'Invalid OTP'
+        message: 'Invalid OTP, please request for a new one'
       })
     }
 
@@ -308,31 +321,11 @@ exports.changePassword = async(req, res)=>{
     })
     
   } catch (error) {
-    console.log(error.message)
     res.status(500).json({
-      message: 'something went wrong'
+      message: error.message
     })
   }
 };
-
-exports.loginWithGoogle = async(req, res) =>{
-    try {
-        const token = await jwt.sign({
-            id: req.user._id
-    }, process.env.SECRET_KEY, {expiresIn: '1d'})
-
-    res.status(200).json({
-        message: 'Login successful',
-        data: req.user.firstName,
-        token
-    })
-    } catch (error) {
-        console.log(error.message)
-        res.status(500).json({
-            message: 'something went wrong'
-        })
-    }
-}
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -367,7 +360,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 
-exports.getOne = async (req, res) => {
+exports.getOneUser = async (req, res) => {
   try {
     const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
     if (!getUser) {

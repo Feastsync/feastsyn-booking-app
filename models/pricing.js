@@ -9,14 +9,10 @@ const pricingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'bookings',
     },
-    minimumPrice: {
+    packagePrice: {
         type: Number,
         required: true
     },
-    bookingFee: {
-        type: Number,
-        required: true
-    }, 
     packageName: {
         type: String,
         required: true,
@@ -26,6 +22,9 @@ const pricingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    totalAmount: {
+        type: Number
+     }
 }, {timestamps: true});
 
 const pricingModel = mongoose.model('pricing', pricingSchema);  

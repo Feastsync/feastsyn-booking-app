@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const bookingSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -17,12 +16,7 @@ const bookingSchema = new mongoose.Schema({
     },
     packageName: {
         type: String,
-        required: true,
         enum: ['basic', 'standard', 'premium', 'addMorePackages']
-    },
-    bookingTitle: {
-        type: String,
-        required: true
     },
     eventType: {
         type: String,
@@ -42,18 +36,18 @@ const bookingSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    additionalDetails: {
+        type: String,
+        trim: true
+    },
     eventLocation: {
         type: String,
         required: true
     },
-    bookingDate: {
-        type: Date,
-        required: true
-    },
-    totalAmount: {
-        type: String,
-        required: true
-    },
+    // totalAmount: {
+    //     type: Number,
+    //     required: true
+    // },
     bookingStatus: {
         type: String,
         enum: ['pending','confirmed','completed','cancelled','disputed'],
@@ -64,15 +58,24 @@ const bookingSchema = new mongoose.Schema({
         enum: ['unpaid','paid','refunded'],
         default: 'unpaid'
     },
-    startTime: {
-    type: String,
-    required: true
-  },
-  endTime: {
-    type: String,
-    required: true
- }
+//     startTime: {
+//     type: String,
+//     required: true
+//   },
+//   endTime: {
+//     type: String,
+//     required: true
+//  }
 }, { timestamps: true });
+
+bookingSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    if (ret.eventDate) {
+      ret.eventDate = ret.eventDate.toISOString().split('T')[0];
+    }
+    return ret;
+  }
+});
 
 const bookingModel = mongoose.model('bookings', bookingSchema);
 module.exports = bookingModel;
