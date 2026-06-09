@@ -69,7 +69,7 @@ const vendorSchema = new mongoose.Schema({
     otpExpires: {
         type: Number,
         default: () => {
-        return Date.now() + ( 100 * 60 * 1000)   
+        return Date.now() + ( 10 * 60 * 1000)   
     }
 },
 photoCatalogue: {
