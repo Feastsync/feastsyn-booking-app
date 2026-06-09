@@ -115,7 +115,7 @@ paths:
               type: object
               required:
                 - stateOfResidence
-                - BankName
+                - bankName
                 - accountNumber
                 - photoCatalogue
                 - videoCatalogue
