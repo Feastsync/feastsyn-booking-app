@@ -61,8 +61,104 @@ exports.createBooking = async (req, res) => {
   } catch (error) {
     console.log(error.message);
     res.status(500).json({
-      message: 'Something went wrong'
+      message: error.message
     });
+  }
+};
+
+// Vendor confirms a booking and auto cancels conflicting ones
+exports.confirmBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await bookingModel.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Get vendor buffer time
+    const vendor = await vendorModel.findById(booking.vendorId);
+    const bufferTime = vendor.bufferTime || 60;
+
+    const confirmedStart = toMinutes(booking.startTime);
+    const confirmedEnd = toMinutes(booking.endTime) + bufferTime;
+
+    // Find all other pending bookings on the same date
+    const otherBookings = await bookingModel.find({
+      vendorId: booking.vendorId,
+      eventDate: booking.eventDate,
+      bookingStatus: 'pending',
+      _id: { $ne: bookingId }
+    });
+
+    // Cancel only those that conflict with the confirmed booking time
+    const conflictingIds = otherBookings
+      .filter(b => {
+        const otherStart = toMinutes(b.startTime);
+        const otherEnd = toMinutes(b.endTime) + bufferTime;
+        return confirmedStart < otherEnd && confirmedEnd > otherStart;
+      })
+      .map(b => b._id);
+
+    if (conflictingIds.length > 0) {
+      await bookingModel.updateMany(
+        { _id: { $in: conflictingIds } },
+        { bookingStatus: 'cancelled' }
+      );
+    }
+
+    // Confirm this booking
+    booking.bookingStatus = 'accept';
+    await booking.save();
+
+    // Update availability
+    await Availability.findOneAndUpdate(
+      { vendorId: booking.vendorId, bookingDate: booking.eventDate },
+      { status: 'booked', bookingId: booking._id },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'Booking accepted successfully',
+      booking: {
+        ...booking.toObject(),
+        eventDate: booking.eventDate.toISOString().split('T')[0],
+        bookingDate: booking.bookingDate.toISOString().split('T')[0],
+        createdAt: booking.createdAt.toISOString().split('T')[0],
+        updatedAt: booking.updatedAt.toISOString().split('T')[0]
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Vendor declines a booking
+exports.declineBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await bookingModel.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    booking.bookingStatus = 'cancelled';
+    await booking.save();
+
+    await Availability.findOneAndUpdate(
+      { vendorId: booking.vendorId, bookingDate: booking.eventDate },
+      { status: 'available' },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'Booking declined successfully',
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -71,7 +167,7 @@ exports.getVendorBookings = async (req, res) => {
   try {
     const { vendorId } = req.params;
 
-    const bookings = await Booking.find({ vendorId })
+    const bookings = await bookingModel.find({ vendorId })
       .populate('userId', 'firstName lastName email phoneNumber')
       .sort({ createdAt: -1 });
 
@@ -103,7 +199,7 @@ exports.getClientBookings = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const bookings = await Booking.find({ userId })
+    const bookings = await bookingModel.find({ userId })
       .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category')
       .sort({ createdAt: -1 });
 
@@ -135,7 +231,7 @@ exports.getSingleBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
 
-    const booking = await Booking.findById(bookingId)
+    const booking = await bookingModel.findById(bookingId)
       .populate('userId', 'firstName lastName email phoneNumber')
       .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category');
 
