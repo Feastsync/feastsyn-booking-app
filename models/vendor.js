@@ -117,7 +117,7 @@ coverPhoto: {
             type: String,
             trim: true 
         },
-        profileId: {
+        profilePictureId: {
             type: String,
             trim: true
         }
@@ -135,7 +135,7 @@ coverPhoto: {
         default: false
     },
     accountNumber: {
-        type: String,
+        type: String, 
         trim: true
     },
     bankName: {
