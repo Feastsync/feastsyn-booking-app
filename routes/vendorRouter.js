@@ -9,7 +9,7 @@ router.put('/update-profile/:id', upload.fields([
   { name: 'profilePicture', maxCount: 1 },
   { name: 'coverPhoto', maxCount: 1 },
   { name: 'coverVideo', maxCount: 1 },
-  { name: 'photoCatalogue', maxCount: 3 },
+  { name: 'photoCatalogue', maxCount: 4 },
   { name: 'videoCatalogue', maxCount: 2 }
 ]), updateVendor);
 router.post('/verify', verifyVendorEmail);

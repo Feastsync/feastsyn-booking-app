@@ -82,7 +82,7 @@ exports.updateVendor = async (req, res) => {
 
     let slug = vendor.slug;
     if (!vendor.slug) {
-    const uniqueCode = crypto.randomBytes(4).toString("hex");
+    const uniqueCode = crypto.randomBytes(6).toString("hex");
 
   slug = `${slugify(vendor.stageName || req.body.stageName,{ lower: true, strict: true,})}-${uniqueCode}`;
     vendor.slug = slug;
@@ -156,7 +156,6 @@ if (req.files?.coverVideo) {
     });
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       message: error.message
     });
@@ -194,9 +193,8 @@ exports.verifyVendorEmail = async (req, res) => {
       }
     })
   } catch (error) {
-    console.log(error.message),
       res.status(500).json({
-        message: 'Something went wrong'
+        message: error.message
       })
   }
 };
