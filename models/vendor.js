@@ -82,7 +82,7 @@ photoCatalogue: {
             trim: true
         }
 },
-videocatalogue: {
+videoCatalogue: {
     secureUrl:{
             type: String,
             trim: true 
