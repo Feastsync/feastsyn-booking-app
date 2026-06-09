@@ -2,7 +2,7 @@ const { initializePayment, verifyPayment, getAllPaymentByUser } = require('../co
 const { authentication } = require('../middlewares/auth');
 const router = require('express').Router();
 
-router.post('/initialize-booking/:vendorId/:bookingId', authentication, initializePayment);
+router.post('/initialize-payment/:vendorId/:bookingId', authentication, initializePayment);
 router.post('/verify-payment/:vendorId', authentication, verifyPayment);
 router.get('/all-payment-by-user', authentication, getAllPaymentByUser);
 

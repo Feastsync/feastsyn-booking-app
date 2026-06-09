@@ -4,7 +4,7 @@ const vendorModel = require('../models/vendor');
 exports.createPricing = async (req, res) => {
     try {
         const { id } = req.user;
-        const { minimumPrice, bookingFee, packageName, packageDescription} = req.body;
+        const { packagePrice, packageName, packageDescription} = req.body;
         const vendor = await vendorModel.findById(id);
         if (!vendor) {
             return res.status(404).json({
@@ -13,8 +13,7 @@ exports.createPricing = async (req, res) => {
         }
         const pricing = await pricingModel.create({
             vendorId: vendor._id,
-            minimumPrice,
-            bookingFee,
+            packagePrice,
             packageName,
             packageDescription
         });
@@ -22,10 +21,9 @@ exports.createPricing = async (req, res) => {
             message: 'Pricing package created successfully',
             data: pricing
         });
-    } catch (error) {
-        console.log(error.message);
+    } catch (error) { 
         res.status(500).json({
-            message: 'Something went wrong'
+            message: error.message
         });
     }
 };

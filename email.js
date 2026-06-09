@@ -9,86 +9,77 @@ exports.emailTemplate = (firstName, lastName, otp) => {
 <title>Verify Your Email</title>
 <style>
     body {
-        margin: 0;
-        padding: 0;
-        background-color: #f4f7fc;
-        font-family: Arial, Helvetica, sans-serif;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-section {
+    width: 50%;
+    height: 100%;
+    background-color: grey;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 10px;
+    gap: 10px;
+}
+.upper-div {
+    width: 100%;
+    height: 30%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    
+}
+.upper-div-1 {
+    width: 100%;
+    height: 30%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+
+    p {
+        align-self: center;
+    }
+}
+.upper-div-2 {
+    width: 50%;
+    height: 30%;
+    background-color: rgb(207, 182, 182);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.upper-div-3 {
+    width: 100%;
+    height: 30%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+
+    p {
+        align-self: center;
     }
 
-    .container {
-        max-width: 600px;
-        margin: 40px auto;
-        background: #ffffff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    .header {
-        background: #6C63FF;
-        color: #ffffff;
-        text-align: center;
-        padding: 30px 20px;
-    }
-
-    .header h1 {
-        margin: 0;
-        font-size: 28px;
-    }
-
-    .content {
-        padding: 40px 30px;
-        text-align: center;
-        color: #333333;
-    }
-
-    .content h2 {
-        margin-bottom: 15px;
-    }
-
-    .content p {
-        line-height: 1.7;
-        color: #666666;
-    }
-
-    .otp-box {
-        margin: 30px auto;
-        background: #f5f5ff;
-        border: 2px dashed #6C63FF;
-        border-radius: 10px;
-        padding: 20px;
-        width: fit-content;
-    }
-
-    .otp-code {
-        font-size: 36px;
-        font-weight: bold;
-        letter-spacing: 8px;
-        color: #6C63FF;
-    }
-
-    .footer {
-        background: #fafafa;
-        padding: 25px;
-        text-align: center;
-        color: #999999;
-        font-size: 13px;
-    }
-
-    @media screen and (max-width: 600px) {
-        .container {
-            width: 95%;
-        }
-
-        .content {
-            padding: 30px 20px;
-        }
-
-        .otp-code {
-            font-size: 28px;
-            letter-spacing: 5px;
-        }
-    }
+}
+.downer-div {
+     width: 100%;
+    height: 30%;
+    background-color: white;   
+}
 </style>
 </head>
 <body>
@@ -118,7 +109,7 @@ exports.emailTemplate = (firstName, lastName, otp) => {
         </div>
 
         <p>
-            This code will expire in <strong>30 minutes</strong>.
+            This code will expire in <strong>10 minutes</strong>.
             Please do not share this code with anyone.
         </p>
 

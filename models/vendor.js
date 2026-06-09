@@ -10,6 +10,11 @@ const vendorSchema = new mongoose.Schema({
         require: true,
         trim: true
     },
+    bookingFee: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     stageName: {
         type: String,
         trim: true,

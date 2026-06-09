@@ -24,7 +24,6 @@ const Booking = require('../models/booking');
 
 
 const booking = require('../models/booking');
-
 exports.getCalendar = async (req, res) => {
   try {
     const { vendorId } = req.params;
@@ -38,7 +37,7 @@ exports.getCalendar = async (req, res) => {
       bookingDate: { $gte: startDate, $lt: endDate },
       bookingStatus: 'confirmed'
     });
-    
+     
      const blocks = await AvailabilityBlock.find({
        vendorId,
        blockedDate: { $gte: startDate, $lt: endDate }
