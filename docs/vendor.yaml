@@ -103,10 +103,10 @@ paths:
   /api/v1/vendor/update-profile/{id}:
     put: 
       summary: this is the endpoint for vendor's profile update
-      tags: [vendors]
       parameters:
         - in: path
           name: id
+      tags: [vendors]    
       requestBody:
         required: true
         content: 
