@@ -139,7 +139,7 @@ if (req.files?.coverVideo) {
           uploadFile(file, 'video')
         )
       );
-    }
+    } 
     const updatedVendor = await vendorModel.findByIdAndUpdate(id, {bankName, accountNumber, bio, servicesOffered, stateOfResidence,
         ...(coverPhoto && { coverPhoto }),
         ...(coverVideo && { coverVideo }),

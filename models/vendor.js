@@ -86,8 +86,8 @@ videoCatalogue: {
     secureUrl:{
             type: String,
             trim: true 
-        },
-        videoCatalogueId: {
+    },
+    videoCatalogueId: {
             type: String,
             trim: true
         }
