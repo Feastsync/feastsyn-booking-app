@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose')
 const http = require('http');
 const {Server} = require('socket.io')
-
+const cors = require('cors');
 
 //Routers
 const vendorRouter = require('./routes/vendorRouter');
@@ -18,7 +18,7 @@ const kycRouter = require('./routes/kycRouter')
 // const { initializeIO } = require('./controllers/messageController');
 
 const app = express();
-const cors = require('cors');
+app.use(cors({origin: '*'}));
 const server = http.createServer(app);
 
 // ✅ Create IO instance first
@@ -63,7 +63,7 @@ const limiter = rateLimit({
 
 // ---- MIDDLEWARES ----\
 app.use(express.json());
-app.use(cors({origin: '*'}));
+
 
 // ---- ROUTES ----
 app.use('/api/v1/user', router);
