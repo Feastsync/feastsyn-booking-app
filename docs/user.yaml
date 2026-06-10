@@ -93,7 +93,7 @@ paths:
                   description: The user's password  
                   example: password123
       responses:          
-        '201':
+        '200':
           description: User logged in successfully
 
           
@@ -114,7 +114,7 @@ paths:
                   type: string
                   description: The user's email address
       responses:          
-        '201':
+        '200':
           description: Forgot password request submitted successfully
 
   /api/v1/user/resend-otp:
@@ -134,7 +134,7 @@ paths:
                   type: string
                   description: The user's reset otp
       responses:          
-        '201':
+        '200':
           description: OTP resent successfully   
                          
   /api/v1/user/reset-password:
@@ -166,7 +166,7 @@ paths:
                   type: string
                   description: Confirmation of the user's new password
       responses:          
-        '201':
+        '200':
           description: User's password reset successfully
 
           
@@ -199,7 +199,7 @@ paths:
                   type: string
                   description: Confirmation of the user's new password
       responses:          
-        '201':
+        '200':
           description: User's password changed successfully
 
           
@@ -210,7 +210,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: All users retrieved successfully
         "500": 
           description: Something went wrong  
@@ -222,7 +222,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: user retrieved successfully found
         "500": 
           description: Something went wrong  
@@ -235,7 +235,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: Logged out successfully
         "500": 
           description: Something went wrong        

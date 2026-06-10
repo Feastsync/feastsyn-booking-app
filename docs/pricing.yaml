@@ -19,17 +19,13 @@ paths:
             schema:
               type: object
               required:
-                - minimumPrice
-                - bookingFee
+                - packagePrice
                 - packageDescription
                 - pacakageName
               properties:
-                minimumPrice:
+                packagePrice:
                   type: string
-                  description: The vendor's minimum price
-                bookingFee:
-                  type: string
-                  description: The booking fee
+                  description: The vendor's package price
                 packageDescription:
                   type: string
                   description: The description of the package

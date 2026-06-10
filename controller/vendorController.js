@@ -548,7 +548,7 @@ exports.getOneVendor = async (req, res) => {
       });
     }
     res.status(200).json({
-      data: vendor
+      data: vendor 
     });
 
   } catch (error) {

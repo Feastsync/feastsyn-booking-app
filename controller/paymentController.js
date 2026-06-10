@@ -221,4 +221,4 @@ exports.getAllPaymentByUser = async(req, res)=>{
             message: error.message
         })
     }
-};
+}; 
