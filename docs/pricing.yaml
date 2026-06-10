@@ -45,7 +45,7 @@ paths:
           name: Authorization
           in: headers
       responses:
-        "201":
+        "200":
           description: All pricing packages retrieved successfully
         "500": 
           description: Something went wrong  
@@ -62,7 +62,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package retrieved successfully
         "500": 
           description: Something went wrong
@@ -79,7 +79,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package updated successfully
         "500": 
           description: Something went wrong
@@ -96,7 +96,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package updated successfully
         "500": 
           description: Something went wrong                

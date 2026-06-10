@@ -34,10 +34,10 @@ const paymentSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['card', 'bank transfer', 'korapay'],
+        enum: ['card', 'bank transfer', 'bank', 'korapay'],
         default: 'korapay'
     },
-    paymentStatus: {
+    paymentStatus: {  
         type: String,
         enum: ['processing', 'successful', 'failed'],
         default: 'processing'
