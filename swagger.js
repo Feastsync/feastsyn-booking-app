@@ -34,7 +34,8 @@ const options = {
         './docs/vendor.yaml',
         './docs/pricing.yaml', 
         './docs/booking.yaml',
-        './docs/payment.yaml'
+        './docs/payment.yaml',
+        './docs/kyc.yaml'
     ]
     
 }
