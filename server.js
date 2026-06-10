@@ -27,13 +27,16 @@ const limiter = rateLimit({
 	ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
 	// store: ... , // Redis, Memcached, etc. See below.
 });
-app.use(cors({
+
+const corsOptions = {
   origin: ['http://localhost:5173', 'https://feast-sync.vercel.app'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}
 
+app.use(cors(corsOptions))
+app.options(/.*/, cors(corsOptions))
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 
