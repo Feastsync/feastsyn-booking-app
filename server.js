@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose')
 const http = require('http');
 const {Server} = require('socket.io')
-const cors = require('cors');
 
 
 //Routers
@@ -19,6 +18,7 @@ const kycRouter = require('./routes/kycRouter')
 // const { initializeIO } = require('./controllers/messageController');
 
 const app = express();
+const cors = require('cors');
 const server = http.createServer(app);
 
 // ✅ Create IO instance first

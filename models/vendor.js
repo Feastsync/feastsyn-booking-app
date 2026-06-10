@@ -15,6 +15,10 @@ const vendorSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+    isSuspended: {
+         type: Boolean,
+         default: false
+},
     stageName: {
         type: String,
         trim: true,
