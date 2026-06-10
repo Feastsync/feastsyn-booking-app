@@ -1,0 +1,98 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows vendors upload their government approved means of Identification.
+paths:
+  /api/v1/kyc/upload-kyc:
+    post: 
+      summary: this is the endpoint for KYC verification upload
+      tags: [kyc]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers 
+      requestBody:
+        required: true
+        content:
+        application/json:
+          schema:
+          type: object
+          required:
+            - documentImage
+          properties:
+            documentImage: 
+              type: string
+              format: binary
+              description: The vendor's government approved identity card   
+      responses:          
+        '201':
+          description: KYC uploaded successfully
+        '500': 
+          description: Something went wrong
+
+          
+  /api/v1/kyc/approve-kyc/{kycId}:
+    post: 
+      summary: this is the endpoint to approve the KYC uploaded by the vendor
+      tags: [kyc]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers 
+      parameters:
+        - in: path
+          name: kycId
+          required: true      
+      responses:          
+        '200':
+          description: KYC approved successfully
+        '500': 
+          description: Something went wrong
+
+
+  /api/v1/kyc/reject-kyc/{kycId}:
+    post: 
+      summary: this is the endpoint to reject the KYC uploaded by the vendor
+      tags: [kyc]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers 
+      parameters:
+        - in: path
+          name: kycId
+          required: true 
+      requestBody: 
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - rejectionReason
+              properties:
+                rejectionReason:
+                  type: string
+                  description: Reasons why the KYC uploaded by the vendor is rejected  
+      responses:          
+        '200':
+          description: KYC rejected successfully
+        '500': 
+          description: Something went wrong        
+
+
+  /api/v1/kyc/get-pending-kyc:
+    post: 
+      summary: this is the endpoint to get all pending KYCs that is yet to be approved
+      tags: [kyc]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers  
+      responses:          
+        '200':
+          description: All pending KYCs retrieved successfully
+        '500': 
+          description: Something went wrong         
+

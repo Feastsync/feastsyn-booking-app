@@ -376,7 +376,7 @@ exports.forgotPassword = async(req, res)=>{
   }
 };
 
-exports.resendOTP = async(req, res) => {
+exports.resendOtp = async(req, res) => {
    try {
      const {email} = req.body;
     //find the vendor trying to verify
@@ -387,6 +387,12 @@ exports.resendOTP = async(req, res) => {
         })
        }
 
+      if (vendor.isVerified) {
+      return res.status(400).json({
+        message: 'Vendor is already verified'
+      });
+    }
+
        const OTP = otpGenerator.generate(4, {upperCaseAlphabets:false, lowerCaseAlphabets:false, specialChars:false});
        console.log(OTP)
 
@@ -395,6 +401,7 @@ exports.resendOTP = async(req, res) => {
 
         vendor.otp = OTP;
         vendor.otpExpiresAt = expiresAt;
+        vendor.otpVerified = false;
 
         //save changes to the database
         await vendor.save()
@@ -405,7 +412,7 @@ exports.resendOTP = async(req, res) => {
             message: 'OTP sent successfully'
         })
    } catch (error) {
-    res.status(500).json({
+   return res.status(500).json({
         message: error.message
     })
    }
@@ -420,7 +427,7 @@ exports.resetPassword = async(req, res)=>{
     const vendor = await vendorModel.findOne({email: email.toLowerCase()})
 
     //Check if vendor exists
-    if(vendor== null) {
+    if(!vendor) {
       return res.status(404).json({
         message: 'Invalid credentials'
       })
@@ -541,7 +548,7 @@ exports.getOneVendor = async (req, res) => {
       });
     }
     res.status(200).json({
-      data: vendor
+      data: vendor 
     });
 
   } catch (error) {

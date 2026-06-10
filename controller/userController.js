@@ -193,7 +193,8 @@ exports.forgotPassword = async(req, res)=>{
     res.status(200).json({
       message: 'Forgot password successful',
       data: {
-        firstName: user.firstName
+        firstName: user.firstName,
+        otp: OTP
       }
     })
   } catch (error) {
@@ -203,7 +204,7 @@ exports.forgotPassword = async(req, res)=>{
   }
 };
 
-exports.resendOTP = async(req, res) => {
+exports.resendOtp = async(req, res) => {
    try {
      const {email} = req.body;
     //find the user trying to verify
@@ -213,15 +214,21 @@ exports.resendOTP = async(req, res) => {
             message: 'user not found'
         })
        }
+       if (user.isVerified) {
+      return res.status(400).json({
+        message: 'User is already verified'
+      });
+    }
 
        const OTP = otpGenerator.generate(4, {upperCaseAlphabets:false, lowerCaseAlphabets:false, specialChars:false});
-       console.log(OTP)
+       console.log('New OTP:', OTP)
 
        const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
 
 
         user.otp = OTP;
         user.otpExpiresAt = expiresAt;
+        user.otpVerified = false
 
         //save changes to the database
         await user.save()

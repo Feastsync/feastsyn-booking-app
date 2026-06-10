@@ -1,6 +1,6 @@
-const { createUser, verifyEmail, userLogin, userLogout, forgotPassword, resendOTP, resetPassword, getOneUser, changePassword, getAllUsers, deleteUser } = require('../controller/userController');
+const { createUser, verifyEmail, userLogin, userLogout, forgotPassword, resendOtp, resetPassword, getOneUser, changePassword, getAllUsers, deleteUser } = require('../controller/userController');
 const { authentication, adminAuth } = require('../middlewares/auth');
-const {signupUserValidator, resetPasswordValidator, changePasswordValidator} = require('../middlewares/validator');
+const {signupUserValidator, resetPasswordValidator, changePasswordValidator, verifyOtpValidator} = require('../middlewares/validator');
 
 const router = require('express').Router();
 
@@ -10,7 +10,7 @@ router.post('/login', userLogin);
 router.post('/logout', authentication, userLogout);
 
 router.post('/forgot-password', forgotPassword);
-router.post('/resendOTP', resendOTP);
+router.post('/resend-otp', verifyOtpValidator,resendOtp);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.post('/change-password', authentication, changePasswordValidator, changePassword);
 

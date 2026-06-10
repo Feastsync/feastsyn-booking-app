@@ -71,7 +71,7 @@ paths:
                   type: string
                   description: The one-time password for verification
       responses:
-        '201':
+        '200':
           description: Vendor verified successfully
 
           
@@ -96,7 +96,7 @@ paths:
                   type: string
                   description: The vendors's password
       responses:          
-        '201':
+        '200':
           description: Vendor logged in successfully
 
           
@@ -158,7 +158,7 @@ paths:
                   type: string
                   description: The services offered by the vendor
       responses:          
-        '201':
+        '200':
           description: Vendor profile updated successfully
 
 
@@ -180,8 +180,29 @@ paths:
                   type: string
                   description: The vendor's email address 
       responses:          
-        '201':
+        '200':
           description: Forgot password request submitted successfully
+  
+
+  /api/v1/vendor/resend-otp:
+    post: 
+      summary: this is the endpoint to resend otp
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The vendor's email address
+      responses:          
+        '200':
+          description: OTP resent successfully       
 
           
   /api/v1/vendor/reset-password:
@@ -196,12 +217,16 @@ paths:
               type: object
               required:
                 - email
+                - otp
                 - password
                 - confirmPassword
               properties:
-                email:
+              email:
                 type: string
                 description: The vendor's email address
+              otp: 
+                type: string
+                description: One time password
               password:
                 type: string
                 description: The vendor's password 
@@ -209,7 +234,7 @@ paths:
                 type: string
                 description: Confirmation of the vendor's password
       responses:          
-        '201':
+        '200':
           description: Vendor's password reset successfully
 
           
@@ -242,7 +267,7 @@ paths:
                   type: string
                   description: Confirmation of the vendor's new password
       responses:          
-        '201':
+        '200':
           description: Vendor's password changed successfully
 
           
@@ -253,7 +278,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: All vendors retrieved successfully
         "500": 
           description: Something went wrong  
@@ -268,7 +293,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: vendor retrieved successfully found
         "500": 
           description: Something went wrong 
@@ -280,7 +305,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "201":
+        "200":
           description: Logged out successfully
         "500": 
           description: Something went wrong        

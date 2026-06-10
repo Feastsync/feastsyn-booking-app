@@ -19,17 +19,13 @@ paths:
             schema:
               type: object
               required:
-                - minimumPrice
-                - bookingFee
+                - packagePrice
                 - packageDescription
                 - pacakageName
               properties:
-                minimumPrice:
+                packagePrice:
                   type: string
-                  description: The vendor's minimum price
-                bookingFee:
-                  type: string
-                  description: The booking fee
+                  description: The vendor's package price
                 packageDescription:
                   type: string
                   description: The description of the package
@@ -49,7 +45,7 @@ paths:
           name: Authorization
           in: headers
       responses:
-        "201":
+        "200":
           description: All pricing packages retrieved successfully
         "500": 
           description: Something went wrong  
@@ -66,7 +62,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package retrieved successfully
         "500": 
           description: Something went wrong
@@ -83,7 +79,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package updated successfully
         "500": 
           description: Something went wrong
@@ -100,7 +96,7 @@ paths:
         - in: path
           name: pricingId
       responses:
-        "201":
+        "200":
           description: Pricing package updated successfully
         "500": 
           description: Something went wrong                

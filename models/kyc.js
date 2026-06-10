@@ -8,27 +8,26 @@ const kycSchema = new mongoose.Schema({
     },
     documentType: {
         type: String,
-        enum: [ 'votersCard', 'driverLicense', 'nationalId'],
-        required: true
-    },
-    documentNumber: {
-        type: String,
-        required: true
+        enum: [ 'votersCard', 'driverLicense', 'nationalId']
     },
     documentImage: {
         secureUrl: {
             type: String,
             required: true
         },
-        documentId: {
+        documentImageId: {
             type: String,
             required: true
         }
     },
+    isKycVerified: {
+        type: Boolean,
+        default: false
+    },
     verificationStatus: {
         type: String,
-        enum: ['pending', 'verified', 'rejected'],
-        default: 'pending'
+        enum: ['processing', 'verified', 'rejected'],
+        default: 'processing'
     },
     rejectionReason: {
         type: String
