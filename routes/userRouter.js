@@ -10,7 +10,7 @@ router.post('/login', userLogin);
 router.post('/logout', authentication, userLogout);
 
 router.post('/forgot-password', forgotPassword);
-router.post('/resend-otp', verifyOtpValidator,resendOtp);
+router.post('/resend-otp',resendOtp);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.post('/change-password', authentication, changePasswordValidator, changePassword);
 
