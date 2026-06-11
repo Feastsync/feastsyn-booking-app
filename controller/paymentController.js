@@ -198,6 +198,7 @@ exports.verifyPayment = async (req, res) => {
         });
     }
 };
+ 
 exports.getAllPaymentByUser = async(req, res)=>{
     try {
         //Extract the User ID from the request user
@@ -221,4 +222,4 @@ exports.getAllPaymentByUser = async(req, res)=>{
             message: error.message
         })
     }
-}; 
+};

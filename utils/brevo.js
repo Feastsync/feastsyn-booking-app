@@ -9,7 +9,7 @@ const brevo = async (userEmail, userName, html) => {
         htmlContent: `<html><head></head><body><p>Hello ${userName} ,</p>Welcome to Feastsync!.</p></body></html>`,
         sender: {
             email: process.env.USER_EMAIL,
-            name: "Taiwo from FEASTSYNC",
+            name: "Our team from FEASTSYNC",
         },
         subject: "Feastsync",
     };

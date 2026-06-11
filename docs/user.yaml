@@ -128,11 +128,11 @@ paths:
             schema:
               type: object
               required:
-                - otp
+                - email
               properties:
-                otp:
+                email:
                   type: string
-                  description: The user's reset otp
+                  description: The user's email address
       responses:          
         '200':
           description: OTP resent successfully   
