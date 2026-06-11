@@ -40,6 +40,12 @@ exports.createUser = async (req, res) => {
     return res.status(201).json({
       message: "User created successfully",
       data: {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email.toLowerCase(),
+              phoneNumber: user.phoneNumber,
+              _id: user._id,
+              otp: user.otp
       },
     });
   } catch (error) {
