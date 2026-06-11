@@ -1,4 +1,4 @@
-const { createVendor, updateVendor, verifyVendorEmail, vendorLogin, vendorLogout, forgotPassword, resetPassword, changePassword, getOneVendor, resendOtp } = require('../controller/vendorController');
+const { createVendor, updateVendor, verifyVendorEmail, vendorLogin, vendorLogout, forgotPassword, resetPassword, changePassword, getAllVendors, getOneVendor, resendOtp } = require('../controller/vendorController');
 const { authentication, adminAuth } = require('../middlewares/auth');
 const {upload} = require('../middlewares/multer');
 const {signupVendorValidator, resetPasswordValidator, changePasswordValidator, verifyOtpValidator} = require('../middlewares/validator');
@@ -21,5 +21,7 @@ router.post('/resend-otp', resendOtp);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.post('/change-password', authentication, changePasswordValidator, changePassword);
 
+
+router.get('/all-vendors', authentication, getAllVendors)
 router.get('/one-vendor/:slug', authentication, getOneVendor)
 module.exports = router; 

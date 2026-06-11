@@ -1,6 +1,8 @@
 // sockets/chatSocket.js
 const jwt = require("jsonwebtoken");
 const messageModel = require("../models/message");
+require('dotenv').config();
+
 
 function initializeChatSocket(io) {
   io.on("connection", (socket) => {
@@ -14,7 +16,7 @@ function initializeChatSocket(io) {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
       socket.userId = decoded.id;
       console.log(`Authenticated user: ${socket.userId}`);
     } catch (error) {

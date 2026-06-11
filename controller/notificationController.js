@@ -1,3 +1,8 @@
+const notificationModel = require('../models/notification');
+const userModel = require('../models/user');
+const vendorModel = require('../models/vendor');
+const adminModel = require('../models/admin');
+
 exports.getNotifications = async (req, res) => {
   try {
 

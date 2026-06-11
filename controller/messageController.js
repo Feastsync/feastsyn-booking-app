@@ -99,29 +99,6 @@ exports.sendMessage = async (req, res) => {
     });
   }
 };
-// exports.getMessagesByRoom = async (req, res) => {
-//   try {
-//     const { roomId } = req.params;
-//     const errand = await Errand.findByPk(errandId);
-//     if (!errand) return res.status(404).json({ message: "Errand not found" });
-//     const messages = await Message.findAll({
-//       where: { roomId: `errand_${errandId}`
-//  },
-//       include: [
-//         { model: User, as: "sender", attributes: ["id", "firstName", "lastName", "profileImage", "role"] },
-//         { model: User, as: "receiver", attributes: ["id", "firstName", "lastName", "profileImage", "role"] },
-//       ],
-//       order: [["createdAt", "ASC"]],
-//     });
-
-//     res.json({
-//       message: `Found ${messages.length} messages`,
-//       data: messages,
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message:  `Failed to fetch messages", error: err.message `});
-//   }
-// };
 
 exports.getMessagesByRoom = async (req, res) => {
   try {
