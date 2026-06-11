@@ -1,3 +1,6 @@
+const adminModel = require('../models/admin');
+
+
 exports.getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await userModel.countDocuments();
@@ -36,7 +39,46 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
+exports.getAllUsers = async (req, res) => {
+  try {
 
+    const users = await userModel.find().select('-password');
+
+    res.status(200).json({
+      count: users.length,
+      data: users
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getOneUser = async (req, res) => {
+  try {
+
+    const { userId } = req.params;
+
+    const user = await userModel.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      data: user
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
 
 exports.getAllVendorsAdmin = async (req, res) => {
   try {
@@ -44,6 +86,28 @@ exports.getAllVendorsAdmin = async (req, res) => {
     res.status(200).json({
       count: vendors.length,
       data: vendors
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getOneVendorAdmin = async (req, res) => {
+  try {
+
+    const { vendorId } = req.params;
+
+    const vendor = await vendorModel.findById(vendorId).select('-password');
+    if (!vendor) {
+      return res.status(404).json({
+        message: 'Vendor not found'
+      });
+    }
+    res.status(200).json({
+      data: vendor
     });
 
   } catch (error) {
@@ -214,6 +278,29 @@ exports.getAllPayments = async (req, res) => {
   }
 };
 
+exports.getOnePayment = async (req, res) => {
+  try {
+
+    const { paymentId } = req.params;
+
+    const payment = await paymentModel.findById(paymentId).populate('userId','firstName lastName email').populate('vendorId','stageName');
+    if (!payment) {
+      return res.status(404).json({
+        message: 'Payment not found'
+      });
+    }
+
+    res.status(200).json({
+      data: payment
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 
 exports.getAllBookings = async (req, res) => {
   try {
@@ -226,6 +313,80 @@ exports.getAllBookings = async (req, res) => {
     res.status(200).json({
       count: bookings.length,
       data: bookings
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getOneBooking = async (req, res) => {
+  try {
+
+    const { bookingId } = req.params;
+
+    const booking = await bookingModel.findById(bookingId).populate('userId','firstName lastName email').populate('vendorId','firstName lastName stageName' );
+    if (!booking) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+
+    res.status(200).json({
+      message: 'One booking successfully retrieved',  
+      data: booking
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.revenueSummary = async (req, res) => {
+  try {
+
+    const payments = await paymentModel.find({
+      status: 'success'
+    });
+
+    const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount,0);
+
+    res.status(200).json({
+      totalRevenue,
+      totalTransactions: payments.length
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.resolveDispute = async (req, res) => {
+  try {
+    const { disputeId } = req.params;
+    const { status, adminComment} = req.body;
+
+    const dispute = await disputeModel.findById(disputeId);
+    if (!dispute) {
+      return res.status(404).json({
+        message: 'Dispute not found'
+      });
+    }
+
+    dispute.status = status;
+    dispute.adminComment = adminComment;
+
+    await dispute.save();
+
+    res.status(200).json({
+      message: 'Dispute updated successfully',
+      data: dispute
     });
 
   } catch (error) {
