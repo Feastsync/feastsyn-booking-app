@@ -159,133 +159,139 @@ exports.userLogout = async (req, res) => {
   });
 };
 
-exports.forgotPassword = async(req, res)=>{
+exports.forgotPassword = async (req, res) => {
   try {
-    //extract user email from the request body
-    const {email} = req.body;
-    //find the user
-    const user = await userModel.findOne({ email: email.toLowerCase()})
-    //check if user exists
-    if (user ==null){
+    const { email } = req.body;
+
+    const user = await userModel.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
       return res.status(404).json({
-        message: 'Invalid credentials'
-      })
-    }
-
-    //Generate OTP
-    const OTP = Math.round(Math.random() * 1e4).toString().padStart(4,"0");
-    //Update the user with the new OTP
-    user.otp = OTP;
-    
-    //set expiry date
-    user.otpExpires = Date.now() + ( 5 * 60 * 1000);
-    //create the data object for the email template
-    const data = {
-      name: user.firstName,
-      otp: OTP
-    }
-    //send the email to the user
-    await brevo(email, user.firstName, resetPasswordTemplate(data));
-    //save the changes to the database
-    await user.save();
-    //send a success response
-    res.status(200).json({
-      message: 'Forgot password successful',
-      data: {
-        firstName: user.firstName,
-        otp: OTP
-      }
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    })
-  }
-};
-
-exports.resendOtp = async(req, res) => {
-   try {
-     const {email} = req.body;
-    //find the user trying to verify
-    const user = await userModel.findOne({ email: email.toLowerCase() })
-       if (!user) {
-        return res.status(404).json({
-            message: 'user not found'
-        })
-       }
-       if (user.isVerified) {
-      return res.status(400).json({
-        message: 'User is already verified'
+        message: "Invalid credentials"
       });
     }
 
-       const OTP = otpGenerator.generate(4, {upperCaseAlphabets:false, lowerCaseAlphabets:false, specialChars:false});
-       console.log('New OTP:', OTP)
+    const OTP = Math.round(Math.random() * 1e4).toString().padStart(4, "0");
 
-       const expiresAt = new Date(Date.now() + 1000 * 60 * 5)
+    user.otp = OTP;
+    user.otpExpires = Date.now() + 5 * 60 * 1000;
+    user.otpVerified = false;
 
+    const data = {
+      name: user.firstName,
+      email: user.email
+    };
 
-        user.otp = OTP;
-        user.otpExpiresAt = expiresAt;
-        user.otpVerified = false
+    await brevo(email, user.firstName, resetPasswordTemplate(data));
+    await user.save();
 
-        //save changes to the database
-        await user.save()
-        await brevo(user.email, user.firstName, OTP, emailTemplate(user.firstName, OTP))
+    return res.status(200).json({
+      message: "OTP sent successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
 
-        //send a success response
-        res.status(200).json({
-            message: 'OTP sent successfully'
-        })
-   } catch (error) {
-    res.status(500).json({
-        message: error.message
-    })
-   }
-}
-
-exports.resetPassword = async(req, res)=>{
+exports.resendOtp = async (req, res) => {
   try {
-    //Extract the required field from the request body
-    const {otp, password, email} = req.body;
-    
-    //Find the user
-    const user = await userModel.findOne({email: email.toLowerCase()})
+    const { email } = req.body;
 
-    //Check if user exists
-    if(user== null) {
-      return res.status(404).json({
-        message: 'Invalid credentials'
-      })
-    }
-
-    if(Date.now() > user.otpExpires || otp !== user.otp) {
+    if (!email) {
       return res.status(400).json({
-        message: 'Invalid OTP, please request for a new one'
-      })
+        message: "Email is required"
+      });
     }
 
-    //Reset the user's password with the encrypted and updated password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt) 
+    const user = await userModel.findOne({ email: email.toLowerCase() });
 
-    user.password = hashPassword
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    const OTP = Math.floor(1000 + Math.random() * 9000).toString();
+
+    user.otp = OTP;
+    user.otpExpires = Date.now() + 5 * 60 * 1000;
+
+    await user.save();
+
+    const data = {
+      name: user.firstName,
+      otp: OTP
+    };
+
+    await brevo(user.email, user.firstName, resetPasswordTemplate(data));
+
+    return res.status(200).json({
+      message: "OTP resent successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
+exports.resetPassword = async (req, res) => {
+  try {
+    // Extract the required fields from the request body
+    const { otp, password, email } = req.body;
+
+    if (!email || !otp || !password) {
+      return res.status(400).json({
+        message: "Email, OTP and password are required"
+      });
+    }
+
+    // Find the user
+    const user = await userModel.findOne({ email: email.toLowerCase() });
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    // Check if OTP exists, has not expired, and matches the user's OTP
+    if (!user.otp || !user.otpExpires || Date.now() > user.otpExpires || String(otp) !== String(user.otp)) {
+      return res.status(400).json({
+        message: "Invalid OTP, please request for a new one"
+      });
+    }
+
+    // Reset the user's password with the encrypted and updated password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashPassword;
     user.loginAttempts = 0;
     user.isLocked = false;
-    //save changes in the database
+
+    // Clear OTP after successful password reset
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    user.otpVerified = false;
+
     await user.save();
-    res.status(200).json({
-      message: 'password reset successfully'
-    })
 
+    return res.status(200).json({
+      message: "Password reset successfully"
+    });
   } catch (error) {
-    console.log(error)
-    res.status(500).json({
-      message: error.message
-    })
-  }
+    console.log(error);
 
-}
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
 
 exports.changePassword = async(req, res)=>{
   try {
