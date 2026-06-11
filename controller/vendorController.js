@@ -511,7 +511,24 @@ exports.changePassword = async(req, res)=>{
 
 exports.getAllVendors = async (req, res) => {
   try {
+
+    // const checkCache = await client.get('vendors');
+
+    // if (checkCache) {
+    //   return res.status(200).json({
+    //     message: 'successfully retrieved all vendors',
+    //     data: JSON.parse(checkCache)
+    //   });
+    // }
+
     const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
+// await client.set(
+//   'vendors',
+//   JSON.stringify(vendor),
+//   'EX',
+//   60
+// );
+
     return res.status(200).json({
       message: 'successfully retrieved all vendors',
       data: vendor  
