@@ -1,6 +1,8 @@
 const bookingModel = require('../models/booking');
 const vendorModel = require('../models/vendor');
 const pricingModel = require('../models/pricing');
+const userModel = require('../models/user');
+const Availability = require('../models/availability');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -116,7 +118,7 @@ exports.confirmBooking = async (req, res) => {
     // }
 
     // Confirm this booking
-    booking.bookingStatus = 'accept';
+    booking.bookingStatus = 'confirmed';
     await booking.save();
 
     // Update availability
@@ -131,7 +133,7 @@ exports.confirmBooking = async (req, res) => {
       booking: {
         ...booking.toObject(),
         eventDate: booking.eventDate.toISOString().split('T')[0],
-        bookingDate: booking.bookingDate.toISOString().split('T')[0],
+        // bookingDate: booking.bookingDate.toISOString().split('T')[0],
         createdAt: booking.createdAt.toISOString().split('T')[0],
         updatedAt: booking.updatedAt.toISOString().split('T')[0]
       }
@@ -170,69 +172,69 @@ exports.declineBooking = async (req, res) => {
   }
 };
 
-// Get all bookings for a vendor
-exports.getVendorBookings = async (req, res) => {
-  try {
-    const { vendorId } = req.params;
+// // Get all bookings for a vendor
+// exports.getVendorBookings = async (req, res) => {
+//   try {
+//     const { vendorId } = req.params;
 
-    const bookings = await bookingModel.find({ vendorId })
-      .populate('userId', 'firstName lastName email phoneNumber')
-      .sort({ createdAt: -1 });
+//     const bookings = await bookingModel.find({ vendorId })
+//       .populate('userId', 'firstName lastName email phoneNumber')
+//       .sort({ createdAt: -1 });
 
-    if (!bookings) {
-      return res.status(404).json({ message: 'No bookings found' });
-    }
+//     if (!bookings) {
+//       return res.status(404).json({ message: 'No bookings found' });
+//     }
 
-    const formattedBookings = bookings.map(b => ({
-      ...b.toObject(),
-      eventDate: b.eventDate.toISOString().split('T')[0],
-      bookingDate: b.bookingDate.toISOString().split('T')[0],
-      createdAt: b.createdAt.toISOString().split('T')[0],
-      updatedAt: b.updatedAt.toISOString().split('T')[0]
-    }));
+//     const formattedBookings = bookings.map(b => ({
+//       ...b.toObject(),
+//       eventDate: b.eventDate.toISOString().split('T')[0],
+//       bookingDate: b.bookingDate.toISOString().split('T')[0],
+//       createdAt: b.createdAt.toISOString().split('T')[0],
+//       updatedAt: b.updatedAt.toISOString().split('T')[0]
+//     }));
 
-    res.status(200).json({
-      message: 'Bookings fetched successfully',
-      totalBookings: bookings.length,
-      bookings: formattedBookings
-    });
+//     res.status(200).json({
+//       message: 'Bookings fetched successfully',
+//       totalBookings: bookings.length,
+//       bookings: formattedBookings
+//     });
 
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
 
-// Get all bookings for a client
-exports.getClientBookings = async (req, res) => {
-  try {
-    const { userId } = req.params;
+// // Get all bookings for a client
+// exports.getClientBookings = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
 
-    const bookings = await bookingModel.find({ userId })
-      .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category')
-      .sort({ createdAt: -1 });
+//     const bookings = await bookingModel.find({ userId })
+//       .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category')
+//       .sort({ createdAt: -1 });
 
-    if (!bookings) {
-      return res.status(404).json({ message: 'No bookings found' });
-    }
+//     if (!bookings) {
+//       return res.status(404).json({ message: 'No bookings found' });
+//     }
 
-    const formattedBookings = bookings.map(b => ({
-      ...b.toObject(),
-      eventDate: b.eventDate.toISOString().split('T')[0],
-      bookingDate: b.bookingDate.toISOString().split('T')[0],
-      createdAt: b.createdAt.toISOString().split('T')[0],
-      updatedAt: b.updatedAt.toISOString().split('T')[0]
-    }));
+//     const formattedBookings = bookings.map(b => ({
+//       ...b.toObject(),
+//       eventDate: b.eventDate.toISOString().split('T')[0],
+//       bookingDate: b.bookingDate.toISOString().split('T')[0],
+//       createdAt: b.createdAt.toISOString().split('T')[0],
+//       updatedAt: b.updatedAt.toISOString().split('T')[0]
+//     }));
 
-    res.status(200).json({
-      message: 'Bookings fetched successfully',
-      totalBookings: bookings.length,
-      bookings: formattedBookings
-    });
+//     res.status(200).json({
+//       message: 'Bookings fetched successfully',
+//       totalBookings: bookings.length,
+//       bookings: formattedBookings
+//     });
 
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
 
 // Get a single booking
 exports.getSingleBooking = async (req, res) => {
