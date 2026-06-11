@@ -1,68 +1,172 @@
-// sockets/chatSocket.js
-const { Op } = require("sequelize");
-const jwt = require("jsonwebtoken");
-const messageModel = require("../models/message");
+const message = require('../models/message');
+const userModel = require('../models/user');
+const bookingModel = require('../models/booking');
 
-function initializeChatSocket(io) {
-  io.on("connection", (socket) => {
-    console.log(`User connected: ${socket.id}`);
 
-    // Step 1: Authenticate user using token
-    const token = socket.handshake.auth?.token;
-    if (!token) {
-      console.log("No token provided — disconnecting socket");
-      return socket.disconnect(true);
+exports.initializeIO = (io) => {
+  ioInstance = io;
+  console.log("Socket.io instance initialized");
+};
+exports.getMessages = async (req, res) => {
+  const { bookingId } = req.params;
+
+  try {
+    const booking = await bookingModel.findById(bookingId);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    const senderId = req.user.id;
+    const receiverId = bookingModel.vendorId === senderId ? bookingModel.userId : bookingModel.vendorId;
+
+    if (!receiverId) return res.status(400).json({ message: "You have not been assigned to user yet" });
+
+    
+
+    const messages = await Message.findAll({
+      where: { roomId: `feastsync_${bookingId}`
+ },
+      include: [
+        { model: User, as: "sender", attributes: ["id", "firstName", "lastName", "role"] },
+        { model: User, as: "receiver", attributes: ["id", "firstName", "lastName", "role"] },
+      ],
+      order: [["createdAt", "ASC"]],
+    });
+
+    res.status(200).json({
+      message:` Found ${messages.length} messages for this errand`,
+      data: messages,
+    });
+  } catch (err) {
+    console.error("Error fetching messages:", err.message);
+    res.status(500).json({ message: "Failed to get messages", error: err.message });
+  }
+};
+
+
+exports.sendMessage = async (req, res) => {
+  try {
+    const { text, senderId, receiverId, roomId } = req.body;
+    const { bookingId } = req.params;
+
+    if (!bookingId || !text || !senderId || !receiverId || !roomId) {
+      return res.status(400).json({
+        error: "Missing text, senderId, receiverId, errandId or roomId",
+      });
     }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-      socket.userId = decoded.id;
-      console.log(`Authenticated user: ${socket.userId}`);
-    } catch (error) {
-      console.log("Invalid token — disconnecting socket");
-      return socket.disconnect(true);
+    // Save message
+    const message = await Message.create({
+      senderId,
+      receiverId,
+      text,
+      roomId,
+    });
+
+    // Fetch full message with relations
+    const fullMessage = await Message.findById(message.id, {
+      include: [
+        {
+          model: User,
+          as: "sender",
+          attributes: ["id", "firstName", "lastName", "role"],
+        },
+        {
+          model: User,
+          as: "receiver",
+          attributes: ["id", "firstName", "lastName", "role"],
+        },
+      ],
+    });
+
+    // REAL-TIME EMIT
+    if (ioInstance) {
+      ioInstance.to(roomId).emit("receive_message", fullMessage);
+      console.log( `Emitted message to room: ${roomId}`);
+    } else {
+      console.log("Socket.io not initialized");
     }
 
-    // Step 2: Join private room between sender & receiver
-    socket.on("join_room", ({ senderId, receiverId }) => {
-      const roomId = [senderId, receiverId].sort().join("_");
-      socket.join(roomId);
-      socket.roomId = roomId; // store room ID for later use
-      console.log(`User ${senderId} joined room ${roomId}`);
+    // API Response
+    res.status(201).json({
+      message: "Message sent successfully",
+      data: fullMessage,
     });
 
-    // Step 3: When user sends a message
-    socket.on("send_message", async (data) => {
-      const { senderId, receiverId, text } = data;
-      const roomId = [senderId, receiverId].sort().join("_");
+  } catch (err) {
+    console.error("Error sending message:", err.message);
+    res.status(500).json({
+      error: "Failed to send message",
+      details: err.message,
+    });
+  }
+};
+// exports.getMessagesByRoom = async (req, res) => {
+//   try {
+//     const { roomId } = req.params;
+//     const errand = await Errand.findByPk(errandId);
+//     if (!errand) return res.status(404).json({ message: "Errand not found" });
+//     const messages = await Message.findAll({
+//       where: { roomId: `errand_${errandId}`
+//  },
+//       include: [
+//         { model: User, as: "sender", attributes: ["id", "firstName", "lastName", "profileImage", "role"] },
+//         { model: User, as: "receiver", attributes: ["id", "firstName", "lastName", "profileImage", "role"] },
+//       ],
+//       order: [["createdAt", "ASC"]],
+//     });
 
-      if (!senderId || !receiverId || !text) {
-        console.error("Missing message data");
-        return;
-      }
+//     res.json({
+//       message: `Found ${messages.length} messages`,
+//       data: messages,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message:  `Failed to fetch messages", error: err.message `});
+//   }
+// };
 
-      try {
-        // Save message including roomId
-        const message = await messageModel.create({
-          senderId,
-          receiverId,
-          text,
-          roomId, 
-        });
+exports.getMessagesByRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
 
-        // Send message to both participants in the room
-        io.to(roomId).emit("receive_message", message);
-        console.log(`Message saved & sent in room ${roomId}`);
-      } catch (error) {
-        console.error("Error saving message:", error.message);
-      }
+    // Validate roomId format
+    if (!roomId || !roomId.startsWith("errand_")) {
+      return res.status(400).json({ message: "Invalid roomId format." });
+    }
+
+    // Extract actual errandId
+    const bookingId = roomId.replace("feastsync_", "");
+
+    // Check errand exists
+    const booking = await bookingModel.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Fetch messages for this room ONLY
+    const messages = await Message.findAll({
+      where: { roomId }, 
+      include: [
+        {
+          model: User,
+          as: "sender",
+          attributes: ["id", "firstName", "lastName", "role"],
+        },
+        {
+          model: User,
+          as: "receiver",
+          attributes: ["id", "firstName", "lastName", "role"],
+        },
+      ],
+      order: [["createdAt", "ASC"]],
     });
 
-    // Step 4: Disconnect
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.id}`);
+    res.json({
+      message: `Found ${messages.length} messages`,
+      data: messages,
     });
-  });
-}
-
-module.exports = initializeChatSocket;
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch messages",
+      error: err.message,
+    });
+  }
+};

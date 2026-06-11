@@ -1,7 +1,9 @@
 require('dotenv').config();
 const PORT = process.env.PORT
 const express = require('express');
-const app = express();
+const mongoose = require('mongoose')
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const swagger = require('./swagger');
 const swaggerUi = require('swagger-ui-express');
@@ -15,8 +17,39 @@ const paymentRouter = require('./routes/paymentRouter');
 const calendarRouter = require('./routes/calendarRouter');
 const bookingRouter = require('./routes/bookingRouter');
 const kycRouter = require('./routes/kycRouter')
+const messageRouter = require('./routes/messageRouter')
 
 const rateLimit = require('express-rate-limit');
+
+
+const app = express();
+const server = http.createServer(app);
+
+// ✅ Create IO instance first
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // ⭐ Join room (correct way)
+  socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+    console.log("Joined room:", roomId);
+  });
+
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+
+
 
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
@@ -45,6 +78,7 @@ app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/schedule', calendarRouter);
 app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/kyc', kycRouter)
+app.use('/api/v1/message', messageRouter)
 
  app.use((req, res) => {
   res.status(404).json({
@@ -67,16 +101,15 @@ app.use((err, req, res, next)=>{
         }
   console.log(err.message)
   res.status(500).json({
-    message: 'something went wrong'
+    message: 'An error occurred while processing your request'
   })
 })
-
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI).then(()=>{
-    console.log('Connected to Database');
-  app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-})  
-}).catch((error) => {
-    console.error('Error connecting to Database:', error.message);
-}); 
+const db = process.env.MONGODB_URI;
+mongoose.connect(db).then(()=> {
+    console.log('Database connection has been established successfully');
+    app.listen(PORT, ()=>{
+    console.log(`Server is running on the PORT: ${PORT}` );  
+})
+}).catch((error=> {
+    console.error(`Error connecting to Database: ${error.message}`);
+}))
