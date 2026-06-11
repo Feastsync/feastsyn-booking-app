@@ -395,3 +395,24 @@ exports.resolveDispute = async (req, res) => {
     });
   }
 };
+
+exports.getVendorReviews = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const reviews = await reviewModel.find({ vendorId }).populate(
+        'userId',
+        'firstName lastName'
+      );
+
+    res.status(200).json({
+      count: reviews.length,
+      data: reviews
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+

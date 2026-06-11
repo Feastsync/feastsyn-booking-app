@@ -62,10 +62,8 @@ exports.createVendor = async (req, res) => {
         });
 
     } catch (error) {
- 
-        console.log(error.message);
         res.status(500).json({
-            message: 'Something went wrong'
+            message: error.message
         });
     }
 };
@@ -209,8 +207,6 @@ exports.updateVendor = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       message: error.message
     });
@@ -321,9 +317,8 @@ exports.vendorLogin = async (req, res) => {
       }
     })
   } catch (error) {
-    console.log(error.message),
       res.status(500).json({
-        message: 'Something went wrong'
+        message: error.message
       })
   }
 };
@@ -507,9 +502,8 @@ exports.changePassword = async(req, res)=>{
     })
     
   } catch (error) {
-    console.log(error.message)
     res.status(500).json({
-      message: 'something went wrong'
+      message: error.message
     })
   }
 };
