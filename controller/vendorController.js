@@ -408,7 +408,6 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-
 exports.resetPassword = async (req, res) => {
   try {
     // Extract the required fields from the request body
@@ -420,10 +419,10 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    // Find the user
+    // Find the vendor
     const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
 
-    // Check if user exists
+    // Check if vendor exists
     if (!vendor) {
       return res.status(404).json({
         message: "Invalid credentials"
@@ -437,7 +436,7 @@ exports.resetPassword = async (req, res) => {
       });
     }
 
-    // Reset the user's password with the encrypted and updated password
+    // Reset the vendor's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
