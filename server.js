@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const swagger = require('./swagger');
 const swaggerUi = require('swagger-ui-express');
-// const session = require('express-session')
+const session = require('express-session')
 
 
 const vendorRouter = require('./routes/vendorRouter');
@@ -64,13 +64,12 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
-app.use(limiter);
 
-// app.use(session({
-//   secret: 'dabest',
-//   resave: false,
-//   saveUninitialized: false
-//  }))
+app.use(session({
+  secret: 'dabest',
+  resave: false,
+  saveUninitialized: false
+ }))
 
  app.use('/api/v1/user', router);
 app.use('/api/v1/vendor', vendorRouter);
