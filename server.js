@@ -107,7 +107,7 @@ app.use((err, req, res, next)=>{
 const db = process.env.MONGODB_URI;
 mongoose.connect(db).then(()=> {
     console.log('Database connection has been established successfully');
-    app.listen(PORT, ()=>{
+    server.listen(PORT, ()=>{
     console.log(`Server is running on the PORT: ${PORT}` );  
 })
 }).catch((error=> {
