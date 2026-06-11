@@ -1,4 +1,4 @@
-const { createUser, verifyEmail, userLogin, userLogout, forgotPassword, resendOtp, resetPassword, getOneUser, changePassword, getAllUsers, deleteUser } = require('../controller/userController');
+const { createUser, verifyEmail, userLogin, userLogout, forgotPassword, resendOtp, resetPassword, getOneUser, changePassword, deleteUser } = require('../controller/userController');
 const { authentication, adminAuth } = require('../middlewares/auth');
 const {signupUserValidator, resetPasswordValidator, changePasswordValidator, verifyOtpValidator} = require('../middlewares/validator');
 
@@ -14,7 +14,6 @@ router.post('/resend-otp',resendOtp);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.post('/change-password', authentication, changePasswordValidator, changePassword);
 
-router.get('/all-users', authentication, getAllUsers);
 router.get('/one-user', authentication, getOneUser  )
 router.delete('/user/:id', authentication, adminAuth, deleteUser)
 
