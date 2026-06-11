@@ -344,9 +344,9 @@ exports.forgotPassword = async (req, res) => {
 
     const OTP = Math.round(Math.random() * 1e4).toString().padStart(4, "0");
 
-    user.otp = OTP;
-    user.otpExpires = Date.now() + 5 * 60 * 1000;
-    user.otpVerified = false;
+    vendor.otp = OTP;
+    vendor.otpExpires = Date.now() + 5 * 60 * 1000;
+    vendor.otpVerified = false;
 
     const data = {
       name: vendor.firstName,
