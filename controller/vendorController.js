@@ -509,6 +509,22 @@ exports.changePassword = async(req, res)=>{
 };
 
 
+exports.getAllVendors = async (req, res) => {
+  try {
+    const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
+    return res.status(200).json({
+      message: 'successfully retrieved all vendors',
+      data: vendor  
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+
 exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;

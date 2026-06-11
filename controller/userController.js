@@ -6,11 +6,9 @@ const {brevo} = require('../utils/brevo')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
 const jwt = require('jsonwebtoken')
 
-
 exports.createUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
-
     if (!password) {
       return res.status(400).json({
         message: "Please enter password",
@@ -34,12 +32,6 @@ exports.createUser = async (req, res) => {
     return res.status(201).json({
       message: "User created successfully",
       data: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        _id: user._id,
-        otp,
       },
     });
   } catch (error) {
@@ -336,39 +328,6 @@ exports.changePassword = async(req, res)=>{
     })
   }
 };
-
-exports.getAllUsers = async (req, res) => {
-  try {
-
-    // const checkCache = await client.get('users');
-
-    // if (checkCache) {
-    //   return res.status(200).json({
-    //     message: 'successfully retrieved all users',
-    //     data: JSON.parse(checkCache)
-    //   });
-    // }
-
-    const user = await userModel.find().select('firstName lastName email phoneNumber');
-// await client.set(
-//   'users',
-//   JSON.stringify(user),
-//   'EX',
-//   60
-// );
-
-    return res.status(200).json({
-      message: 'successfully retrieved all users',
-      data: user
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
-  }
-};
-
 
 exports.getOneUser = async (req, res) => {
   try {
