@@ -386,8 +386,8 @@ exports.resendOtp = async (req, res) => {
 
     const OTP = Math.floor(1000 + Math.random() * 9000).toString();
 
-    user.otp = OTP;
-    user.otpExpires = Date.now() + 5 * 60 * 1000;
+    vendor.otp = OTP;
+    vendor.otpExpires = Date.now() + 5 * 60 * 1000;
 
     await vendor.save();
 
@@ -505,39 +505,6 @@ exports.changePassword = async(req, res)=>{
     res.status(500).json({
       message: error.message
     })
-  }
-};
-
-
-exports.getAllVendors = async (req, res) => {
-  try {
-
-    // const checkCache = await client.get('vendors');
-
-    // if (checkCache) {
-    //   return res.status(200).json({
-    //     message: 'successfully retrieved all vendors',
-    //     data: JSON.parse(checkCache)
-    //   });
-    // }
-
-    const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
-// await client.set(
-//   'vendors',
-//   JSON.stringify(vendor),
-//   'EX',
-//   60
-// );
-
-    return res.status(200).json({
-      message: 'successfully retrieved all vendors',
-      data: vendor  
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
   }
 };
 
