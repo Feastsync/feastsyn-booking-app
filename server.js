@@ -64,6 +64,7 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
+app.use(limiter);
 
 // app.use(session({
 //   secret: 'dabest',
