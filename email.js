@@ -1,139 +1,131 @@
 
-exports.emailTemplate = (firstName, lastName, otp) => {
-  return `
+exports.emailTemplate = (firstName, otp) => {
+return `
+
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Your Email</title>
-<style>
-    body {
-    width: 100%;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.main-section {
-    width: 50%;
-    height: 100%;
-    background-color: grey;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    padding: 10px;
-    gap: 10px;
-}
-.upper-div {
-    width: 100%;
-    height: 30%;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    
-}
-.upper-div-1 {
-    width: 100%;
-    height: 30%;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-
-    p {
-        align-self: center;
-    }
-}
-.upper-div-2 {
-    width: 50%;
-    height: 30%;
-    background-color: rgb(207, 182, 182);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.upper-div-3 {
-    width: 100%;
-    height: 30%;
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-
-    p {
-        align-self: center;
-    }
-
-}
-.downer-div {
-     width: 100%;
-    height: 30%;
-    background-color: white;   
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FeastSync Email Verification</title>
 </head>
-<body>
 
-<div class="container">
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial, Helvetica, sans-serif;">
 
-    <div class="header">
-        <h1>FeastSync</h1>
-        <p>Event Booking App</p>
-    </div>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;padding:40px 0;">
+    <tr>
+      <td align="center">
+      
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;">
 
-    <div class="content">
-        <h2>Email Verification</h2>
+      <!-- Header -->
+      <tr>
+        <td align="center" style="background-color:#6A0DAD;padding:30px;">
+          <h1 style="margin:0;color:#ffffff;">
+            FeastSync Event Booking
+          </h1>
+          <p style="margin-top:10px;color:#f3e8ff;">
+            Secure Email Verification
+          </p>
+        </td>
+      </tr>
 
-        <p>
-            Hello ${firstName} ${lastName},
-        </p>
+      <!-- Content -->
+      <tr>
+        <td style="padding:40px;">
 
-        <p>
-            Thank you for joining FeastSync. Use the verification code below
-            to complete your account setup and start discovering talented
-            entertainers for your events.
-        </p>
+          <h2 style="margin-top:0;color:#333333;">
+            Hello ${firstName},
+          </h2>
 
-        <div class="otp-box">
-            <span class="otp-code">${otp}</span>
-        </div>
+          <p style="font-size:16px;line-height:1.8;color:#555555;">
+            Thank you for registering on FeastSync Event Booking.
+            To complete your registration, please verify your email address using the One-Time Password (OTP) below.
+          </p>
 
-        <p>
-            This code will expire in <strong>10 minutes</strong>.
-            Please do not share this code with anyone.
-        </p>
+          <!-- OTP BOX -->
+          <table align="center"
+                 cellpadding="0"
+                 cellspacing="0"
+                 border="0"
+                 width="320"
+                 style="
+                   margin:30px auto;
+                   background-color:#F3E8FF;
+                   border:3px solid #6A0DAD;
+                   border-radius:12px;
+                 ">
 
-        <p>
-            With FeastSync, you can browse entertainers, compare profiles,
-            and hire the perfect performer for your event with ease.
-        </p>
-    </div>
+            <tr>
+              <td align="center" style="padding:15px;">
+                <p style="
+                  margin:0;
+                  font-size:14px;
+                  font-weight:bold;
+                  color:#6A0DAD;
+                  letter-spacing:2px;
+                ">
+                  YOUR VERIFICATION CODE
+                </p>
+              </td>
+            </tr>
 
-    <div class="footer">
-        <p>
-            If you did not create an account, you can safely ignore this email.
-        </p>
+            <tr>
+              <td align="center" style="padding-bottom:20px;">
+                <span style="
+                  display:inline-block;
+                  font-size:48px;
+                  font-weight:bold;
+                  color:#6A0DAD;
+                  letter-spacing:12px;
+                ">
+                  ${otp}
+                </span>
+              </td>
+            </tr>
 
-        <p>
-            © 2026 FeastSync Event Booking App. All rights reserved.
-        </p>
-    </div>
+          </table>
 
-</div>
+          <p style="font-size:16px;line-height:1.8;color:#555555;">
+            This code will expire in <strong>30 minutes</strong>.
+            Please do not share this code with anyone for security reasons.
+          </p>
+
+          <p style="font-size:16px;line-height:1.8;color:#555555;">
+            If you did not create a FeastSync account, please ignore this email.
+          </p>
+
+          <p style="margin-top:30px;color:#333333;">
+            Regards,<br>
+            <strong>FeastSync Team</strong>
+          </p>
+
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td align="center" style="background-color:#f8f8f8;padding:20px;">
+          <p style="margin:0;color:#777777;font-size:14px;">
+            FeastSync Event Booking Platform
+          </p>
+          <p style="margin-top:8px;color:#999999;font-size:12px;">
+            Making Event Planning Easier & More Reliable.
+          </p>
+        </td>
+      </tr>
+
+    </table>
+
+  </td>
+</tr>
+
+  </table>
 
 </body>
 </html>
-  `
+  `;
 };
 
 

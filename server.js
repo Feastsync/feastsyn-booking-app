@@ -80,7 +80,7 @@ app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/kyc', kycRouter)
 app.use('/api/v1/message', messageRouter)
 
- app.use((req, res) => {
+ app.use((req, res) => { 
   res.status(404).json({
     message: 'Route not found'  
   })

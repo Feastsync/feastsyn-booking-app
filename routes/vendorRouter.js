@@ -21,6 +21,6 @@ router.post('/resend-otp', resendOtp);
 router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.post('/change-password', authentication, changePasswordValidator, changePassword);
 
-router.get('/all-vendors', authentication, getAllVendors)
+router.get('/all-vendors', getAllVendors)
 router.get('/one-vendor/:slug', authentication, getOneVendor)
 module.exports = router; 
