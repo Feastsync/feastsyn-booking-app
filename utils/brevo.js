@@ -21,6 +21,10 @@ const brevo = async (userEmail, userName, html) => {
     sendSmtpEmail.sender = data.sender
    
     await brevoClient.sendTransacEmail(sendSmtpEmail);
+
+//     const response = await brevoClient.sendTransacEmail(sendSmtpEmail);
+// console.log(response);
+// console.log("Sending to:", user.email);
 }
 
 module.exports = {brevo}

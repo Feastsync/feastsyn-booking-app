@@ -44,11 +44,11 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    totalAmount: {
-        type: Number,
-        required: true
-    },
-    bookingStatus: {
+    // totalAmount: {
+    //     type: Number,
+    //     required: true
+    // },
+    bookingStatus: { 
         type: String,
         enum: ['pending','confirmed','completed','cancelled','disputed'],
         default: 'pending'
@@ -58,14 +58,14 @@ const bookingSchema = new mongoose.Schema({
         enum: ['unpaid','paid','refunded'],
         default: 'unpaid'
     },
-    startTime: {
-    type: String,
-    required: true
-  },
-  endTime: {
-    type: String,
-    required: true
- }
+//     startTime: {
+//     type: String,
+//     required: true
+//   },
+//   endTime: {
+//     type: String,
+//     required: true
+//  }
 }, { timestamps: true });
 
 bookingSchema.set('toJSON', {

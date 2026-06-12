@@ -129,6 +129,8 @@ return `
 };
 
 
+
+
 exports.resetPasswordTemplate = (data) => {
     return `
     <!DOCTYPE html>

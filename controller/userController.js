@@ -58,6 +58,7 @@ exports.verifyEmail = async (req, res) => {
       })
     }; 
 
+
     if (user.otp !== otp) {
       return res.status(400).json({
         message: 'Invalid OTP Provided'
