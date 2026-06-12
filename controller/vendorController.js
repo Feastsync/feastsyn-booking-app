@@ -190,7 +190,8 @@ exports.updateVendor = async (req, res) => {
         bio,
         servicesOffered,
         stateOfResidence,
-
+// photos:updatedVendor.photoCatalogue[0].secureUrl,
+// videos::updatedVendor.videoCatalogue[0].secureUrl,
         ...(slug && { slug }),
         ...(profilePicture && { profilePicture }),
         ...(coverPhoto && { coverPhoto }),
@@ -200,7 +201,6 @@ exports.updateVendor = async (req, res) => {
       },
       { new: true }
     );
-
     return res.status(200).json({
       message: 'Vendor information updated successfully',
       vendorUrl: publicUrl,
@@ -522,7 +522,7 @@ exports.getAllVendors = async (req, res) => {
     //   });
     // }
 
-    const vendor = await vendorModel.find().select('stageName profilePicture mainPhoto servicesOffered');
+    const vendor = await vendorModel.find();
 // await client.set(
 //   'vendors',
 //   JSON.stringify(vendor),
