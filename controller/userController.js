@@ -27,19 +27,17 @@ exports.createUser = async (req, res) => {
       phoneNumber,
       otp, 
     });
-
-   await brevo(
-  user.email,
-  `${user.firstName} ${user.lastName}`,
-  emailTemplate(
-    user.firstName,
-    user.lastName,
-    otp
-  )
-);
+      console.log("OTP being sent:", otp);
+    await brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, otp ));
     return res.status(201).json({
       message: "User created successfully",
       data: {
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email.toLowerCase(),
+              phoneNumber: user.phoneNumber,
+              _id: user._id,
+              otp: user.otp
       },
     });
   } catch (error) {
