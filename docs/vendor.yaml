@@ -221,18 +221,18 @@ paths:
                 - password
                 - confirmPassword
               properties:
-              email:
-                type: string
-                description: The vendor's email address
-              otp: 
-                type: string
-                description: One time password
-              password:
-                type: string
-                description: The vendor's password 
-              confirmPassword:
-                type: string
-                description: Confirmation of the vendor's password
+                email:
+                  type: string
+                  description: The vendor's email address
+                otp: 
+                  type: string
+                  description: One time password
+                password:
+                  type: string
+                  description: The vendor's password 
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the vendor's password
       responses:          
         '200':
           description: Vendor's password reset successfully
