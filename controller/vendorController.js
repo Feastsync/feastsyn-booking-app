@@ -351,7 +351,8 @@ exports.forgotPassword = async (req, res) => {
 
     const data = {
       name: vendor.firstName,
-      email: vendor.email
+      email: vendor.email,
+      otp: vendor.otp
     };
 
     await brevo(email, vendor.firstName, resetPasswordTemplate(data));
