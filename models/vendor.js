@@ -142,6 +142,10 @@ coverPhoto: {
         type: String, 
         trim: true
     },
+    vendorUrl: {
+        type: String,
+        trim: true
+    }, 
     bankName: {
         type: String,
         enum: ['Access Bank', 'First Bank', 'GTBank', 'Zenith Bank', 'FCMB', 'UBA', 'EcoBank', 'Wema Bank', 'FCFBank', 'Heritage Bank'],

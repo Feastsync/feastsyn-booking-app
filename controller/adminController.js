@@ -1,4 +1,5 @@
 const adminModel = require('../models/admin');
+const contactModel = require('../models/contact');
 
 
 exports.getDashboardStats = async (req, res) => {
@@ -396,6 +397,28 @@ exports.resolveDispute = async (req, res) => {
   }
 };
 
+exports.updateSettings = async (req, res) => {
+  try {
+
+    const settings = await settingsModel.findOneAndUpdate({}, req.body,
+        {
+          new: true,
+          upsert: true
+        }
+      );
+
+    res.status(200).json({
+      message: 'Settings updated',
+      data: settings
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 exports.getVendorReviews = async (req, res) => {
   try {
     const { vendorId } = req.params;
@@ -416,3 +439,40 @@ exports.getVendorReviews = async (req, res) => {
   }
 };
 
+exports.getUserReviews = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const reviews = await reviewModel.find({ userId }).populate(
+        'vendorId',
+        'firstName lastName'
+      );
+
+    res.status(200).json({
+      count: reviews.length,
+      data: reviews
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getAllContactMessages = async (req, res) => {
+  try {
+    const messages = await contactModel.find()
+      .populate("userId", "firstName lastName email phoneNumber")
+      .populate("vendorId", "businessName email phoneNumber")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      count: messages.length,
+      data: messages
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};

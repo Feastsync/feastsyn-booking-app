@@ -1,30 +1,5 @@
-//const Booking = require('../models/booking');
-// const AvailabilityBlock = require('../models/availabiltyBlock');
-// const calendarModel = require('../models/calendarModel');
-
-// exports.createCalendarEntry = async (req, res, next) => {
-//     try {
-//         const { eventDate, startTime, endTime, eventLocation, totalAmount } = req.body;
-//         const calendarEntry = new calendarModel({
-//             eventDate,
-//             startTime,
-//             endTime,
-//             eventLocation,
-//             totalAmount
-//         });
-//         await calendarEntry.save();
-//         res.status(201).json({
-//             message: 'Calendar entry created successfully',
-//             data: calendarEntry
-//         });
-//     } catch (error) {
-//         next(error);
-//     }
-// };
-
-
 const Booking = require("../models/booking");
-// const Availability = require("../models/availability");
+const Availability = require("../models/availability");
 const vendorModel = require("../models/vendor");
 const pricingModel = require("../models/pricing");
 const userModel = require("../models/user");

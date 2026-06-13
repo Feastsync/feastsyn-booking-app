@@ -293,50 +293,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.changePassword = async(req, res)=>{
-  try {
-    //Extract the user ID from the request user object
-    const { id } = req.user;
-    //Extract the required field from the request body object
-    const { oldPassword, newPassword } = req.body;
-    //Find the user
-    const user = await userModel.findById(id);
-    //check if user exists
-    if (!user) {
-      return res.status(404).json({
-        message: 'User not found'
-      })
-    }
-    //Confirm the old password
-    const checkPassword = await bcrypt.compare(oldPassword, user.password);
-    if(!checkPassword) {
-      return res.status(400).json({
-        message: 'Old password is invalid'
-      })
-    }
-    //Encrypt and change to the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(newPassword, salt);
-
-    user.password = hashPassword;
-    user.loginAttempts = 0;
-    user.isLocked = false;
-
-    //Save changes in the database
-    await user.save();
-
-    //send a success response
-    res.status(200).json({
-      message: 'Password changed successfully'
-    })
-    
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    })
-  }
-};
-
 exports.getOneUser = async (req, res) => {
   try {
     const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
