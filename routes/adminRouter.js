@@ -1,7 +1,11 @@
-const { getDashboardStats, getAllVendorsAdmin, suspendVendor, activateVendor, getPendingKYCs, approveKYC, rejectKYC, getAllPayments, getAllBookings, resolveDispute } = require('../controller/adminController');
-const { adminAuth, authentication } = require('../middlewares/auth');
+const express = require('express');
+const router = require('express').Router();
 
-const router = require('express').Router()
+const { getDashboardStats, getAllVendorsAdmin, suspendVendor, activateVendor, getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, updateSettings } = require('../controller/adminController');
+const { adminAuth, authentication } = require('../middlewares/auth');
+const { createDispute } = require('../controller/disputeController');
+const { createReview } = require('../controller/reviewController');
+const { getNotifications } = require('../controller/notificationController');
 
 router.get('/dashboard-stats', adminAuth, getDashboardStats);
 
@@ -11,30 +15,35 @@ router.patch('/suspend-vendor/:vendorId', adminAuth, suspendVendor);
 
 router.patch('/activate-vendor/:vendorId', adminAuth, activateVendor);
 
-router.get('/all-pending-kyc', adminAuth, getPendingKYCs);
+router.get('/all-pending-kyc', adminAuth, getPendingKycs);
 
-router.patch('/approve-kyc/:kycId', adminAuth, approveKYC);
+router.patch('/approve-kyc/:kycId', adminAuth, approveKyc);
 
-router.patch('/reject-kyc/:kycId', adminAuth, rejectKYC);
+router.patch('/reject-kyc/:kycId', adminAuth, rejectKyc);
 
 router.get('/all-payments', adminAuth, getAllPayments);
 
 router.get('/all-bookings', adminAuth, getAllBookings);
 
 // Disputes
-router.post('/disputes/:bookingId',authentication, createDispute);
+router.post('/disputes/:bookingId', adminAuth, createDispute);
 
-router.patch('/disputes/:disputeId',adminAuth,resolveDispute);
+router.patch('/disputes/:disputeId', adminAuth,resolveDispute);
 
 // Reviews
-router.post('/reviews/:bookingId',authentication,createReview);
+router.post('/reviews/:bookingId', authentication,createReview);
 
-router.get('/reviews/vendor/:vendorId', getVendorReviews);
+router.get('/vendor-reviews/:vendorId', adminAuth ,getVendorReviews);
+
+router.get('/user-reviews/:userId', adminAuth, getUserReviews)
 
 // Notifications
-router.get('/notifications',authentication,getNotifications);
+router.get('/notifications', authentication,getNotifications);
 
 // Settings
-router.patch('/settings',adminAuth,updateSettings);
+router.patch('/settings', adminAuth, updateSettings);
+
+//contactUs
+router.get('/contact-message', adminAuth, getAllContactMessages)
 
 module.exports = router;

@@ -465,51 +465,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.changePassword = async(req, res)=>{
-  try {
-    //Extract the vendor ID from the request vendor object
-    const { id } = req.user;
-    //Extract the required field from the request body object
-    const { oldPassword, newPassword } = req.body;
-    //Find the vendor
-    const vendor = await vendorModel.findById(id);
-    //check if vendor exists
-    if (!vendor) {
-      return res.status(404).json({
-        message: 'Vendor not found'
-      })
-    }
-    //Confirm the old password
-    const checkPassword = await bcrypt.compare(oldPassword, vendor.password);
-    if(!checkPassword) {
-      return res.status(400).json({
-        message: 'Old password is invalid'
-      })
-    }
-    //Encrypt and change to the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(newPassword, salt);
-
-    vendor.password = hashPassword;
-    vendor.loginAttempts = 0;
-    vendor.isLocked = false;
-
-    //Save changes in the database
-    await vendor.save();
-
-    //send a success response
-    res.status(200).json({
-      message: 'Password changed successfully'
-    })
-    
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    })
-  }
-};
-
-
 exports.getAllVendors = async (req, res) => {
   try {
 
@@ -541,7 +496,6 @@ exports.getAllVendors = async (req, res) => {
     });
   }
 };
-
 
 exports.getOneVendor = async (req, res) => {
   try {

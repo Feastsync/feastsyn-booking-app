@@ -1,11 +1,13 @@
+const bookingModel = require('../models/booking');
+const disputeModel = require('../models/dispute');
+const userModel = require('../models/user');
+const vendorModel = require('../models/vendor')
+
 exports.createDispute = async (req, res) => {
   try {
     const { bookingId } = req.params;
-
-    const {reason,description,raisedBy} = req.body;
-
+    const {reason, description, raisedBy} = req.body;
     const booking = await bookingModel.findById(bookingId);
-
     if (!booking) {
       return res.status(404).json({
         message: 'Booking not found'
