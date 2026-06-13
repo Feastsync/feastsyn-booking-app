@@ -18,6 +18,8 @@ const calendarRouter = require('./routes/calendarRouter');
 const bookingRouter = require('./routes/bookingRouter');
 const kycRouter = require('./routes/kycRouter')
 const messageRouter = require('./routes/messageRouter')
+const notificationRouter = require('./routes/notificationRouter');
+const adminRouter = require('./routes/adminRouter')
 
 const rateLimit = require('express-rate-limit');
 
@@ -77,13 +79,24 @@ app.use('/api/v1', pricingRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/schedule', calendarRouter);
 app.use('/api/v1/bookings', bookingRouter);
-app.use('/api/v1/kyc', kycRouter)
-app.use('/api/v1/message', messageRouter)
+app.use('/api/v1/kyc', kycRouter);
+app.use('/api/v1/message', messageRouter);
+app.use('/api/v1/notification', notificationRouter);
+app.use('/api/v1/admin', adminRouter)
 
- app.use((req, res) => {
+ app.use((req, res) => { 
   res.status(404).json({
     message: 'Route not found'  
   })
+})
+
+app.use((error, req, res, next) => {
+  if(error){
+    return res.status(500).json({
+      message: error.message
+    })
+  }
+  next()
 })
 
 app.use((err, req, res, next)=>{

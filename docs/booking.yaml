@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API documentation for the FeastSync Booking App, which allows users to book a vendor's services
 paths:
-  /api/v1/bookings:
+  /api/v1/bookings/bookings:
     post:
       summary: this is the endpoint for creating a new booking
       tags: [bookings]

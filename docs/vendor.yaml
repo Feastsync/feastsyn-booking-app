@@ -221,62 +221,27 @@ paths:
                 - password
                 - confirmPassword
               properties:
-              email:
-                type: string
-                description: The vendor's email address
-              otp: 
-                type: string
-                description: One time password
-              password:
-                type: string
-                description: The vendor's password 
-              confirmPassword:
-                type: string
-                description: Confirmation of the vendor's password
+                email:
+                  type: string
+                  description: The vendor's email address
+                otp: 
+                  type: string
+                  description: One time password
+                password:
+                  type: string
+                  description: The vendor's password 
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the vendor's password
       responses:          
         '200':
           description: Vendor's password reset successfully
 
-          
-  /api/v1/vendor/change-password:
-    post: 
-      summary: this is the endpoint for changing password
-      tags: [vendors]
-      security:
-        - bearerAuth: []
-          name: Authorization
-          in: headers
-      requestBody:
-        required: true
-        content: 
-          application/json:
-            schema:
-              type: object
-              required:
-                - oldPassword
-                - newPassword
-                - confirmPassword  
-              properties:
-                oldPassword:
-                  type: string
-                  description: The vendor's current password
-                newPassword:
-                  type: string
-                  description: The vendor's new password
-                confirmPassword:
-                  type: string
-                  description: Confirmation of the vendor's new password
-      responses:          
-        '200':
-          description: Vendor's password changed successfully
-
-          
+        
   /api/v1/vendor/all-vendors:
     get: 
       summary: this is the endpoint to retrieve all vendors
       tags: [vendors]
-      security:
-        - bearerAuth: []
       responses:
         "200":
           description: All vendors retrieved successfully
