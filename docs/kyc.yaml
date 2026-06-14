@@ -15,16 +15,16 @@ paths:
       requestBody:
         required: true
         content:
-        application/json:
-          schema:
-          type: object
-          required:
-            - documentImage
-          properties:
-            documentImage: 
-              type: string
-              format: binary
-              description: The vendor's government approved identity card   
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - documentImage
+              properties:
+                documentImage: 
+                  type: string
+                  format: binary
+                  description: The vendor's government approved identity card   
       responses:          
         '201':
           description: KYC uploaded successfully
