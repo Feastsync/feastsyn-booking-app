@@ -1,7 +1,7 @@
 const express = require('express');
 const router = require('express').Router();
 
-const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getAllVendorPricing, getOnePricing, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
+const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
 const { adminAuth, authentication } = require('../middlewares/auth');
 const { createDispute } = require('../controller/disputeController');
 const { createReview } = require('../controller/reviewController');
@@ -49,8 +49,8 @@ router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 router.get('/contact-message', adminAuth, getAllContactMessages);
 
 //pricingPackage
-router.get('/all-pricing', adminAuth , getAllVendorPricing);
+// router.get('/all-pricing', getAllVendorPricing);
 
-router.get('/one-pricing/:pricingId', getOnePricing);
+// router.get('/one-pricing/:pricingId', getOnePricing);
 
 module.exports = router;

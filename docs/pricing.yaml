@@ -83,21 +83,5 @@ paths:
           description: Pricing package updated successfully
         "500": 
           description: Something went wrong
-
-  /api/v1/delete-pricing/{pricingId}:
-    delete: 
-      summary: this is the endpoint to delete a pricing package
-      tags: [pricing]
-      security:
-        - bearerAuth: []
-          name: Authorization
-          in: headers
-      parameters:
-        - in: path
-          name: pricingId
-      responses:
-        "200":
-          description: Pricing package updated successfully
-        "500": 
-          description: Something went wrong                
+               
 

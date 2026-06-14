@@ -590,43 +590,43 @@ exports.getAllContactMessages = async (req, res) => {
   }
 };
 
-exports.getAllVendorPricing = async (req, res) => {
-    try {
-        const { id } = req.user;
-        const pricing = await pricingModel.find({ vendorId: id});
-        res.status(200).json({
-            message: 'Pricing packages retrieved successfully',
-            totalPackages: pricing.length,
-            data: pricing
-        });
+// exports.getAllVendorPricing = async (req, res) => {
+//     try {
+//         const { id } = req.user;
+//         const pricing = await pricingModel.find({ vendorId: id});
+//         res.status(200).json({
+//             message: 'Pricing packages retrieved successfully',
+//             totalPackages: pricing.length,
+//             data: pricing
+//         });
 
-    } catch (error) {
-        console.log(error.message);
-        res.status(500).json({
-            message: 'Something went wrong'
-        });
-    }
-};
+//     } catch (error) {
+//         console.log(error.message);
+//         res.status(500).json({
+//             message: 'Something went wrong'
+//         });
+//     }
+// };
 
-exports.getOnePricing = async (req, res) => {
-  try {
-    const { pricingId } = req.params;
-    const pricing = await pricingModel.findById(pricingId)
-    if (!pricing) {
-      return res.status(404).json({
-        message: "Package not found"
-      });
-    }
-    return res.status(200).json({
-      message: "Package retrieved successfully",
-      data: pricing
-    });
+// exports.getOnePricing = async (req, res) => {
+//   try {
+//     const { pricingId } = req.params;
+//     const pricing = await pricingModel.findById(pricingId)
+//     if (!pricing) {
+//       return res.status(404).json({
+//         message: "Package not found"
+//       });
+//     }
+//     return res.status(200).json({
+//       message: "Package retrieved successfully",
+//       data: pricing
+//     });
 
-  } catch (error) {
-    console.log(error.message);
+//   } catch (error) {
+//     console.log(error.message);
 
-    return res.status(500).json({
-      message: "Something went wrong"
-    });
-  }
-};
+//     return res.status(500).json({
+//       message: "Something went wrong"
+//     });
+//   }
+// };
