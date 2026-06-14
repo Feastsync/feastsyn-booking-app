@@ -6,46 +6,46 @@ const {brevo} = require('../utils/brevo')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
 const jwt = require('jsonwebtoken')
 
-exports.createUser = async (req, res) => {
-  try {
-    const { firstName, lastName, email, password, phoneNumber } = req.body;
-    if (!password) {
-      return res.status(400).json({
-        message: "Please enter password",
+  exports.createUser = async (req, res) => {
+    try {
+      const { firstName, lastName, email, password, phoneNumber } = req.body;
+      if (!password) {
+        return res.status(400).json({
+          message: "Please enter password",
+        });
+      }
+    const otp = otpGenerator.generate(4, {upperCaseAlphabets: false,lowerCaseAlphabets: false,specialChars: false,});
+      console.log("OTP:", otp);
+
+      const salt = await bcrypt.genSalt(10);
+      const hashPassword = await bcrypt.hash(password, salt);
+      const user = await userModel.create({
+        firstName,
+        lastName,
+        email: email.toLowerCase(),
+        password: hashPassword,
+        phoneNumber,
+        otp, 
+      });
+        console.log("OTP being sent:", otp);
+      await brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, otp ));
+      return res.status(201).json({
+        message: "User created successfully",
+        data: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email.toLowerCase(),
+                phoneNumber: user.phoneNumber,
+                _id: user._id,
+                otp: user.otp
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
       });
     }
-  const otp = otpGenerator.generate(4, {upperCaseAlphabets: false,lowerCaseAlphabets: false,specialChars: false,});
-    console.log("OTP:", otp);
-
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(password, salt);
-    const user = await userModel.create({
-      firstName,
-      lastName,
-      email: email.toLowerCase(),
-      password: hashPassword,
-      phoneNumber,
-      otp, 
-    });
-      console.log("OTP being sent:", otp);
-    await brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, otp ));
-    return res.status(201).json({
-      message: "User created successfully",
-      data: {
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email.toLowerCase(),
-              phoneNumber: user.phoneNumber,
-              _id: user._id,
-              otp: user.otp
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
-  }
-};
+  };
 
 exports.verifyEmail = async (req, res) => {
   try {
