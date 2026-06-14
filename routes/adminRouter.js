@@ -1,8 +1,7 @@
 const express = require('express');
 const router = require('express').Router();
 
-const { getDashboardStats, getAllVendorsAdmin, suspendVendor, activateVendor, getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, updateSettings, createAdmin, adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword } = require('../controller/adminController');
-const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getAllVendorPricing, getOnePricing, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
+const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getAllVendorPricing, getOnePricing, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
 const { adminAuth, authentication } = require('../middlewares/auth');
 const { createDispute } = require('../controller/disputeController');
 const { createReview } = require('../controller/reviewController');
