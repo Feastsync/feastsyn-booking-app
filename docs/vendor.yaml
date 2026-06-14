@@ -121,6 +121,7 @@ paths:
                 - videoCatalogue
                 - bio
                 - servicesOffered
+                - category
               properties:
                 stateOfResidence:
                   type: string
@@ -157,6 +158,10 @@ paths:
                 servicesOffered:
                   type: string
                   description: The services offered by the vendor
+                category: 
+                  type: string
+                  enum: [Mc, Live Band Artist, Dj, Photographer, Vide0grapher]
+                  description: The area of profession  
       responses:          
         '200':
           description: Vendor profile updated successfully
@@ -274,3 +279,29 @@ paths:
           description: Logged out successfully
         "500": 
           description: Something went wrong        
+
+  /api/v1/vendor/vendor-dashboard:
+    get:
+      summary: Get authenticated vendor dashboard
+      tags: [vendors]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Vendor dashboard fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendorUrl:
+                    type: string
+                    example: https://feastsync.com/vendor/tola-events-a91b23
+                  data:
+                    $ref: "#/components/schemas/Vendor"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Vendor not found
+        "500":
+          description: Server error
