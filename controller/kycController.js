@@ -17,7 +17,7 @@ exports.uploadKyc = async (req, res) => {
       {
         resource_type: 'image'
       }
-    );
+    ); 
     await fs.promises.unlink(req.file.path);
 
     const kyc = await kycModel.create({

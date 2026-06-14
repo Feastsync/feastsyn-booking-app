@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows users and vendors create disputes for dissatisfaction of service
+paths:
+  /api/v1/dispute/create-dispute/{bookingId}:
+    post:
+      summary: this is the endpoint for creating a dispute for dissatisfaction of service
+      tags: [dispute]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters:
+        - in: path
+          name: bookingId
+          required: true    
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+                - description
+                - raisedBy
+              properties:
+                reason:
+                  type: string
+                  description: The reason for the dispute
+                description:
+                  type: string
+                  description: What happened that caused the dispute
+                raisedBy:
+                  type: string
+                  description: who raised the dispute  
+      responses:          
+        '201':
+          description: Dispute created successfully
