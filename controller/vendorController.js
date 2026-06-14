@@ -342,44 +342,7 @@ exports.vendorLogout = async (req, res) => {
   });
 };
 
-exports.forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
-
-    if (!vendor) {
-      return res.status(404).json({
-        message: "Invalid credentials"
-      });
-    }
-
-    const OTP = Math.round(Math.random() * 1e4).toString().padStart(4, "0");
-
-    vendor.otp = OTP;
-    vendor.otpExpires = Date.now() + 5 * 60 * 1000;
-    vendor.otpVerified = false;
-
-    const data = {
-      name: vendor.firstName,
-      email: vendor.email,
-      otp: vendor.otp
-    };
-
-    await brevo(email, vendor.firstName, resetPasswordTemplate(data));
-    await vendor.save();
-
-    return res.status(200).json({
-      message: "OTP sent successfully"
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
-  }
-};
-
-exports.resendOtp = async (req, res) => {
+exports.vendorForgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -393,7 +356,7 @@ exports.resendOtp = async (req, res) => {
 
     if (!vendor) {
       return res.status(404).json({
-        message: "Vendor not found"
+        message: "Invalid credentials"
       });
     }
 
@@ -401,11 +364,87 @@ exports.resendOtp = async (req, res) => {
 
     vendor.otp = OTP;
     vendor.otpExpires = Date.now() + 5 * 60 * 1000;
-
-    await vendor.save();
+    vendor.otpVerified = false;
 
     const data = {
       name: vendor.firstName,
+      email: vendor.email,
+      otp: OTP
+    };
+
+    await brevo(vendor.email, vendor.firstName, resetPasswordTemplate(data));
+    await vendor.save();
+
+    return res.status(200).json({
+      message: "OTP sent successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.vendorVerifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required"
+      });
+    }
+
+    const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    if (!vendor.otp || !vendor.otpExpires || Date.now() > vendor.otpExpires || String(otp) !== String(vendor.otp)) {
+      return res.status(400).json({
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    vendor.otpVerified = true;
+    await vendor.save();
+
+    return res.status(200).json({
+      message: "OTP verified successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.vendorResendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
+    const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
+    }
+    const OTP = Math.floor(1000 + Math.random() * 9000).toString();
+    vendor.otp = OTP;
+    vendor.otpExpires = Date.now() + 5 * 60 * 1000;
+    vendor.otpVerified = false;
+
+    await vendor.save();
+    const data = {
+      name: vendor.firstName,
+      email: vendor.email,
       otp: OTP
     };
 
@@ -421,35 +460,30 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-exports.resetPassword = async (req, res) => {
+exports.vendorResetPassword = async (req, res) => {
   try {
-    // Extract the required fields from the request body
-    const { otp, password, email } = req.body;
+    const { email, password } = req.body;
 
-    if (!email || !otp || !password) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Email, OTP and password are required"
+        message: "Email and password are required"
       });
     }
 
-    // Find the vendor
     const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
 
-    // Check if vendor exists
     if (!vendor) {
       return res.status(404).json({
         message: "Invalid credentials"
       });
     }
 
-    // Check if OTP exists, has not expired, and matches the vendor's OTP
-    if (!vendor.otp || !vendor.otpExpires || Date.now() > vendor.otpExpires || String(otp) !== String(vendor.otp)) {
+    if (!vendor.otpVerified) {
       return res.status(400).json({
-        message: "Invalid OTP, please request for a new one"
+        message: "Please verify OTP before resetting password"
       });
     }
 
-    // Reset the vendor's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -457,7 +491,6 @@ exports.resetPassword = async (req, res) => {
     vendor.loginAttempts = 0;
     vendor.isLocked = false;
 
-    // Clear OTP after successful password reset
     vendor.otp = undefined;
     vendor.otpExpires = undefined;
     vendor.otpVerified = false;
@@ -468,8 +501,6 @@ exports.resetPassword = async (req, res) => {
       message: "Password reset successfully"
     });
   } catch (error) {
-    console.log(error);
-
     return res.status(500).json({
       message: error.message
     });

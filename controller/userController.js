@@ -161,6 +161,11 @@ exports.userLogout = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      });
+    }
 
     const user = await userModel.findOne({ email: email.toLowerCase() });
 
@@ -170,7 +175,7 @@ exports.forgotPassword = async (req, res) => {
       });
     }
 
-    const OTP = Math.round(Math.random() * 1e4).toString().padStart(4, "0");
+    const OTP = Math.floor(1000 + Math.random() * 9000).toString();
 
     user.otp = OTP;
     user.otpExpires = Date.now() + 5 * 60 * 1000;
@@ -179,7 +184,7 @@ exports.forgotPassword = async (req, res) => {
     const data = {
       name: user.firstName,
       email: user.email,
-      otp: user.otp
+      otp: OTP
     };
 
     await brevo(email, user.firstName, resetPasswordTemplate(data));
@@ -195,10 +200,49 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required"
+      });
+    }
+    const user = await userModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    if (
+      !user.otp ||
+      !user.otpExpires ||
+      Date.now() > user.otpExpires ||
+      String(otp) !== String(user.otp)
+    ) {
+      return res.status(400).json({
+        message: "Invalid or expired OTP"
+      });
+    }
+
+    user.otpVerified = true;
+    await user.save();
+
+    return res.status(200).json({
+      message: "OTP verified successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
-
     if (!email) {
       return res.status(400).json({
         message: "Email is required"
@@ -206,7 +250,6 @@ exports.resendOtp = async (req, res) => {
     }
 
     const user = await userModel.findOne({ email: email.toLowerCase() });
-
     if (!user) {
       return res.status(404).json({
         message: "User not found"
@@ -217,11 +260,13 @@ exports.resendOtp = async (req, res) => {
 
     user.otp = OTP;
     user.otpExpires = Date.now() + 5 * 60 * 1000;
+    user.otpVerified = false;
 
     await user.save();
 
     const data = {
       name: user.firstName,
+      email: user.email,
       otp: OTP
     };
 
@@ -237,36 +282,29 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
-
 exports.resetPassword = async (req, res) => {
   try {
-    // Extract the required fields from the request body
-    const { otp, password, email } = req.body;
-
-    if (!email || !otp || !password) {
+    const { password, email } = req.body;
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Email, OTP and password are required"
+        message: "Email and password are required"
       });
     }
 
-    // Find the user
     const user = await userModel.findOne({ email: email.toLowerCase() });
 
-    // Check if user exists
     if (!user) {
       return res.status(404).json({
         message: "Invalid credentials"
       });
     }
 
-    // Check if OTP exists, has not expired, and matches the user's OTP
-    if (!user.otp || !user.otpExpires || Date.now() > user.otpExpires || String(otp) !== String(user.otp)) {
+    if (!user.otpVerified) {
       return res.status(400).json({
-        message: "Invalid OTP, please request for a new one"
+        message: "Please verify OTP before resetting password"
       });
     }
 
-    // Reset the user's password with the encrypted and updated password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -274,7 +312,6 @@ exports.resetPassword = async (req, res) => {
     user.loginAttempts = 0;
     user.isLocked = false;
 
-    // Clear OTP after successful password reset
     user.otp = undefined;
     user.otpExpires = undefined;
     user.otpVerified = false;

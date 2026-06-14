@@ -97,11 +97,6 @@ exports.resetPasswordValidator = (req, res, next)=>{
             'string.empty': 'Email cannot be empty',
             'string.email': 'Email must be a valid email'
         }),
-        otp: joi.string().pattern(/^\d{4}$/).required().messages({
-          'any.required': 'OTP is required',
-          'string.empty': 'OTP cannot be empty',
-          'string.pattern.base': 'OTP must only contain numbers and must be 4 digits'  
-        }),
         password: joi.string().pattern(/^(?=.*[A-Z]).{8,}$/).required().messages({
           'any.required': 'Password is required',
           'string.empty': 'Password cannot be empty',
