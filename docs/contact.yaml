@@ -1,0 +1,41 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows logged-in users, vendors and guests contact us
+paths:
+  /api/v1/contact/contact-us:
+    post:
+      summary: this is the endpoint for contact us
+      tags: [contact]   
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+                - phoneNumber
+                - message
+              properties:
+                firstName:
+                  type: string
+                  description: The first name of who wants to contact us
+                lastName:
+                  type: string
+                  description: The last name of who wants to contact us
+                email:
+                  type: string
+                  description: The email address of who wants to contact us
+                phoneNumber: 
+                  type: string
+                  description: The phone number of who wants to contact us
+                message:
+                  type: string
+                  description: The message the person wants to send to contact us      
+      responses:          
+        '201':
+          description: Message sent successfully

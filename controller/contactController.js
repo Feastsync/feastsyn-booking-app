@@ -1,14 +1,11 @@
-const brevo = require("../utils/brevo");
+const {brevo} = require("../utils/brevo");
 const userModel = require('../models/user');
 const vendorModel = require('../models/vendor')
-const contactModel = require('../models/user')
-
 const contactModel = require("../models/contact");
-const brevo = require("../utils/brevo");
 
 exports.contactUs = async (req, res) => {
   try {
-    const {firstName,lastName,email,phoneNumber,message} = req.body;
+    const {firstName, lastName, email, phoneNumber, message} = req.body;
 
     if (!firstName || !lastName || !email || !phoneNumber || !message) {
       return res.status(400).json({

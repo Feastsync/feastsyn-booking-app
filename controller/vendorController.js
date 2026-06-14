@@ -105,8 +105,23 @@ exports.updateVendor = async (req, res) => {
       accountNumber,
       bio,
       servicesOffered,
-      stateOfResidence
+      stateOfResidence,
+      category
     } = req.body;
+
+    let categoryToUpdate;
+
+    if (category) {
+      if (vendor.category && vendor.category !== category) {
+        return res.status(400).json({
+          message: 'Category cannot be changed after it has been selected'
+        });
+      }
+
+      if (!vendor.category) {
+        categoryToUpdate = category;
+      }
+    }
 
     // Upload helper
     const uploadFile = async (file, resourceType = 'image') => {
@@ -140,7 +155,6 @@ exports.updateVendor = async (req, res) => {
     let photoCatalogue = [];
     let videoCatalogue = [];
 
-    // Profile Picture
     if (req.files?.profilePicture) {
       profilePicture = await uploadFile(
         req.files.profilePicture[0],
@@ -148,7 +162,6 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    // Cover Photo
     if (req.files?.coverPhoto) {
       coverPhoto = await uploadFile(
         req.files.coverPhoto[0],
@@ -156,7 +169,6 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    // Cover Video
     if (req.files?.coverVideo) {
       coverVideo = await uploadFile(
         req.files.coverVideo[0],
@@ -164,7 +176,6 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    // Multiple Photos
     if (req.files?.photoCatalogue) {
       photoCatalogue = await Promise.all(
         req.files.photoCatalogue.map(file =>
@@ -173,7 +184,6 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    // Multiple Videos
     if (req.files?.videoCatalogue) {
       videoCatalogue = await Promise.all(
         req.files.videoCatalogue.map(file =>
@@ -183,24 +193,25 @@ exports.updateVendor = async (req, res) => {
     }
 
     const updatedVendor = await vendorModel.findByIdAndUpdate(
-      id,
-      {
-        bankName,
-        accountNumber,
-        bio,
-        servicesOffered,
-        stateOfResidence,
-// photos:updatedVendor.photoCatalogue[0].secureUrl,
-// videos::updatedVendor.videoCatalogue[0].secureUrl,
-        ...(slug && { slug }),
-        ...(profilePicture && { profilePicture }),
-        ...(coverPhoto && { coverPhoto }),
-        ...(coverVideo && { coverVideo }),
-        ...(photoCatalogue.length && { photoCatalogue }),
-        ...(videoCatalogue.length && { videoCatalogue })
-      },
-      { new: true }
-    );
+  id,
+  {
+    bankName,
+    accountNumber,
+    bio,
+    servicesOffered,
+    stateOfResidence,
+    vendorUrl: publicUrl,
+    ...(categoryToUpdate && { category: categoryToUpdate }),
+    ...(slug && { slug }),
+    ...(profilePicture && { profilePicture }),
+    ...(coverPhoto && { coverPhoto }),
+    ...(coverVideo && { coverVideo }),
+    ...(photoCatalogue.length && { photoCatalogue }),
+    ...(videoCatalogue.length && { videoCatalogue })
+  },
+  { new: true }
+);
+
     return res.status(200).json({
       message: 'Vendor information updated successfully',
       vendorUrl: publicUrl,
@@ -500,18 +511,60 @@ exports.getAllVendors = async (req, res) => {
 exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
+
     const vendor = await vendorModel.findOne({ slug });
+
     if (!vendor) {
       return res.status(404).json({
         message: "Vendor not found"
       });
     }
-    res.status(200).json({
-      data: vendor 
+
+    const vendorUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+
+    if (!vendor.vendorUrl) {
+      vendor.vendorUrl = vendorUrl;
+      await vendor.save();
+    }
+
+    return res.status(200).json({
+      vendorUrl,
+      data: vendor
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.getVendorDashboard = async (req, res) => {
+  try {
+    const vendorId = req.user.id;
+
+    const vendor = await vendorModel.findById(vendorId).select("-password");
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
+    }
+
+    const vendorUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+
+    if (!vendor.vendorUrl) {
+      vendor.vendorUrl = vendorUrl;
+      await vendor.save();
+    }
+
+    return res.status(200).json({
+      vendorUrl,
+      data: vendor
+    });
+
+  } catch (error) {
+    return res.status(500).json({
       message: error.message
     });
   }

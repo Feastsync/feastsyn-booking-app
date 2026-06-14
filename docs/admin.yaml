@@ -1,0 +1,526 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows the Admin manage some activities.
+paths:
+  /api/v1/admin/dashboard-stats:
+    get:
+      summary: Get admin dashboard statistics
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard statistics fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              properties:
+                data:
+                  type: object
+              properties:
+                totalUsers:
+                  type: integer
+                  example: 120
+                totalVendors:
+                  type: integer
+                  example: 35
+                pendingKYC:
+                  type: integer
+                  example: 8
+                verifiedVendors:
+                  type: integer
+                  example: 27
+                totalBookings:
+                  type: integer
+                  example: 90
+                totalPayments:
+                  type: integer
+                  example: 76
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  # /api/v1/admin/all-users:
+  #   get:
+  #     summary: Get all users
+  #     tags:
+  #       - Admin Users
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       "200":
+  #         description: Users fetched successfully
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 count:
+  #                   type: integer
+  #                   example: 10
+  #                 data:
+  #                   type: array
+  #                   items:
+  #                   $ref: "#/components/schemas/User"
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Admin access required
+  #       "500":
+  #         description: Server error
+
+  # /api/v1/admin/users/{userId}:
+  #   get:
+  #     summary: Get one user
+  #     tags:
+  #       - Admin Users
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - in: path
+  #         name: userId
+  #         required: true
+  #         schema:
+  #           type: string
+  #           example: 65f1a92c2b7c9a001234abcd
+  #     responses:
+  #       "200":
+  #         description: User fetched successfully
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 data:
+  #                   $ref: "#/components/schemas/User"
+  #     "401":
+  #       description: Unauthorized
+  #     "403":
+  #       description: Admin access required
+  #     "404":
+  #       description: User not found
+  #     "500":
+  #       description: Server error
+
+  /api/v1/admin/all-vendors:
+    get:
+      summary: Get all vendors
+      tags: [admin]
+      responses:
+        "200":
+          description: Vendors fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              properties:
+                count:
+                  type: integer
+                  example: 5
+                data:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Vendor"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/vendors/{vendorId}:
+    get:
+      summary: Get one vendor
+      tags:
+        - Admin Vendors
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: vendorId
+          required: true
+          schema:
+             type: string
+             example: 65f1a92c2b7c9a001234abcd
+      responses:
+        "200":
+          description: Vendor fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              properties:
+                data:
+                  $ref: "#/components/schemas/Vendor"
+        "401":
+         description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: Vendor not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/all-pending-kyc:
+    get:
+      summary: Get all pending KYC submissions
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pending KYC submissions fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              properties:
+                count:
+                  type: integer
+                  example: 3
+                data:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Kyc"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/approve-kyc/{kycId}:
+    put:
+      summary: Approve a KYC submission
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+      - in: path
+        name: kycId
+        required: true
+        schema:
+          type: string
+          example: 65f1a92c2b7c9a007777abcd
+      responses:
+        "200":
+          description: KYC approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: KYC approved successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: KYC not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/reject-kyc/{kycId}:
+    put:
+      summary: Reject a KYC submission
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: kycId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a007777abcd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rejectionReason
+              properties:
+                rejectionReason:
+                  type: string
+                  example: Uploaded document is unclear. Please submit a clearer image.
+      responses:
+        "200":
+          description: KYC rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              properties:
+                message:
+                  type: string
+                  example: KYC rejected successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: KYC not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/all-payments:
+    get:
+      summary: Get all payments
+      tags:
+        - Admin Payments
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: All payments retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All payments retrieved
+                  count:
+                    type: integer
+                    example: 12
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Payment"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/payments/{paymentId}:
+    get:
+      summary: Get one payment
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: paymentId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a005555abcd
+      responses:
+        "200":
+          description: Payment fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Payment"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: Payment not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/all-bookings:
+    get:
+      summary: Get all bookings
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Bookings fetched successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/bookings/{bookingId}:
+    get:
+      summary: Get one booking
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a001234abcd
+      responses:
+        "200":
+          description: Booking retrieved successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: Booking not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/disputes/{disputeId}:
+    put:
+      summary: Resolve or update a dispute
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: disputeId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a002222abcd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+                - adminComment
+              properties:
+                status:
+                  type: string
+                  example: resolved
+                adminComment:
+                  type: string
+                  example: Issue reviewed and resolved by admin.
+      responses:
+        "200":
+          description: Dispute updated successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: Dispute not found
+        "500":
+          description: Server error
+
+  /api/v1/admin/vendor-reviews/{vendorId}:
+    get:
+      summary: Get reviews for a vendor
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: vendorId
+          required: true
+          schema:
+            type: string
+          example: 65f1a92c2b7c9a009999abcd
+      responses:
+        "200":
+          description: Vendor reviews fetched successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/user-reviews/{userId}:
+    get:
+      summary: Get reviews by a user
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a001234abcd
+      responses:
+        "200":
+          description: User reviews fetched successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/contact-message:
+    get:
+      summary: Get all contact messages
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Contact messages fetched successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/all-pricing:
+    get:
+      summary: Get vendor pricing packages
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pricing packages retrieved successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "500":
+          description: Server error
+
+  /api/v1/admin/one-pricing/{id}:
+    get:
+      summary: Get one pricing package
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a003333abcd
+      responses:
+        "200":
+          description: Pricing package retrieved successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: Admin access required
+        "404":
+          description: Package not found
+        "500":
+          description: Server error            
+  

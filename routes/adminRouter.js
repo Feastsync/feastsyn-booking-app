@@ -2,6 +2,7 @@ const express = require('express');
 const router = require('express').Router();
 
 const { getDashboardStats, getAllVendorsAdmin, suspendVendor, activateVendor, getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, updateSettings, createAdmin, adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword } = require('../controller/adminController');
+const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getAllVendorPricing, getOnePricing, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
 const { adminAuth, authentication } = require('../middlewares/auth');
 const { createDispute } = require('../controller/disputeController');
 const { createReview } = require('../controller/reviewController');
@@ -19,41 +20,38 @@ router.post('/resetPassword', resetPasswordValidator, resetPassword);
 
 router.get('/dashboard-stats', adminAuth, getDashboardStats);
 
-router.get('/all-vendors', adminAuth, getAllVendorsAdmin);
-
-router.patch('/suspend-vendor/:vendorId', adminAuth, suspendVendor);
-
-router.patch('/activate-vendor/:vendorId', adminAuth, activateVendor);
+router.get('/all-vendors', getAllVendorsAdmin);
+router.get('/one-vendor/:vendorId', authentication, adminAuth, getOneVendorAdmin)
 
 router.get('/all-pending-kyc', adminAuth, getPendingKycs);
 
-router.patch('/approve-kyc/:kycId', adminAuth, approveKyc);
+router.put('/approve-kyc/:kycId', adminAuth, approveKyc);
 
-router.patch('/reject-kyc/:kycId', adminAuth, rejectKyc);
+router.put('/reject-kyc/:kycId', adminAuth, rejectKyc);
 
 router.get('/all-payments', adminAuth, getAllPayments);
+router.get('/one-payment/:paymentId', adminAuth, getOnePayment)
 
 router.get('/all-bookings', adminAuth, getAllBookings);
+router.get('/one-booking/:bookingId', adminAuth, getOneBooking)
 
 // Disputes
-router.post('/disputes/:bookingId', adminAuth, createDispute);
-
-router.patch('/disputes/:disputeId', adminAuth,resolveDispute);
+router.put('/disputes/:disputeId', adminAuth,resolveDispute);
 
 // Reviews
-router.post('/reviews/:bookingId', authentication,createReview);
+router.get('/vendor-reviews/:vendorId', authentication,adminAuth ,getVendorReviews);
 
-router.get('/vendor-reviews/:vendorId', adminAuth ,getVendorReviews);
+router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 
-router.get('/user-reviews/:userId', adminAuth, getUserReviews)
-
-// Notifications
-router.get('/notifications', authentication,getNotifications);
-
-// Settings
-router.patch('/settings', adminAuth, updateSettings);
+// // Notifications
+// router.get('/notifications', authentication, getNotifications);
 
 //contactUs
-router.get('/contact-message', adminAuth, getAllContactMessages)
+router.get('/contact-message', adminAuth, getAllContactMessages);
+
+//pricingPackage
+router.get('/all-pricing', adminAuth , getAllVendorPricing);
+
+router.get('/one-pricing/:pricingId', getOnePricing);
 
 module.exports = router;

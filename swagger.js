@@ -37,7 +37,11 @@ const options = {
         './docs/payment.yaml',
         './docs/kyc.yaml',
         './docs/notification.yaml',
-        './docs/message.yaml'
+        './docs/message.yaml',
+        './docs/review.yaml',
+        './docs/dispute.yaml',
+        './docs/contact.yaml' 
+        // './docs/admin.yaml'
     ]
     
 }
