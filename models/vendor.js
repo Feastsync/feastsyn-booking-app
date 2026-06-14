@@ -161,9 +161,7 @@ profilePicture: {
     }, 
     bankName: {
         type: String,
-        enum: ['Access Bank', 'First Bank', 'GTBank', 'Zenith Bank', 'FCMB', 'UBA', 'EcoBank', 'Wema Bank', 'FCFBank', 'Heritage Bank'],
-        trim: true,
-        sparse : true
+        trim: true
     },
     averageRating: { 
         type: Number,
