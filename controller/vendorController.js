@@ -192,6 +192,7 @@ exports.updateVendor = async (req, res) => {
       ...(servicesOffered && { servicesOffered }),
       ...(normalizedState && { stateOfResidence: normalizedState }),
       vendorUrl: publicUrl,
+      isProfileCompleted: true,
       ...(categoryToUpdate && { category: categoryToUpdate }),
       ...(slug && { slug }),
       ...(profilePicture && { profilePicture }),
@@ -241,18 +242,18 @@ exports.verifyVendorEmail = async (req, res) => {
 
     vendor.isVerified = true;
     await vendor.save();
-    res.status(200).json({
-      message: 'OTP Verified successfully',
-      data: {
-        firstName: vendor.firstName,
-        lastName: vendor.lastName,
-        stageName: vendor.stageName,
-        email: vendor.email.toLowerCase(),
-        phoneNumber: vendor.phoneNumber,
-        _id: vendor._id,
-        otp
-      }
-    })
+    return res.status(200).json({
+    message: "Login successful",
+    token,
+    data: {
+      id: vendor._id,
+      firstName: vendor.firstName,
+      lastName: vendor.lastName,
+      stageName: vendor.stageName,
+      email: vendor.email.toLowerCase(),
+      isProfileCompleted: vendor.isProfileCompleted
+  }
+});
   } catch (error) {
       res.status(500).json({
         message: error.message

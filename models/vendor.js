@@ -139,21 +139,25 @@ profilePicture: {
     trim: true
   }
 },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-    loginAttempts: {
-        type: Number,
-        default: 0
-    },
-    isLocked: {
-        type: Boolean,
-        default: false
-    },
-    accountNumber: {
-        type: String, 
-        trim: true
+ isVerified: {
+    type: Boolean,
+    default: false
+ },
+  isProfileCompleted: {
+    type: Boolean,
+    default: false
+},
+  loginAttempts: {
+    type: Number,
+    default: 0
+},
+  isLocked: {
+    type: Boolean,
+    default: false
+},
+  accountNumber: {
+    type: String, 
+    trim: true
     },
     vendorUrl: {
         type: String,
