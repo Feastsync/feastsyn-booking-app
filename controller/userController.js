@@ -166,15 +166,12 @@ exports.forgotPassword = async (req, res) => {
         message: "Email is required"
       });
     }
-
     const user = await userModel.findOne({ email: email.toLowerCase() });
-
     if (!user) {
       return res.status(404).json({
         message: "Invalid credentials"
       });
     }
-
     const OTP = Math.floor(1000 + Math.random() * 9000).toString();
 
     user.otp = OTP;
@@ -203,7 +200,6 @@ exports.forgotPassword = async (req, res) => {
 exports.verifyResetOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-
     if (!email || !otp) {
       return res.status(400).json({
         message: "Email and OTP are required"
@@ -216,12 +212,7 @@ exports.verifyResetOtp = async (req, res) => {
       });
     }
 
-    if (
-      !user.otp ||
-      !user.otpExpires ||
-      Date.now() > user.otpExpires ||
-      String(otp) !== String(user.otp)
-    ) {
+    if ( !user.otp || !user.otpExpires || Date.now() > user.otpExpires || String(otp) !== String(user.otp)) {
       return res.status(400).json({
         message: "Invalid or expired OTP"
       });
@@ -248,7 +239,6 @@ exports.resendOtp = async (req, res) => {
         message: "Email is required"
       });
     }
-
     const user = await userModel.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.status(404).json({
@@ -290,9 +280,7 @@ exports.resetPassword = async (req, res) => {
         message: "Email and password are required"
       });
     }
-
     const user = await userModel.findOne({ email: email.toLowerCase() });
-
     if (!user) {
       return res.status(404).json({
         message: "Invalid credentials"
@@ -304,7 +292,6 @@ exports.resetPassword = async (req, res) => {
         message: "Please verify OTP before resetting password"
       });
     }
-
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -330,25 +317,25 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.getOneUser = async (req, res) => {
-  try {
-    const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
-    if (!getUser) {
-      return res.status(404).json({
-        message: 'User not found'
-      });
-    }
-    res.status(200).json({
-      message: 'One user fetched successfully',
-      data: getUser
-    });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({
-      message: 'Something went wrong'
-    });
-  }
-};
+// exports.getOneUser = async (req, res) => {
+//   try {
+//     const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
+//     if (!getUser) {
+//       return res.status(404).json({
+//         message: 'User not found'
+//       });
+//     }
+//     res.status(200).json({
+//       message: 'One user fetched successfully',
+//       data: getUser
+//     });
+//   } catch (error) {
+//     console.log(error.message);
+//     res.status(500).json({
+//       message: 'Something went wrong'
+//     });
+//   }
+// };
 
 
 exports.deleteUser = async(req, res) =>{

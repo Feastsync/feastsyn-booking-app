@@ -345,15 +345,12 @@ exports.vendorLogout = async (req, res) => {
 exports.vendorForgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-
     if (!email) {
       return res.status(400).json({
         message: "Email is required"
       });
     }
-
     const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
-
     if (!vendor) {
       return res.status(404).json({
         message: "Invalid credentials"
@@ -361,11 +358,9 @@ exports.vendorForgotPassword = async (req, res) => {
     }
 
     const OTP = Math.floor(1000 + Math.random() * 9000).toString();
-
     vendor.otp = OTP;
     vendor.otpExpires = Date.now() + 5 * 60 * 1000;
     vendor.otpVerified = false;
-
     const data = {
       name: vendor.firstName,
       email: vendor.email,
@@ -388,15 +383,12 @@ exports.vendorForgotPassword = async (req, res) => {
 exports.vendorVerifyResetOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-
     if (!email || !otp) {
       return res.status(400).json({
         message: "Email and OTP are required"
       });
     }
-
     const vendor = await vendorModel.findOne({ email: email.toLowerCase() });
-
     if (!vendor) {
       return res.status(404).json({
         message: "Invalid credentials"
@@ -449,7 +441,6 @@ exports.vendorResendOtp = async (req, res) => {
     };
 
     await brevo(vendor.email, vendor.firstName, resetPasswordTemplate(data));
-
     return res.status(200).json({
       message: "OTP resent successfully"
     });
@@ -463,7 +454,6 @@ exports.vendorResendOtp = async (req, res) => {
 exports.vendorResetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required"
