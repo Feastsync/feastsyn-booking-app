@@ -11,7 +11,7 @@ const { resetPasswordValidator } = require('../middlewares/validator');
 router.post('/admin', createAdmin)
 router.post('/verify', verifyEmail);
 router.post('/login', adminLogin);
-router.post('/logout', authentication, adminLogout);
+router.post('/logout', adminAuth, adminLogout);
 
 router.post('/forgotPassword', forgotPassword);
 router.post('/resendOTP',resendOtp);
