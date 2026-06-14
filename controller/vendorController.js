@@ -11,6 +11,7 @@ const {emailTemplate, resetPasswordTemplate} = require('../email')
 const otpGenerator = require('otp-generator')
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
+const {formatBankName, normalizeEnumValue} = require('../utils/normalize')
 
 exports.createVendor = async (req, res) => {
     try {
@@ -72,27 +73,20 @@ exports.createVendor = async (req, res) => {
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
-
     const vendor = await vendorModel.findById(id);
-
     if (!vendor) {
       return res.status(404).json({
-        message: 'Vendor not found'
+        message: "Vendor not found"
       });
     }
 
     let slug = vendor.slug;
-
     if (!vendor.slug) {
-      const uniqueCode = crypto.randomBytes(6).toString('hex');
-
-      slug = `${slugify(
-        vendor.stageName || req.body.stageName,
-        {
-          lower: true,
-          strict: true
-        }
-      )}-${uniqueCode}`;
+      const uniqueCode = crypto.randomBytes(6).toString("hex");
+      slug = `${slugify(vendor.stageName || req.body.stageName, {
+        lower: true,
+        strict: true
+      })}-${uniqueCode}`;
 
       vendor.slug = slug;
       await vendor.save();
@@ -100,47 +94,59 @@ exports.updateVendor = async (req, res) => {
 
     const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
-    const {
-      bankName,
-      accountNumber,
-      bio,
-      servicesOffered,
-      stateOfResidence,
-      category
-    } = req.body;
+    const { bankName, accountNumber, bio, servicesOffered, stateOfResidence, category} = req.body;
+
+    const allowedStates = [ "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
+      "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo",
+      "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja"];
+
+    const allowedCategories = ["MC", "Live Band Artist", "Photographer", "Videographer", "DJ"];
+
+    const normalizedBankName = formatBankName(bankName);
+    const normalizedState = normalizeEnumValue(stateOfResidence, allowedStates);
+    const normalizedCategory = normalizeEnumValue(category, allowedCategories);
+
+    if (stateOfResidence && !normalizedState) {
+      return res.status(400).json({
+        message: `${stateOfResidence} is not a valid state`
+      });
+    }
 
     let categoryToUpdate;
-
     if (category) {
-      if (vendor.category && vendor.category !== category) {
+      if (!normalizedCategory) {
         return res.status(400).json({
-          message: 'Category cannot be changed after it has been selected'
+          message: `${category} is not a valid category`
+        });
+      }
+
+      if (
+        vendor.category &&
+        vendor.category.toLowerCase() !== normalizedCategory.toLowerCase()
+      ) {
+        return res.status(400).json({
+          message: "Category cannot be changed after it has been selected"
         });
       }
 
       if (!vendor.category) {
-        categoryToUpdate = category;
+        categoryToUpdate = normalizedCategory;
       }
     }
 
-    // Upload helper
-    const uploadFile = async (file, resourceType = 'image') => {
+    const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
 
-      console.log('Uploading:', absolutePath);
+      console.log("Uploading:", absolutePath);
 
       if (!fs.existsSync(absolutePath)) {
         throw new Error(`File not found: ${absolutePath}`);
       }
 
-      const uploaded = await cloudinary.uploader.upload(
-        absolutePath,
-        {
-          resource_type: resourceType
-        }
-      );
+      const uploaded = await cloudinary.uploader.upload(absolutePath, {
+        resource_type: resourceType
+      });
 
-      // Delete local file after upload
       await fs.promises.unlink(absolutePath);
 
       return {
@@ -156,68 +162,59 @@ exports.updateVendor = async (req, res) => {
     let videoCatalogue = [];
 
     if (req.files?.profilePicture) {
-      profilePicture = await uploadFile(
-        req.files.profilePicture[0],
-        'image'
-      );
+      profilePicture = await uploadFile(req.files.profilePicture[0], "image");
     }
 
     if (req.files?.coverPhoto) {
-      coverPhoto = await uploadFile(
-        req.files.coverPhoto[0],
-        'image'
-      );
+      coverPhoto = await uploadFile(req.files.coverPhoto[0], "image");
     }
 
     if (req.files?.coverVideo) {
-      coverVideo = await uploadFile(
-        req.files.coverVideo[0],
-        'video'
-      );
+      coverVideo = await uploadFile(req.files.coverVideo[0], "video");
     }
 
     if (req.files?.photoCatalogue) {
       photoCatalogue = await Promise.all(
-        req.files.photoCatalogue.map(file =>
-          uploadFile(file, 'image')
-        )
+        req.files.photoCatalogue.map(file => uploadFile(file, "image"))
       );
     }
 
     if (req.files?.videoCatalogue) {
       videoCatalogue = await Promise.all(
-        req.files.videoCatalogue.map(file =>
-          uploadFile(file, 'video')
-        )
+        req.files.videoCatalogue.map(file => uploadFile(file, "video"))
       );
     }
 
+    const updateData = {
+      ...(normalizedBankName && { bankName: normalizedBankName }),
+      ...(accountNumber && { accountNumber }),
+      ...(bio && { bio }),
+      ...(servicesOffered && { servicesOffered }),
+      ...(normalizedState && { stateOfResidence: normalizedState }),
+      vendorUrl: publicUrl,
+      ...(categoryToUpdate && { category: categoryToUpdate }),
+      ...(slug && { slug }),
+      ...(profilePicture && { profilePicture }),
+      ...(coverPhoto && { coverPhoto }),
+      ...(coverVideo && { coverVideo }),
+      ...(photoCatalogue.length && { photoCatalogue }),
+      ...(videoCatalogue.length && { videoCatalogue })
+    };
+
     const updatedVendor = await vendorModel.findByIdAndUpdate(
-  id,
-  {
-    bankName,
-    accountNumber,
-    bio,
-    servicesOffered,
-    stateOfResidence,
-    vendorUrl: publicUrl,
-    ...(categoryToUpdate && { category: categoryToUpdate }),
-    ...(slug && { slug }),
-    ...(profilePicture && { profilePicture }),
-    ...(coverPhoto && { coverPhoto }),
-    ...(coverVideo && { coverVideo }),
-    ...(photoCatalogue.length && { photoCatalogue }),
-    ...(videoCatalogue.length && { videoCatalogue })
-  },
-  { new: true }
-);
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     return res.status(200).json({
-      message: 'Vendor information updated successfully',
+      message: "Vendor information updated successfully",
       vendorUrl: publicUrl,
       data: updatedVendor
     });
-
   } catch (error) {
     return res.status(500).json({
       message: error.message
