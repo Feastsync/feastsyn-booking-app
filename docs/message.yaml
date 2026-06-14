@@ -29,7 +29,7 @@ paths:
   /api/v1/message/messages/{bookingId}:
     post:
       summary: Send a message for a booking
-      tags: {message}
+      tags: [message]
       parameters:
         - in: path
           name: bookingId

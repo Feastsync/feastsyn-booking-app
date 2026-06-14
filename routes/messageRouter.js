@@ -1,6 +1,6 @@
 const express = require('express');
 const { authentication } = require('../middlewares/auth');
-const { sendMessage, getMessages,getMessagesByRoom } = require('../controller/messageController');
+const { sendMessage, getMessages , getMessagesByRoom } = require('../controller/messageController');
 
 const router = express.Router();
 
