@@ -77,6 +77,10 @@ const vendorSchema = new mongoose.Schema({
         return Date.now() + ( 10 * 60 * 1000)   
     }
 },
+otpVerified: {
+  type: Boolean,
+  default: false
+},
 photoCatalogue: [
   {
     secureUrl: {

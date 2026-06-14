@@ -207,7 +207,31 @@ paths:
                   description: The vendor's email address
       responses:          
         '200':
-          description: OTP resent successfully       
+          description: OTP resent successfully
+
+  /api/v1/vendor/verify-otp:
+    post: 
+      summary: this is the endpoint to verify reset otp
+      tags: [vendors]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  description: The vendor's email address
+                otp: 
+                  type: string
+                  description: One time password  
+      responses:          
+        '200':
+          description: Reset OTP verified successfully
 
           
   /api/v1/vendor/reset-password:
@@ -222,16 +246,12 @@ paths:
               type: object
               required:
                 - email
-                - otp
                 - password
                 - confirmPassword
               properties:
                 email:
                   type: string
                   description: The vendor's email address
-                otp: 
-                  type: string
-                  description: One time password
                 password:
                   type: string
                   description: The vendor's password 
