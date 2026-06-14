@@ -77,56 +77,64 @@ const vendorSchema = new mongoose.Schema({
         return Date.now() + ( 10 * 60 * 1000)   
     }
 },
-photoCatalogue: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        photoCatalogueId: {
-            type: String,
-            trim: true
-        }
-},
-videoCatalogue: {
-    secureUrl:{
-            type: String,
-            trim: true 
+photoCatalogue: [
+  {
+    secureUrl: {
+      type: String,
+      trim: true
     },
-    videoCatalogueId: {
-            type: String,
-            trim: true
-        }
-},
+    publicId: {
+      type: String,
+      trim: true
+    }
+  }
+],
+
+videoCatalogue: [
+  {
+    secureUrl: {
+      type: String,
+      trim: true
+    },
+    publicId: {
+      type: String,
+      trim: true
+    }
+  }
+],
+
 coverPhoto: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        coverPhotoId: {
-            type: String,
-            trim: true
-        }
-    },
-    coverVideo: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        coverVideoId: {
-            type: String,
-            trim: true
-        }
-    },   
-    profilePicture: {
-        secureUrl:{
-            type: String,
-            trim: true 
-        },
-        profilePictureId: {
-            type: String,
-            trim: true
-        }
-    },
+  secureUrl: {
+    type: String,
+    trim: true
+  },
+  publicId: {
+    type: String,
+    trim: true
+  }
+},
+
+coverVideo: {
+  secureUrl: {
+    type: String,
+    trim: true
+  },
+  publicId: {
+    type: String,
+    trim: true
+  }
+},
+
+profilePicture: {
+  secureUrl: {
+    type: String,
+    trim: true
+  },
+  publicId: {
+    type: String,
+    trim: true
+  }
+},
     isVerified: {
         type: Boolean,
         default: false
@@ -177,7 +185,7 @@ responseRate: {
    }, 
    bufferTime: {
     type: Number,
-    default: 60 // in minutes
+    default: 60 
 }
 },    
 {timestamps:true},
