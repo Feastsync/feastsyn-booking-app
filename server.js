@@ -16,10 +16,13 @@ const pricingRouter = require('./routes/pricingRouter');
 const paymentRouter = require('./routes/paymentRouter');
 const calendarRouter = require('./routes/calendarRouter');
 const bookingRouter = require('./routes/bookingRouter');
-const kycRouter = require('./routes/kycRouter')
-const messageRouter = require('./routes/messageRouter')
+const kycRouter = require('./routes/kycRouter');
+const messageRouter = require('./routes/messageRouter');
 const notificationRouter = require('./routes/notificationRouter');
-const adminRouter = require('./routes/adminRouter')
+const adminRouter = require('./routes/adminRouter');
+const disputeRouter = require('./routes/disputeRouter'); 
+const reviewRouter = require('./routes/reviewRouter');
+const contactRouter = require('./routes/contactRouter');
 
 const rateLimit = require('express-rate-limit');
 
@@ -82,7 +85,10 @@ app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/kyc', kycRouter);
 app.use('/api/v1/message', messageRouter);
 app.use('/api/v1/notification', notificationRouter);
-app.use('/api/v1/admin', adminRouter)
+app.use('/api/v1/admin', adminRouter);
+app.use('api/v1/dispute', disputeRouter);
+app.use('/api/v1/review', reviewRouter);
+app.use('/api/v1/contact', contactRouter)
 
  app.use((req, res) => { 
   res.status(404).json({

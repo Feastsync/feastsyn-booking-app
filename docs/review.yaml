@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows users and vendors create reviews
+paths:
+  /api/v1/review/create-review/{bookingId}:
+    post:
+      summary: this is the endpoint for creating a new review
+      tags: [review]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters:
+        - in: path
+          name: bookingId
+          required: true    
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+                - comment
+              properties:
+                rating:
+                  type: string
+                  description: The rating of the vendor or the user pertaining to booking
+                comment:
+                  type: string
+                  description: What you have to say about the person in question as regards the event hosted or hired
+      responses:          
+        '201':
+          description: Review created successfully

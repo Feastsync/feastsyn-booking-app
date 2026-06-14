@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: FeastSync Booking App API
   version: 1.0.0
-  description: API documentation for the FeastSync Booking App, which allows vendors to be booked fordifferent events.
+  description: API documentation for the FeastSync Booking App, which allows vendors to be booked for different events.
 paths:
   /api/v1/vendor/sign-up:
     post: 
