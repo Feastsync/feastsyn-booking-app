@@ -243,16 +243,7 @@ exports.verifyVendorEmail = async (req, res) => {
     vendor.isVerified = true;
     await vendor.save();
     return res.status(200).json({
-    message: "Login successful",
-    token,
-    data: {
-      id: vendor._id,
-      firstName: vendor.firstName,
-      lastName: vendor.lastName,
-      stageName: vendor.stageName,
-      email: vendor.email.toLowerCase(),
-      isProfileCompleted: vendor.isProfileCompleted
-  }
+    message: "Email verified successfully"
 });
   } catch (error) {
       res.status(500).json({
