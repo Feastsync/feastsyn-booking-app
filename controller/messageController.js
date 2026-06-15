@@ -1,7 +1,7 @@
 const message = require('../models/message');
 const userModel = require('../models/user');
 const bookingModel = require('../models/booking');
-
+const vendorModel = require('../models/vendor')
 
 exports.initializeIO = (io) => {
   ioInstance = io;
@@ -9,7 +9,6 @@ exports.initializeIO = (io) => {
 };
 exports.getMessages = async (req, res) => {
   const { bookingId } = req.params;
-
   try {
     const booking = await bookingModel.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
@@ -18,8 +17,6 @@ exports.getMessages = async (req, res) => {
     const receiverId = bookingModel.vendorId === senderId ? bookingModel.userId : bookingModel.vendorId;
 
     if (!receiverId) return res.status(400).json({ message: "You have not been assigned to user yet" });
-
-    
 
     const messages = await Message.findAll({
       where: { roomId: `feastsync_${bookingId}`
@@ -40,7 +37,6 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ message: "Failed to get messages", error: err.message });
   }
 };
-
 
 exports.sendMessage = async (req, res) => {
   try {
@@ -136,7 +132,7 @@ exports.getMessagesByRoom = async (req, res) => {
       order: [["createdAt", "ASC"]],
     });
 
-    res.json({
+    res.status(201).json({
       message: `Found ${messages.length} messages`,
       data: messages,
     });
