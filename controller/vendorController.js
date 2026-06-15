@@ -500,7 +500,7 @@ exports.getAllVendors = async (req, res) => {
     //   });
     // }
 
-    const vendor = await vendorModel.find();
+    const vendor = await vendorModel.find().populate('category');
 // await client.set(
 //   'vendors',
 //   JSON.stringify(vendor),

@@ -15,10 +15,6 @@ const vendorSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
-    isSuspended: {
-         type: Boolean,
-         default: false
-},
     stageName: {
         type: String,
         trim: true,
@@ -66,15 +62,15 @@ const vendorSchema = new mongoose.Schema({
         enum: [ 'MC', 'Live Band Artist', 'Photographer', 'Videographer', 'DJ'
         ],
         immutable: true
-    },
-    otp: {
+},
+ otp: {
         type: String,
-        trim: true
-        },
-    otpExpires: {
-        type: Number,
-        default: () => {
-        return Date.now() + ( 10 * 60 * 1000)   
+        trim: true 
+},
+  otpExpires: {
+   type: Number,
+    default: () => {
+    return Date.now() + ( 10 * 60 * 1000)   
     }
 },
 otpVerified: {
