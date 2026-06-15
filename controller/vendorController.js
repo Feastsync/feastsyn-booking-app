@@ -74,6 +74,7 @@ exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
     const vendor = await vendorModel.findById(id);
+    let onboardingStep = vendor.onboardingStep;
     if (!vendor) {
       return res.status(404).json({
         message: "Vendor not found"
@@ -186,22 +187,53 @@ exports.updateVendor = async (req, res) => {
     }
 
     const updateData = {
-      ...(normalizedBankName && { bankName: normalizedBankName }),
-      ...(accountNumber && { accountNumber }),
-      ...(bio && { bio }),
-      ...(servicesOffered && { servicesOffered }),
-      ...(normalizedState && { stateOfResidence: normalizedState }),
-      vendorUrl: publicUrl,
-      isOnboarded: true,
-      ...(categoryToUpdate && { category: categoryToUpdate }),
-      ...(slug && { slug }),
-      ...(profilePicture && { profilePicture }),
-      ...(coverPhoto && { coverPhoto }),
-      ...(coverVideo && { coverVideo }),
-      ...(photoCatalogue.length && { photoCatalogue }),
-      ...(videoCatalogue.length && { videoCatalogue })
-    };
+    ...(normalizedBankName && { bankName: normalizedBankName }),
+    ...(accountNumber && { accountNumber }),
+    ...(bio && { bio }),
+    ...(servicesOffered && { servicesOffered }),
+    ...(normalizedState && { stateOfResidence: normalizedState }),
+    vendorUrl: publicUrl,
+    ...(categoryToUpdate && { category: categoryToUpdate }),
+    ...(slug && { slug }),
+    ...(profilePicture && { profilePicture }),
+    ...(coverPhoto && { coverPhoto }),
+    ...(coverVideo && { coverVideo }),
+    ...(photoCatalogue.length && { photoCatalogue }),
+    ...(videoCatalogue.length && { videoCatalogue }),
+    onboardingStep
+};
+    // STEP 1: Basic Information
+if (
+    bio ||
+    stateOfResidence ||
+    category
+) {
+    onboardingStep = Math.max(onboardingStep, 2);
+}
 
+// STEP 2: Profile Media
+if (
+    profilePicture ||
+    coverPhoto
+) {
+    onboardingStep = Math.max(onboardingStep, 3);
+}
+
+// STEP 3: Portfolio
+if (
+    photoCatalogue.length > 0 ||
+    videoCatalogue.length > 0
+) {
+    onboardingStep = Math.max(onboardingStep, 4);
+}
+
+// STEP 4: Banking Details
+if (
+    bankName ||
+    accountNumber
+) {
+    onboardingStep = Math.max(onboardingStep, 5);
+}
     const updatedVendor = await vendorModel.findByIdAndUpdate(
       id,
       updateData,
@@ -210,6 +242,21 @@ exports.updateVendor = async (req, res) => {
         runValidators: true
       }
     );
+
+    const onboardingCompleted =
+    updatedVendor.bio &&
+    updatedVendor.stateOfResidence &&
+    updatedVendor.category &&
+    updatedVendor.bankName &&
+    updatedVendor.accountNumber &&
+    updatedVendor.profilePicture?.secureUrl &&
+    updatedVendor.coverPhoto?.secureUrl;
+
+if (onboardingCompleted) {
+    updatedVendor.isOnboarded = true;
+    updatedVendor.onboardingStep = 5;
+    await updatedVendor.save();
+}
 
     return res.status(200).json({
       message: "Vendor information updated successfully",
@@ -314,17 +361,18 @@ exports.vendorLogin = async (req, res) => {
         stageName: vendor.stageName,
         email: vendor.email.toLowerCase(),
         phoneNumber: vendor.phoneNumber,
-        _id: vendor._id,
+        id: vendor._id,
         slug: vendor.slug,
-        isOnboarded: Boolean(vendor.isOnboarded) 
+        onboardingStep: vendor.onboardingStep,
+        isOnboarded: vendor.isOnboarded 
       }
     })
   } catch (error) {
       res.status(500).json({
         message: error.message
       })
-  }
-};
+  } 
+}; 
 
 exports.vendorLogout = async (req, res) => {
   return res.status(200).json({
@@ -369,7 +417,7 @@ exports.vendorForgotPassword = async (req, res) => {
       message: error.message
     });
   }
-};
+}; 
 
 exports.vendorVerifyResetOtp = async (req, res) => {
   try {
@@ -554,7 +602,6 @@ exports.getOneVendor = async (req, res) => {
 exports.getVendorDashboard = async (req, res) => {
   try {
     const vendorId = req.user.id;
-
     const vendor = await vendorModel.findById(vendorId).select("-password");
 
     if (!vendor) {

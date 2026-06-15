@@ -143,6 +143,10 @@ profilePicture: {
     type: Boolean,
     default: false
 },
+onboardingStep: {
+  type: Number,
+  default: 1
+},
   loginAttempts: {
     type: Number,
     default: 0
