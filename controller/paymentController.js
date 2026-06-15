@@ -111,7 +111,8 @@ exports.initializePayment = async (req, res) => {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://www.feastsync.com/'
+            redirect_url: 'https://www.feastsync.com/',
+            notification_url: 'https://feastsyn-booking-app.onrender.com/webhook'
         };
 
         const response = await axios.post(
@@ -152,66 +153,53 @@ exports.initializePayment = async (req, res) => {
     }
 };
 
-exports.verifyPayment = async (req, res) => {
+exports.verifyWebhook = async (req, res) => {
     try {
-        const { reference } = req.query;
+        const { event, data } = req.body;
+        const hash = crypto.createHmac("sha256", secretKey).update(JSON.stringify(data)).digest("hex");
+        const signature = req.headers["x-korapay-signature"];
+        if (hash !== signature) return res.status(401).json({
+            message: "Invalid webhook signature"
+        });
+        const payment = await paymentModel.findOne({ reference: `TCA-FEASTSYNC-${data.reference}` })
+        if (!payment) return res.status(404).json({
+            message: "NO payment record found"
+        });
 
-        const { data } = await axios.get(
-            `https://api.korapay.com/merchant/api/v1/charges/${reference}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
-                }
-            }
-        );
-
-        const payment = await paymentModel.findOne({ reference });
-
-        if (!payment) {
-            return res.status(404).json({
-                message: 'Payment not found'
-            });
-        }
-
-        const koraStatus = data?.data?.status;
-
-        if (koraStatus === 'success') {
-            payment.paymentStatus = 'successful';
-        } else if (koraStatus === 'failed') {
-            payment.paymentStatus = 'failed';
-        } else {
-            payment.paymentStatus = 'pending';
-        }
+        if (event === 'charge.success') {
+            payment.paymentStatus = 'successful'
+            await payment.save()
+        } else if (event === 'charge.pending') {
+            payment.paymentStatus = 'processing'
+            await payment.save()
+        } else if (event === 'charge.failed') {
+            payment.paymentStatus = 'failed'
+            await payment.save()
+        };
 
         await payment.save();
-
-        return res.status(200).json({
-            message: 'Payment verified successfully',
-            data: payment
-        });
-
+        res.status(200)
     } catch (error) {
-        console.log(error?.response?.data || error.message);
-
-        return res.status(500).json({
-            message: 'Error fetching payment'
-        });
+        console.log(error.message)
+        next(error)
     }
+
 };
- 
-exports.getAllPaymentByUser = async(req, res)=>{
+
+
+exports.getAllPaymentByUser = async (req, res) => {
     try {
         //Extract the User ID from the request user
         const userId = req.user.id;
         //check if user exists
         const user = await userModel.findById(userId)
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 message: 'User not found'
             })
         }
         //Find all payments made by the user
-        const allPayments = await paymentModel.find({userId}).sort({createdAt: -1});
+        const allPayments = await paymentModel.find({ userId }).sort({ createdAt: -1 });
         //Send a success response
         res.status(200).json({
             message: 'All payments by User retrieved successfully',

@@ -73,8 +73,9 @@ exports.createVendor = async (req, res) => {
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
+
     const vendor = await vendorModel.findById(id);
-    let onboardingStep = vendor.onboardingStep;
+
     if (!vendor) {
       return res.status(404).json({
         message: "Vendor not found"
@@ -82,8 +83,10 @@ exports.updateVendor = async (req, res) => {
     }
 
     let slug = vendor.slug;
+
     if (!vendor.slug) {
       const uniqueCode = crypto.randomBytes(6).toString("hex");
+
       slug = `${slugify(vendor.stageName || req.body.stageName, {
         lower: true,
         strict: true
@@ -95,13 +98,32 @@ exports.updateVendor = async (req, res) => {
 
     const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
-    const { bankName, accountNumber, bio, servicesOffered, stateOfResidence, category} = req.body;
+    const {
+      bankName,
+      accountNumber,
+      bio,
+      servicesOffered,
+      stateOfResidence,
+      category,
+      onboardingStep
+    } = req.body;
 
-    const allowedStates = [ "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
-      "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano", "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa", "Niger", "Ogun", "Ondo",
-      "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja"];
+    const allowedStates = [
+      "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
+      "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
+      "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano",
+      "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa",
+      "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers",
+      "Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja"
+    ];
 
-    const allowedCategories = ["MC", "Live Band Artist", "Photographer", "Videographer", "DJ"];
+    const allowedCategories = [
+      "MC",
+      "Live Band Artist",
+      "Photographer",
+      "Videographer",
+      "DJ"
+    ];
 
     const normalizedBankName = formatBankName(bankName);
     const normalizedState = normalizeEnumValue(stateOfResidence, allowedStates);
@@ -114,6 +136,7 @@ exports.updateVendor = async (req, res) => {
     }
 
     let categoryToUpdate;
+
     if (category) {
       if (!normalizedCategory) {
         return res.status(400).json({
@@ -134,6 +157,17 @@ exports.updateVendor = async (req, res) => {
         categoryToUpdate = normalizedCategory;
       }
     }
+
+    let nextOnboardingStep = vendor.onboardingStep || 1;
+
+    if (onboardingStep) {
+      nextOnboardingStep = Math.max(
+        Number(onboardingStep),
+        nextOnboardingStep
+      );
+    }
+
+    const isOnboarded = nextOnboardingStep >= 4;
 
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
@@ -187,53 +221,23 @@ exports.updateVendor = async (req, res) => {
     }
 
     const updateData = {
-    ...(normalizedBankName && { bankName: normalizedBankName }),
-    ...(accountNumber && { accountNumber }),
-    ...(bio && { bio }),
-    ...(servicesOffered && { servicesOffered }),
-    ...(normalizedState && { stateOfResidence: normalizedState }),
-    vendorUrl: publicUrl,
-    ...(categoryToUpdate && { category: categoryToUpdate }),
-    ...(slug && { slug }),
-    ...(profilePicture && { profilePicture }),
-    ...(coverPhoto && { coverPhoto }),
-    ...(coverVideo && { coverVideo }),
-    ...(photoCatalogue.length && { photoCatalogue }),
-    ...(videoCatalogue.length && { videoCatalogue }),
-    onboardingStep
-};
-    // STEP 1: Basic Information
-if (
-    bio ||
-    stateOfResidence ||
-    category
-) {
-    onboardingStep = Math.max(onboardingStep, 2);
-}
+      ...(normalizedBankName && { bankName: normalizedBankName }),
+      ...(accountNumber && { accountNumber }),
+      ...(bio && { bio }),
+      ...(servicesOffered && { servicesOffered }),
+      ...(normalizedState && { stateOfResidence: normalizedState }),
+      vendorUrl: publicUrl,
+      onboardingStep: nextOnboardingStep,
+      isOnboarded,
+      ...(categoryToUpdate && { category: categoryToUpdate }),
+      ...(slug && { slug }),
+      ...(profilePicture && { profilePicture }),
+      ...(coverPhoto && { coverPhoto }),
+      ...(coverVideo && { coverVideo }),
+      ...(photoCatalogue.length && { photoCatalogue }),
+      ...(videoCatalogue.length && { videoCatalogue })
+    };
 
-// STEP 2: Profile Media
-if (
-    profilePicture ||
-    coverPhoto
-) {
-    onboardingStep = Math.max(onboardingStep, 3);
-}
-
-// STEP 3: Portfolio
-if (
-    photoCatalogue.length > 0 ||
-    videoCatalogue.length > 0
-) {
-    onboardingStep = Math.max(onboardingStep, 4);
-}
-
-// STEP 4: Banking Details
-if (
-    bankName ||
-    accountNumber
-) {
-    onboardingStep = Math.max(onboardingStep, 5);
-}
     const updatedVendor = await vendorModel.findByIdAndUpdate(
       id,
       updateData,
@@ -242,21 +246,6 @@ if (
         runValidators: true
       }
     );
-
-    const onboardingCompleted =
-    updatedVendor.bio &&
-    updatedVendor.stateOfResidence &&
-    updatedVendor.category &&
-    updatedVendor.bankName &&
-    updatedVendor.accountNumber &&
-    updatedVendor.profilePicture?.secureUrl &&
-    updatedVendor.coverPhoto?.secureUrl;
-
-if (onboardingCompleted) {
-    updatedVendor.isOnboarded = true;
-    updatedVendor.onboardingStep = 5;
-    await updatedVendor.save();
-}
 
     return res.status(200).json({
       message: "Vendor information updated successfully",
