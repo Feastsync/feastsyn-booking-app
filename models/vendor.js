@@ -143,7 +143,7 @@ profilePicture: {
     type: Boolean,
     default: false
  },
-  isProfileCompleted: {
+  isOnboarded: {
     type: Boolean,
     default: false
 },
@@ -158,36 +158,36 @@ profilePicture: {
   accountNumber: {
     type: String, 
     trim: true
-    },
-    vendorUrl: {
-        type: String,
-        trim: true
-    }, 
-    bankName: {
-        type: String,
-        trim: true
-    },
-    averageRating: { 
-        type: Number,
-        default: 0
-    },
-    totalReviews: {
-        type: Number,
-        default: 0
-    },
-    reviews: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'review'
-        }
-    ],  
-    totalBookings: {
-        type: Number,
-        default: 0       
-   },
-responseRate: {
-        type: Number,
-        default: 100
+},
+   vendorUrl: {
+    type: String,
+    trim: true
+}, 
+   bankName: {
+    type: String,
+    trim: true
+},
+   averageRating: { 
+    type: Number,
+    default: 0
+},
+   totalReviews: {
+    type: Number,
+    default: 0
+},
+  reviews: [
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'review'
+    }
+],  
+   totalBookings: {
+    type: Number,
+    default: 0       
+},
+   responseRate: {
+    type: Number,
+    default: 100
    }, 
    bufferTime: {
     type: Number,

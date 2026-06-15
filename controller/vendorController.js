@@ -192,7 +192,7 @@ exports.updateVendor = async (req, res) => {
       ...(servicesOffered && { servicesOffered }),
       ...(normalizedState && { stateOfResidence: normalizedState }),
       vendorUrl: publicUrl,
-      isProfileCompleted: true,
+      isOnboarded: true,
       ...(categoryToUpdate && { category: categoryToUpdate }),
       ...(slug && { slug }),
       ...(profilePicture && { profilePicture }),
@@ -323,7 +323,9 @@ exports.vendorLogin = async (req, res) => {
         stageName: vendor.stageName,
         email: vendor.email.toLowerCase(),
         phoneNumber: vendor.phoneNumber,
-        _id: vendor._id
+        _id: vendor._id,
+        slug: vendor.slug,
+        isOnboarded: Boolean(vendor.isOnboarded) 
       }
     })
   } catch (error) {
