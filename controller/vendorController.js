@@ -95,32 +95,13 @@ exports.updateVendor = async (req, res) => {
 
     const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
 
-    const {
-      bankName,
-      accountNumber,
-      bio,
-      servicesOffered,
-      stateOfResidence,
-      category,
-      onboardingStep
-    } = req.body;
+    const {bankName,accountNumber,bio,servicesOffered,stateOfResidence,category,onboardingStep} = req.body;
 
-    const allowedStates = [
-      "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
-      "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
-      "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano",
-      "Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa",
-      "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers",
-      "Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja"
-    ];
+    const allowedStates = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa","Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
+      "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano","Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa","Niger", "Ogun", "Ondo", 
+      "Osun", "Oyo", "Plateau", "Rivers","Sokoto", "Taraba", "Yobe", "Zamfara", "Abuja"];
 
-    const allowedCategories = [
-      "MC",
-      "Live Band Artist",
-      "Photographer",
-      "Videographer",
-      "DJ"
-    ];
+    const allowedCategories = ["mc","liveband","photographer","videographer","dj"];
 
     const normalizedBankName = formatBankName(bankName);
     const normalizedState = normalizeEnumValue(stateOfResidence, allowedStates);
@@ -140,10 +121,7 @@ exports.updateVendor = async (req, res) => {
         });
       }
 
-      if (
-        vendor.category &&
-        vendor.category.toLowerCase() !== normalizedCategory.toLowerCase()
-      ) {
+      if (vendor.category && vendor.category.toLowerCase() !== normalizedCategory.toLowerCase()) {
         return res.status(400).json({
           message: "Category cannot be changed after it has been selected"
         });
@@ -155,7 +133,6 @@ exports.updateVendor = async (req, res) => {
     }
 
     let nextOnboardingStep = vendor.onboardingStep || 1;
-
     if (onboardingStep) {
       nextOnboardingStep = Math.max(
         Number(onboardingStep),
@@ -214,7 +191,7 @@ exports.updateVendor = async (req, res) => {
       videoCatalogue = await Promise.all(
         req.files.videoCatalogue.map(file => uploadFile(file, "video"))
       );
-    }
+    } 
 
     const updateData = {
       ...(normalizedBankName && { bankName: normalizedBankName }),
@@ -235,20 +212,20 @@ exports.updateVendor = async (req, res) => {
 
       
     };
-    const updatedVendor = await vendorModel.findByIdAndUpdate(
-      id,
-      updateData,
-      {
-        new: true,
-        runValidators: true
-      },
-    );
+    await vendorModel.findByIdAndUpdate(
+  id,
+  updateData,
+  {
+    runValidators: true
+  }
+);
 
+const updatedVendor = await vendorModel.findById(id);
     return res.status(200).json({
-      message: "Vendor information updated successfully",
-      vendorUrl: publicUrl,
-      data: updatedVendor
-    });
+  message: "Vendor information updated successfully",
+  vendorUrl: publicUrl,
+  data: updatedVendor
+});
   } catch (error) {
     return res.status(500).json({
       message: error.message
@@ -524,14 +501,25 @@ exports.vendorResetPassword = async (req, res) => {
 
 exports.getAllVendors = async (req, res) => {
   try {
-    const vendor = await vendorModel.find().populate('category');
-    return res.status(200).json({
-      message: 'successfully retrieved all vendors',
-      data: vendor  
-    });
+    const { category } = req.query;
+    let query = {};
 
+    if (category) {
+      query.category = {
+        $regex: `^${category}$`,
+        $options: "i"
+      };
+    }
+
+    const vendors = await vendorModel.find(query);
+
+    return res.status(200).json({
+      message: "Successfully retrieved vendors",
+      count: vendors.length,
+      data: vendors
+    });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message
     });
   }
@@ -541,7 +529,7 @@ exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const vendor = await vendorModel.findOne({ slug }).populate('pricingId');
+    const vendor = await vendorModel.findOne({ slug }).populate('pricingId')
 
     if (!vendor) {
       return res.status(404).json({
@@ -557,7 +545,7 @@ exports.getOneVendor = async (req, res) => {
     }
     console.log(vendor)
     return res.status(200).json({
-      vendorUrl,
+      vendorUrl, 
       data: vendor
     });
 

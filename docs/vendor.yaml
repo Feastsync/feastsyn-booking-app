@@ -160,13 +160,12 @@ paths:
                   description: The services offered by the vendor
                 category: 
                   type: string
-                  enum: [Mc, Live Band Artist, Dj, Photographer, Vide0grapher]
+                  enum: [mc, Liveband, dj, photographer, vide0grapher]
                   description: The area of profession  
       responses:          
         '200':
           description: Vendor profile updated successfully
-
-
+          
           
   /api/v1/vendor/forgot-password:
     post: 
