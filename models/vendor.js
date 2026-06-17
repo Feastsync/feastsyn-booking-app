@@ -1,3 +1,4 @@
+const { string } = require('joi');
 const mongoose = require('mongoose');
 const vendorSchema = new mongoose.Schema({
     firstName: {
@@ -20,6 +21,11 @@ const vendorSchema = new mongoose.Schema({
         trim: true,
         require: true
     },
+    pricingId: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'pricing',
+      required: true
+    }],
     slug: {
         type: String, 
         trim: true,

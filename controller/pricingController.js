@@ -17,6 +17,8 @@ exports.createPricing = async (req, res) => {
             packageName,
             packageDescription
         });
+        vendor.pricingId.push(pricing._id)
+        await vendor.save()
         res.status(201).json({
             message: 'Pricing package created successfully',
             data: pricing
