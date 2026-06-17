@@ -42,4 +42,9 @@ exports.upload = multer({
       cb(new Error('Only image and video files are allowed!'));
     }
   }
-});
+
+  
+}
+
+
+);
