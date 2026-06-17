@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const availabilitySchema = new mongoose.Schema({
+const calendarSchema = new mongoose.Schema({
 
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,7 +15,7 @@ const availabilitySchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ['available', 'pending', 'booked'],
+        enum: ['available', 'booked'],
         default: 'available'
     },
 
@@ -26,5 +26,5 @@ const availabilitySchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const availabiltyModel = mongoose.model('availability', availabilitySchema);
-module.exports = availabiltyModel;  
+const calendarModel = mongoose.model('calendar', calendarSchema);
+module.exports = calendarModel;  
