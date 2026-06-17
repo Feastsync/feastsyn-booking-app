@@ -5,13 +5,30 @@ const {signupVendorValidator, resetPasswordValidator, changePasswordValidator} =
 const router = require('express').Router();
 
 router.post('/sign-up', signupVendorValidator, createVendor);
-router.put('/update-profile/:id', upload.fields([
-  { name: 'profilePicture', maxCount: 1 },
-  { name: 'coverPhoto', maxCount: 1 },
-  { name: 'coverVideo', maxCount: 1 },
-  { name: 'photoCatalogue', maxCount: 4 },
-  { name: 'videoCatalogue', maxCount: 2 }
-]), updateVendor);
+
+
+
+router.put("/update-profile/:id", (req, res) => {
+  upload.fields([
+    { name: "profilePicture", maxCount: 1 },
+    { name: "coverPhoto", maxCount: 1 },
+    { name: "coverVideo", maxCount: 1 },
+    { name: "photoCatalogue", maxCount: 4 },
+    { name: "videoCatalogue", maxCount: 2 }
+  ])(req, res, (err) => {
+    if (err) {
+      console.error("Multer Error:", err);
+
+      return res.status(400).json({
+        success: false,
+        error: err.message,
+      });
+    }
+
+    updateVendor(req, res);
+  });
+});
+
 router.post('/verify', verifyVendorEmail);
 router.post('/login', vendorLogin);
 router.post('/logout', authentication, vendorLogout);
