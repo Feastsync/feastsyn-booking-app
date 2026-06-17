@@ -22,7 +22,7 @@ router.post('/verify-otp', vendorVerifyResetOtp)
 router.post('/reset-password', resetPasswordValidator, vendorResetPassword);
 
 router.get('/all-vendors', getAllVendors)
-// router.get('/one-vendor/:slug', getOneVendor)
+ router.get('/one-vendor/:slug', getOneVendor)
 router.get("/vendor-dashboard", authentication, getVendorDashboard);
 
 module.exports = router; 
