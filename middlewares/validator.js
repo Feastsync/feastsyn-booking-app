@@ -119,16 +119,6 @@ exports.resetPasswordValidator = (req, res, next)=>{
     next()
 }
 
-exports.verifyOtpValidator = (req, res, next) => {
-    const schema = joi.object({
-        otp: joi.string().pattern(/^\d{4}$/).required().messages({
-          'any.required': 'OTP is required',
-          'string.empty': 'OTP cannot be empty',
-          'string.pattern.base': 'OTP must only contain numbers and must be 4 digits'  
-        }),
-    })
-}
-
 exports.changePasswordValidator = (req, res, next)=>{
     const schema = joi.object({
         oldPassword: joi.string().pattern(/^(?=.*[A-Z]).{8,}$/).required().messages({

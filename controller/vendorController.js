@@ -136,7 +136,6 @@ exports.updateVendor = async (req, res) => {
     }
 
     let categoryToUpdate;
-
     if (category) {
       if (!normalizedCategory) {
         return res.status(400).json({
@@ -168,7 +167,7 @@ exports.updateVendor = async (req, res) => {
     }
 
     const isOnboarded = nextOnboardingStep >= 7;
-
+    console.log(isOnboarded)
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
 
@@ -235,16 +234,18 @@ exports.updateVendor = async (req, res) => {
       ...(coverPhoto && { coverPhoto }),
       ...(coverVideo && { coverVideo }),
       ...(photoCatalogue.length && { photoCatalogue }),
-      ...(videoCatalogue.length && { videoCatalogue })
-    };
+      ...(videoCatalogue.length && { videoCatalogue }),
+            isOnboarded: true
 
+      
+    };
     const updatedVendor = await vendorModel.findByIdAndUpdate(
       id,
       updateData,
       {
         new: true,
         runValidators: true
-      }
+      },
     );
 
     return res.status(200).json({
