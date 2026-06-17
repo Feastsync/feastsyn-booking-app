@@ -544,7 +544,7 @@ exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const vendor = await vendorModel.findOne({ slug });
+    const vendor = await vendorModel.findOne({ slug }).populate('pricingId');
 
     if (!vendor) {
       return res.status(404).json({
@@ -558,7 +558,7 @@ exports.getOneVendor = async (req, res) => {
       vendor.vendorUrl = vendorUrl;
       await vendor.save();
     }
-
+    console.log(vendor)
     return res.status(200).json({
       vendorUrl,
       data: vendor
