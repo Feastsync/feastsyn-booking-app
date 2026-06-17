@@ -146,3 +146,54 @@ exports.changePasswordValidator = (req, res, next)=>{
 
     next()
 }
+
+exports.contactValidator = (req, res, next) => {
+    const schema = joi.object ({
+        firstName: joi.string().trim().pattern(/^[a-zA-Z]+(-[a-zA-Z]+)*$/).required().messages({
+            'any.required': 'First name is required', 
+            'string.empty': 'First name cannot be empty',
+            'string.pattern.base': 'First name cannot contain numbers or special characters'
+        }),
+        lastName: joi.string().trim().pattern(/^[a-zA-Z]+(-[a-zA-Z]+)*$/).required().messages({
+            'any.required': 'Last name is required', 
+            'string.empty': 'Last name cannot be empty',
+            'string.pattern.base': 'Last name cannot contain numbers or special characters'
+        }),
+         email: joi.string().email().required().messages({ 
+            'any.required': 'Email is required',
+            'string.empty': 'Email cannot be empty',
+            'string.email': 'Email must be a valid email'
+        }),
+        phoneNumber: joi.string().pattern(/^\d{11}$/).required().messages({
+          'any.required': 'Phone number is required',
+          'string.empty': 'Phone number cannot be empty',
+          'string.pattern.base': 'Phone number must only contain numbers and must be 11 digits'  
+        }),
+    })
+    const { error } = schema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            message: error.details.message
+        })
+    }
+
+    next()
+}
+
+exports.updateVendorValidator = (req, res, next) => {
+    const schema = joi.object({
+        accountNumber: joi.string().pattern(/^\d{10}$/).required().messages({
+            'any.required': 'Account number is required',
+            'string.empty': 'Account number cannot be empty',
+            'string.pattern.base': 'Account number must only contain numbers and must be 10 digits'
+        }),
+    })
+    const { error } = schema.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            message: error.details.message
+        })
+    }
+
+    next() 
+}
