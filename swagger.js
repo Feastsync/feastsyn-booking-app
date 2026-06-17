@@ -40,7 +40,8 @@ const options = {
         './docs/message.yaml',
         './docs/review.yaml',
         './docs/dispute.yaml',
-        './docs/contact.yaml' 
+        './docs/contact.yaml',
+        './docs/calendar.yaml' 
         // './docs/admin.yaml'
     ]
     
