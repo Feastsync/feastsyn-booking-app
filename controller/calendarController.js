@@ -31,9 +31,7 @@ exports.getCalendar = async (req, res) => {
         }
       });
 
-    const bookedDates = bookings.map(
-      booking => booking.eventDate.toISOString().split('T')[0]);
-
+    const bookedDates = bookings.map(booking => booking.eventDate.toISOString().split('T')[0]);
     return res.status(200).json({
       vendorId,
       month,

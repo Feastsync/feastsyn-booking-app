@@ -48,3 +48,51 @@ paths:
       responses:          
         '201':
           description: Booking created successfully
+
+  
+  /api/v1/bookings/accept/{bookingId}:
+    put:
+      summary: this is the endpoint for accepting a new booking
+      tags: [bookings]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters: 
+        - in: path
+          name: bookingId 
+      responses:          
+        "200":
+          description: Booking accepted successfully 
+        "500": 
+          description: Something went wrong 
+
+  /api/v1/bookings/reject/{bookingId}:
+    put:
+      summary: this is the endpoint for rejecting a new booking
+      tags: [bookings]
+      security:
+        - bearerAuth: []
+          name: Authorization
+          in: headers
+      parameters: 
+        - in: path
+          name: bookingId 
+      responses:          
+        "200":
+          description: Booking reject successfully 
+        "500": 
+          description: Something went wrong  
+
+  /api/v1/bookings/vendor/{vendorId}:
+    get:
+      summary: this is the endpoint for fetching all vendors bookings
+      tags: [bookings]
+      parameters: 
+        - in: path
+          name: vendorId 
+      responses:          
+        "200":
+          description: All vendors bookings fetched successfully 
+        "500": 
+          description: Something went wrong                       

@@ -31,10 +31,7 @@ exports.createBooking = async (req, res) => {
       });
     }
     // Check package
-const selectedPackage = await pricingModel.findOne({
-    _id: pricingId,
-    vendorId: vendorId
-});
+const selectedPackage = await pricingModel.findOne({ _id: pricingId, vendorId: vendorId});
 
 if (!selectedPackage) {
     return res.status(404).json({
@@ -93,9 +90,10 @@ if (!selectedPackage) {
   }
 };
 
-// Vendor confirms a booking and auto cancels conflicting ones
-exports.confirmBooking = async (req, res) => {
+// Vendor accepts a booking and auto cancels conflicting ones
+exports.acceptBooking = async (req, res) => {
   try {
+    const vendorId = req.user.id;
     const { bookingId } = req.params;
 
     const booking = await bookingModel.findById(bookingId);
@@ -115,8 +113,7 @@ exports.confirmBooking = async (req, res) => {
     await booking.save();
 
     // Update availability
-    await Availability.findOneAndUpdate(
-      { vendorId: booking.vendorId, bookingDate: booking.eventDate },
+    await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
       { status: 'booked', bookingId: booking._id },
       { new: true }
     );
@@ -138,9 +135,10 @@ exports.confirmBooking = async (req, res) => {
   }
 };
 
-// Vendor declines a booking
-exports.declineBooking = async (req, res) => {
+// Vendor reject a booking
+exports.rejectBooking = async (req, res) => {
   try {
+    const vendorId = req.user.id;
     const { bookingId } = req.params;
 
     const booking = await bookingModel.findById(bookingId);
@@ -151,8 +149,7 @@ exports.declineBooking = async (req, res) => {
     booking.bookingStatus = 'cancelled';
     await booking.save();
 
-    await Availability.findOneAndUpdate(
-      { vendorId: booking.vendorId, bookingDate: booking.eventDate },
+    await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
       { status: 'available' },
       { new: true }
     );
@@ -199,113 +196,113 @@ exports.getVendorBookings = async (req, res) => {
 };
 
 // Get all bookings for a client
-exports.getClientBookings = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const bookings = await bookingModel.find({ userId }).populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category').sort({ createdAt: -1 });
-    if (!bookings) {
-      return res.status(404).json({ message: 'No bookings found' });
-    }
-    const formattedBookings = bookings.map(b => ({
-      ...b.toObject(),
-      eventDate: b.eventDate.toISOString().split('T')[0],
-      bookingDate: b.bookingDate.toISOString().split('T')[0],
-      createdAt: b.createdAt.toISOString().split('T')[0],
-      updatedAt: b.updatedAt.toISOString().split('T')[0]
-    }));
+// exports.getClientBookings = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const bookings = await bookingModel.find({ userId }).populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category').sort({ createdAt: -1 });
+//     if (!bookings) {
+//       return res.status(404).json({ message: 'No bookings found' });
+//     }
+//     const formattedBookings = bookings.map(b => ({
+//       ...b.toObject(),
+//       eventDate: b.eventDate.toISOString().split('T')[0],
+//       bookingDate: b.bookingDate.toISOString().split('T')[0],
+//       createdAt: b.createdAt.toISOString().split('T')[0],
+//       updatedAt: b.updatedAt.toISOString().split('T')[0]
+//     }));
 
-    res.status(200).json({
-      message: 'Bookings fetched successfully',
-      totalBookings: bookings.length,
-      bookings: formattedBookings
-    });
+//     res.status(200).json({
+//       message: 'Bookings fetched successfully',
+//       totalBookings: bookings.length,
+//       bookings: formattedBookings
+//     });
 
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
 
 // Get a single booking
-exports.getSingleBooking = async (req, res) => {
-  try {
-    const { bookingId } = req.params;
+// exports.getSingleBooking = async (req, res) => {
+//   try {
+//     const { bookingId } = req.params;
 
-    const booking = await bookingModel.findById(bookingId)
-      .populate('userId', 'firstName lastName email phoneNumber')
-      .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category');
+//     const booking = await bookingModel.findById(bookingId)
+//       .populate('userId', 'firstName lastName email phoneNumber')
+//       .populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category');
 
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
+//     if (!booking) {
+//       return res.status(404).json({ message: 'Booking not found' });
+//     }
 
-    res.status(200).json({
-      message: 'Booking fetched successfully',
-      booking: {
-        ...booking.toObject(),
-        eventDate: booking.eventDate.toISOString().split('T')[0],
-        bookingDate: booking.bookingDate.toISOString().split('T')[0],
-        createdAt: booking.createdAt.toISOString().split('T')[0],
-        updatedAt: booking.updatedAt.toISOString().split('T')[0]
-      }
-    });
+//     res.status(200).json({
+//       message: 'Booking fetched successfully',
+//       booking: {
+//         ...booking.toObject(),
+//         eventDate: booking.eventDate.toISOString().split('T')[0],
+//         bookingDate: booking.bookingDate.toISOString().split('T')[0],
+//         createdAt: booking.createdAt.toISOString().split('T')[0],
+//         updatedAt: booking.updatedAt.toISOString().split('T')[0]
+//       }
+//     });
 
-  } catch (error) {
-    res.status(500).json({ 
-      message: 'Server error', error });
-  }
-};
+//   } catch (error) {
+//     res.status(500).json({ 
+//       message: 'Server error', error });
+//   }
+// };
 
-exports.updateBookingStatus = async (req, res) => {
-  try {
-    const { bookingId } = req.params;
-    const { bookingStatus } = req.body;
+// exports.updateBookingStatus = async (req, res) => {
+//   try {
+//     const { bookingId } = req.params;
+//     const { bookingStatus } = req.body;
 
-    if (!bookingStatus) {
-      return res.status(400).json({
-        message: "Booking status is required"
-      });
-    }
-    const allowedStatuses = ["pending", "confirmed", "cancelled", "completed", "disputed"];
+//     if (!bookingStatus) {
+//       return res.status(400).json({
+//         message: "Booking status is required"
+//       });
+//     }
+//     const allowedStatuses = ["pending", "confirmed", "cancelled", "completed", "disputed"];
 
-    if (!allowedStatuses.includes(bookingStatus)) {
-      return res.status(400).json({
-        message: "Invalid booking status"
-      });
-    }
+//     if (!allowedStatuses.includes(bookingStatus)) {
+//       return res.status(400).json({
+//         message: "Invalid booking status"
+//       });
+//     }
 
-    const booking = await bookingModel.findById(bookingId);
+//     const booking = await bookingModel.findById(bookingId);
 
-    if (!booking) {
-      return res.status(404).json({
-        message: "Booking not found"
-      });
-    }
+//     if (!booking) {
+//       return res.status(404).json({
+//         message: "Booking not found"
+//       });
+//     }
 
-    if (String(booking.vendorId) !== String(req.user.id)) {
-      return res.status(403).json({
-        message: "You are not allowed to update this booking"
-      });
-    }
+//     if (String(booking.vendorId) !== String(req.user.id)) {
+//       return res.status(403).json({
+//         message: "You are not allowed to update this booking"
+//       });
+//     }
 
-    booking.bookingStatus = bookingStatus;
-    await booking.save();
+//     booking.bookingStatus = bookingStatus;
+//     await booking.save();
 
-    await createNotification({
-      recipientId: booking.userId,
-      recipientType: "user",
-      title: "Booking Update",
-      message: `Your booking has been ${bookingStatus}.`,
-      emailSubject: "Booking status updated"
-    });
+//     await createNotification({
+//       recipientId: booking.userId,
+//       recipientType: "user",
+//       title: "Booking Update",
+//       message: `Your booking has been ${bookingStatus}.`,
+//       emailSubject: "Booking status updated"
+//     });
 
-    return res.status(200).json({
-      message: "Booking status updated successfully",
-      data: booking
-    });
+//     return res.status(200).json({
+//       message: "Booking status updated successfully",
+//       data: booking
+//     });
 
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
-  }
-};
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: error.message
+//     });
+//   }
+// };

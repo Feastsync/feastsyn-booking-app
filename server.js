@@ -23,6 +23,7 @@ const adminRouter = require('./routes/adminRouter');
 const disputeRouter = require('./routes/disputeRouter'); 
 const reviewRouter = require('./routes/reviewRouter');
 const contactRouter = require('./routes/contactRouter');
+const vendorSettingRouter = require('./routes/vendorSettingRouter');
 
 const rateLimit = require('express-rate-limit');
 
@@ -88,7 +89,8 @@ app.use('/api/v1/notification', notificationRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('api/v1/dispute', disputeRouter);
 app.use('/api/v1/review', reviewRouter);
-app.use('/api/v1/contact', contactRouter)
+app.use('/api/v1/contact', contactRouter);
+app.use('/api/v1/settings', vendorSettingRouter)
 
  app.use((req, res) => { 
   res.status(404).json({
