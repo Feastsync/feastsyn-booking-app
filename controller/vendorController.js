@@ -192,7 +192,7 @@ exports.updateVendor = async (req, res) => {
         req.files.videoCatalogue.map(file => uploadFile(file, "video"))
       );
     } 
-
+console.log("A")
     const updateData = {
       ...(normalizedBankName && { bankName: normalizedBankName }),
       ...(accountNumber && { accountNumber }),
@@ -212,6 +212,8 @@ exports.updateVendor = async (req, res) => {
 
       
     };
+    console.log("B")
+
     await vendorModel.findByIdAndUpdate(
   id,
   updateData,
@@ -226,6 +228,8 @@ const updatedVendor = await vendorModel.findById(id);
   vendorUrl: publicUrl,
   data: updatedVendor
 });
+console.log("c")
+
   } catch (error) {
     return res.status(500).json({
       message: error.message
