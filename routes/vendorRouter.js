@@ -1,7 +1,7 @@
 const { createVendor, updateVendor, verifyVendorEmail, vendorLogin, vendorLogout, getAllVendors, getOneVendor, getVendorDashboard, vendorVerifyResetOtp, vendorForgotPassword, vendorResendOtp, vendorResetPassword } = require('../controller/vendorController');
 const { authentication, adminAuth } = require('../middlewares/auth');
 const {upload} = require('../middlewares/multer');
-const {signupVendorValidator, resetPasswordValidator, changePasswordValidator} = require('../middlewares/validator');
+const {signupVendorValidator, resetPasswordValidator, changePasswordValidator, updateVendorValidator} = require('../middlewares/validator');
 const router = require('express').Router();
 
 router.post('/sign-up', signupVendorValidator, createVendor);
@@ -11,7 +11,7 @@ router.put('/update-profile/:id', upload.fields([
   { name: 'coverVideo', maxCount: 1 },
   { name: 'photoCatalogue', maxCount: 4 },
   { name: 'videoCatalogue', maxCount: 2 }
-]), updateVendor);
+]),updateVendorValidator, updateVendor);
 router.post('/verify', verifyVendorEmail);
 router.post('/login', vendorLogin);
 router.post('/logout', authentication, vendorLogout);
