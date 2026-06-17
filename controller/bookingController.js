@@ -2,9 +2,10 @@ const bookingModel = require('../models/booking');
 const vendorModel = require('../models/vendor');
 const pricingModel = require('../models/pricing');
 const userModel = require('../models/user');
-const Availability = require('../models/availability');
+const Availability = require('../models/calendar');
 const notificationModel = require('../models/notification')
 const {createNotification} = require('../utils/createNotification')
+const {brevo} = require('../utils/brevo')
 
 exports.createBooking = async (req, res) => {
   try {
@@ -44,7 +45,7 @@ if (!selectedPackage) {
       vendorId,
       eventDate: new Date(eventDate),
       bookingStatus: {
-        $in: ['pending', 'confirmed']
+        $in: ['pending', 'confirmed', 'completed']
       }
     });
     if (existingBooking) {

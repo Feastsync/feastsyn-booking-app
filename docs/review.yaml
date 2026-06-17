@@ -19,7 +19,7 @@ paths:
       requestBody:
         required: true
         content: 
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -32,6 +32,14 @@ paths:
                 comment:
                   type: string
                   description: What you have to say about the person in question as regards the event hosted or hired
+                images:
+                  type: string
+                  format: binary
+                  description: picture evidence
+                video:
+                  type: string
+                  format: binary
+                  description: video evidence 
       responses:          
         '201':
           description: Review created successfully

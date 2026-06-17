@@ -136,6 +136,7 @@ paths:
       responses:          
         '200':
           description: OTP resent successfully 
+
   /api/v1/user/verify-otp:
     post: 
       summary: this is the endpoint to verify reset otp
@@ -203,5 +204,17 @@ paths:
         "200":
           description: Logged out successfully
         "500": 
-          description: Something went wrong        
+          description: Something went wrong   
+
+  /api/v1/user/user-dashboard:
+    get:
+      summary: this end point is to get a user's dashboard
+      tags: [users]
+      security: 
+        - bearerAuth: []
+      responses: 
+        "201":
+          description: One user dashboard retrieved successfully
+        "500":
+          description: something went wrong             
   

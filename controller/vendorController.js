@@ -167,7 +167,7 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    const isOnboarded = nextOnboardingStep >= 7;
+    const isOnboarded = nextOnboardingStep >= 8;
 
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
@@ -527,24 +527,7 @@ exports.vendorResetPassword = async (req, res) => {
 
 exports.getAllVendors = async (req, res) => {
   try {
-
-    // const checkCache = await client.get('vendors');
-
-    // if (checkCache) {
-    //   return res.status(200).json({
-    //     message: 'successfully retrieved all vendors',
-    //     data: JSON.parse(checkCache)
-    //   });
-    // }
-
     const vendor = await vendorModel.find().populate('category');
-// await client.set(
-//   'vendors',
-//   JSON.stringify(vendor),
-//   'EX',
-//   60
-// );
-
     return res.status(200).json({
       message: 'successfully retrieved all vendors',
       data: vendor  

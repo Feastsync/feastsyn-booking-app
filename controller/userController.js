@@ -5,6 +5,9 @@ const otpGenerator = require('otp-generator')
 const {brevo} = require('../utils/brevo')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
 const jwt = require('jsonwebtoken')
+const bookingModel = require('../models/booking');
+const reviewModel = require('../models/review');
+const paymentModel = require('../models/payment')
 
   exports.createUser = async (req, res) => {
     try {
@@ -317,46 +320,76 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// exports.getOneUser = async (req, res) => {
-//   try {
-//     const getUser = await userModel.findById(req.user.id).select('firstName lastName email');
-//     if (!getUser) {
-//       return res.status(404).json({
-//         message: 'User not found'
-//       });
-//     }
-//     res.status(200).json({
-//       message: 'One user fetched successfully',
-//       data: getUser
-//     });
-//   } catch (error) {
-//     console.log(error.message);
-//     res.status(500).json({
-//       message: 'Something went wrong'
-//     });
-//   }
-// };
-
-
-exports.deleteUser = async(req, res) =>{
+exports.userDashboard = async (req, res) => {
   try {
-      const { id } = req.params;
-      const users = await userModel.findByIdAndDelete(id);
-      if (!users) {
-        return res.status(404).json({
-          message: 'User not found'
-        })
-      } 
-      //Send a success response
-      res.status(200).json({ 
-        message: 'User deleted successfully',
-        data: users
-      })
+    const userId = req.user.id;
+    const user = await userModel.findById(userId).select("firstName lastName email");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    const totalBookings = await bookingModel.countDocuments({userId});
+    const completedBookings = await bookingModel.countDocuments({userId, bookingStatus: "completed"});
+
+    const totalReviews = await reviewModel.countDocuments({userId});
+
+    const payments = await paymentModel.find({userId, paymentStatus: "successful"});
+
+    const totalSpent = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+
+    const upcomingEvents = await bookingModel.find({userId,
+          bookingStatus: {
+            $in: ["confirmed"]
+          },
+          eventDate: {
+            $gte: new Date()
+          }}).populate("vendorId", "stageName profilePicture").sort({ eventDate: 1 }).limit(3);
+    const recentBookings = await bookingModel.find({ userId }).sort({ createdAt: -1 }).limit(5).populate("vendorId","stageName");
+
+    return res.status(200).json({
+      message: "Dashboard fetched successfully",
+      data: {user,
+        statistics: {
+          totalBookings,
+          completedBookings,
+          totalReviews,
+          totalSpent
+        },
+        upcomingEvents,
+        recentBookings
+      }
+    });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: error.message
-    })
+    });
+
   }
 };
+
+
+// exports.deleteUser = async(req, res) =>{
+//   try {
+//       const { id } = req.params;
+//       const users = await userModel.findByIdAndDelete(id);
+//       if (!users) {
+//         return res.status(404).json({
+//           message: 'User not found'
+//         })
+//       } 
+//       //Send a success response
+//       res.status(200).json({ 
+//         message: 'User deleted successfully',
+//         data: users
+//       })
+
+//   } catch (error) {
+//     res.status(500).json({
+//       message: error.message
+//     })
+//   }
+// };
 

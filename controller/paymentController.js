@@ -6,6 +6,9 @@ const pricingModel = require('../models/pricing');
 const otpGenerator = require('otp-generator');
 const axios = require('axios');
 const mongoose = require('mongoose');
+const walletModel = require('../models/wallet')
+const transactionModel = require('../models/transaction');
+const escrowModel = require('../models/escrow')
 
 exports.initializePayment = async (req, res) => {
     try {
@@ -132,8 +135,7 @@ exports.initializePayment = async (req, res) => {
             userId,
             vendorId: vendor._id,
             bookingId: booking?._id,
-            vendorName,
-            paymentMethod: 'korapay'
+            vendorName
         });
 
         await payment.save();
@@ -156,58 +158,163 @@ exports.initializePayment = async (req, res) => {
 exports.verifyWebhook = async (req, res) => {
     try {
         const { event, data } = req.body;
-        const hash = crypto.createHmac("sha256", secretKey).update(JSON.stringify(data)).digest("hex");
+        const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
+
         const signature = req.headers["x-korapay-signature"];
-        if (hash !== signature) return res.status(401).json({
-            message: "Invalid webhook signature"
-        });
-        const payment = await paymentModel.findOne({ reference: `TCA-FEASTSYNC-${data.reference}` })
-        if (!payment) return res.status(404).json({
-            message: "NO payment record found"
-        });
 
-        if (event === 'charge.success') {
-            payment.paymentStatus = 'successful'
-            await payment.save()
-        } else if (event === 'charge.pending') {
-            payment.paymentStatus = 'processing'
-            await payment.save()
-        } else if (event === 'charge.failed') {
-            payment.paymentStatus = 'failed'
-            await payment.save()
-        };
-
-        await payment.save();
-        res.status(200)
-    } catch (error) {
-        console.log(error.message)
-        next(error)
-    }
-
-};
-
-
-exports.getAllPaymentByUser = async (req, res) => {
-    try {
-        //Extract the User ID from the request user
-        const userId = req.user.id;
-        //check if user exists
-        const user = await userModel.findById(userId)
-        if (!user) {
-            return res.status(404).json({
-                message: 'User not found'
-            })
+        if (hash !== signature) {
+            return res.status(401).json({
+                message: "Invalid webhook signature"
+            });
         }
-        //Find all payments made by the user
-        const allPayments = await paymentModel.find({ userId }).sort({ createdAt: -1 });
-        //Send a success response
-        res.status(200).json({
-            message: 'All payments by User retrieved successfully',
-            data: allPayments
-        })
+
+        const payment = await paymentModel.findOne({
+            reference: `TCA-FEASTSYNC-${data.reference}`
+        });
+
+        if (!payment) {
+            return res.status(404).json({
+                message: "No payment record found"
+            });
+        }
+
+        if (event === "charge.success") {
+
+            // Prevent duplicate processing
+            if (payment.paymentStatus === "successful") {
+                return res.status(200).json({
+                    message: "Payment already processed"
+                });
+            }
+
+            // Update payment
+            payment.paymentStatus = "successful";
+            await payment.save();
+
+            // Update booking
+            if (payment.bookingId) {
+                await bookingModel.findByIdAndUpdate(
+                    payment.bookingId,
+                    {
+                        paymentStatus: "paid",
+                        bookingStatus: "confirmed"
+                    },
+                    {
+                        new: true
+                    }
+                );
+            }
+            // ESCROW CALCULATIONS
+            const totalAmount = Number(payment.amount);
+
+            // FeastSync Commission (5%)
+            const commissionAmount = totalAmount * 0.05;
+
+            // Vendor gets remaining 95%
+            const vendorAmount = totalAmount - commissionAmount;
+
+            // 70% released immediately
+            const firstReleaseAmount = vendorAmount * 0.70;
+
+            // 30% held in escrow
+            const finalReleaseAmount = vendorAmount * 0.30;
+        
+            // CREATE ESCROW RECORD
+            const existingEscrow = await escrowModel.findOne({ paymentId: payment._id});
+            if (!existingEscrow) {
+                await escrowModel.create({
+                    bookingId: payment.bookingId,
+                    vendorId: payment.vendorId,
+                    paymentId: payment._id,
+
+                    totalAmount,
+                    commissionAmount,
+
+                    firstReleaseAmount,
+                    finalReleaseAmount,
+
+                    firstReleaseStatus: "released",
+                    finalReleaseStatus: "pending"
+                });
+            }
+            // CREATE / UPDATE WALLET
+            let wallet = await walletModel.findOne({vendorId: payment.vendorId});
+            if (!wallet) {
+                wallet = await walletModel.create({
+                    vendorId: payment.vendorId,
+                    availableBalance: 0,
+                    escrowBalance: 0,
+                    totalEarned: 0
+                });
+            }
+
+            wallet.availableBalance +=
+                firstReleaseAmount;
+
+            wallet.escrowBalance +=
+                finalReleaseAmount;
+
+            wallet.totalEarned +=
+                vendorAmount;
+
+            await wallet.save();
+            // TRANSACTION RECORDS
+            await transactionModel.create({
+                vendorId: payment.vendorId,
+                bookingId: payment.bookingId,
+                amount: commissionAmount,
+                transactionType: "commission",
+                status: "successful"
+            });
+
+            await transactionModel.create({
+                vendorId: payment.vendorId,
+                bookingId: payment.bookingId,
+                amount: firstReleaseAmount,
+                transactionType: "release",
+                status: "successful"
+            });
+
+            await transactionModel.create({
+                vendorId: payment.vendorId,
+                bookingId: payment.bookingId,
+                amount: finalReleaseAmount,
+                transactionType: "escrow",
+                status: "pending"
+            });
+
+            return res.status(200).json({
+                message: "Payment processed successfully"
+            });
+        }
+
+        if (event === "charge.pending") {
+            payment.paymentStatus = "processing";
+            await payment.save();
+
+            return res.status(200).json({
+                message: "Payment marked as processing"
+            });
+        }
+
+        if (event === "charge.failed") {
+            payment.paymentStatus = "failed";
+            await payment.save();
+
+            return res.status(200).json({
+                message: "Payment marked as failed"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Webhook received"
+        });
+
     } catch (error) {
-        res.status(500).json({
+        console.log(error);
+
+        return res.status(500).json({
             message: error.message
-        })
+        });
     }
 };

@@ -80,7 +80,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 app.use('/api/v1/vendor', vendorRouter);
 app.use('/api/v1', pricingRouter);
 app.use('/api/v1/payment', paymentRouter);
-app.use('/api/v1/schedule', calendarRouter);
+app.use('/api/v1/calendar', calendarRouter);
 app.use('/api/v1/bookings', bookingRouter);
 app.use('/api/v1/kyc', kycRouter);
 app.use('/api/v1/message', messageRouter);

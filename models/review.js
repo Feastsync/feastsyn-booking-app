@@ -28,6 +28,22 @@ const reviewSchema = new mongoose.Schema({
 
   comment: {
     type: String
+  },
+images: [
+    {
+      secureUrl: String,
+      publicId: String
+    }
+  ],
+
+  video: {
+    secureUrl: String,
+    publicId: String
+  },
+
+  isApproved: {
+    type: Boolean,
+    default: false
   }
 
 }, { timestamps: true });

@@ -1,7 +1,7 @@
 const notificationModel = require("../models/notification");
 const userModel = require("../models/user");
 const vendorModel = require("../models/vendor");
-const brevo = require("./brevo");
+const {brevo} = require("../utils/brevo");
 
 exports.createNotification = async ({recipientId,recipientType,title,message, emailSubject}) => {
   let recipient;
