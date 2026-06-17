@@ -13,7 +13,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
 const {formatBankName, normalizeEnumValue} = require('../utils/normalize')
 
-exports.createVendor = async (req, res) => {
+exports.createVendor = async (req, res, next) => {
     try {
         const { firstName, lastName, stageName, email, password, phoneNumber, confirmPassword} = req.body;
         // Generate OTP
@@ -30,7 +30,6 @@ exports.createVendor = async (req, res) => {
                 message: 'Passwords do not match'
             });
         }
-        console.log('OTP:', otp);
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt);
 
@@ -64,12 +63,10 @@ exports.createVendor = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+    
+        next(error)        
     }
-};
-
+  }
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;

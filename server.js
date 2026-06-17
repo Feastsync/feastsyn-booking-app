@@ -98,14 +98,6 @@ app.use('/api/v1/settings', vendorSettingRouter)
   })
 })
 
-app.use((error, req, res, next) => {
-  if(error){
-    return res.status(500).json({
-      message: error.message
-    })
-  }
-  next()
-})
 
 app.use((err, req, res, next)=>{
 
@@ -114,7 +106,15 @@ app.use((err, req, res, next)=>{
                 message: 'Session expired: please login to continue'
             })
         }
+if (err.code == 11000) {
+    const field = Object.keys(err.keyValue)[0];
 
+    return res.status(409).json({
+        message: `${field} already exists`,
+  
+    });
+} 
+     
         if(err.name === 'MulterError'){
           return res.status(400).json({
             message: err.message
