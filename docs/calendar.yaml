@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows users to book vendors for different events.
+paths:
+  /api/v1/calendar/get-calendar/{vendorId}:
+    get:
+      summary: this end point is to know the availability of vendors whether they are booked or not
+      tags: [calendar]
+      security:
+        - bearerAuth: []
+      parameters: 
+        - in: path
+          name: vendorId 
+      responses:
+        "200":
+          description: vendor's availability fetched successfully
+        "500":
+          description: something went wrong       

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCalendar} = require('../controller/calendar');
+const { getCalendar} = require('../controller/calendarController');
 
 router.get('/calendar/:vendorId', getCalendar);
 

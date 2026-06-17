@@ -73,6 +73,10 @@ const vendorSchema = new mongoose.Schema({
     return Date.now() + ( 10 * 60 * 1000)   
     }
 },
+pendingUpdate: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+},
 otpVerified: {
   type: Boolean,
   default: false

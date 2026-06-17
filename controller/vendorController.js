@@ -544,7 +544,7 @@ exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const vendor = await vendorModel.findOne({ slug });
+    const vendor = await vendorModel.findOne({ slug }).select('-vendorUrl -slug');
 
     if (!vendor) {
       return res.status(404).json({
@@ -552,15 +552,7 @@ exports.getOneVendor = async (req, res) => {
       });
     }
 
-    const vendorUrl = `https://feastsync.com/vendor/${vendor.slug}`;
-
-    if (!vendor.vendorUrl) {
-      vendor.vendorUrl = vendorUrl;
-      await vendor.save();
-    }
-
     return res.status(200).json({
-      vendorUrl,
       data: vendor
     });
 
