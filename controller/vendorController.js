@@ -231,8 +231,7 @@ exports.updateVendor = async (req, res) => {
       ...(coverPhoto && { coverPhoto }),
       ...(coverVideo && { coverVideo }),
       ...(photoCatalogue.length && { photoCatalogue }),
-      ...(videoCatalogue.length && { videoCatalogue }),
-            isOnboarded: true
+      ...(videoCatalogue.length && { videoCatalogue })
 
       
     };
