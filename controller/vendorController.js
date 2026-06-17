@@ -540,28 +540,28 @@ exports.getAllVendors = async (req, res) => {
   }
 };
 
-exports.getOneVendor = async (req, res) => {
-  try {
-    const { slug } = req.params;
+// exports.getOneVendor = async (req, res) => {
+//   try {
+//     const { slug } = req.params;
 
-    const vendor = await vendorModel.findOne({ slug }).select('-vendorUrl -slug');
+//     const vendor = await vendorModel.findOne({ slug }).select('-vendorUrl -slug');
 
-    if (!vendor) {
-      return res.status(404).json({
-        message: "Vendor not found"
-      });
-    }
+//     if (!vendor) {
+//       return res.status(404).json({
+//         message: "Vendor not found"
+//       });
+//     }
 
-    return res.status(200).json({
-      data: vendor
-    });
+//     return res.status(200).json({
+//       data: vendor
+//     });
 
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
-  }
-};
+//   } catch (error) {
+//     return res.status(500).json({
+//       message: error.message
+//     });
+//   }
+// };
 
 exports.getVendorDashboard = async (req, res) => {
   try {
