@@ -18,16 +18,7 @@ exports.createBooking = async (req, res) => {
 
     const userId = req.user.id;
 
-    const {
-      vendorId,
-      pricingId,
-      eventType,
-      eventLocation,
-      eventDate,
-      duration,
-      guestCount,
-      additionalDetails
-    } = req.body;
+    const {vendorId,pricingId,eventType,eventLocation,eventDate,duration,guestCount,additionalDetails} = req.body;
 
     if (
       !vendorId ||
