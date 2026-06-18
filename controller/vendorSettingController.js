@@ -3,6 +3,7 @@ const otpGenerator = require('otp-generator');
 const { brevo } = require('../utils/brevo');
 const { emailTemplate } = require('../email');
 const pricingModel = require('../models/pricing')
+const calendarModel = require('../models/calendar')
 
 exports.getSettings = async (req, res) => {
     try {

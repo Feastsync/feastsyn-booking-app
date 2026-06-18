@@ -55,6 +55,14 @@ paths:
           application/json:
             schema:
             type: object
+            required:
+              - phoneNumber
+              - bio
+              - stateOfResidence
+              - bankName
+              - accountNumber
+              - pricing
+              - calendar
             properties:
               phoneNumber:
                 type: string
@@ -98,6 +106,8 @@ paths:
           application/json:
             schema:
             type: object
+            required:
+              - otp
             properties:
               otp: 
                 type: string
