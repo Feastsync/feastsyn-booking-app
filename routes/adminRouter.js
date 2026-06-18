@@ -9,17 +9,17 @@ const { getNotifications } = require('../controller/notificationController');
 const { resetPasswordValidator } = require('../middlewares/validator');
 
 router.post('/admin', createAdmin)
-router.post('/verify', verifyEmail);
-router.post('/login', adminLogin);
-router.post('/logout', adminAuth, adminLogout);
+router.post('/verify-admin', verifyEmail);
+router.post('/login-admin', adminLogin);
+router.post('/logout-admin', adminAuth, adminLogout);
 
-router.post('/forgotPassword', forgotPassword);
-router.post('/resendOTP',resendOtp);
-router.post('/resetPassword', resetPasswordValidator, resetPassword);
+router.post('/forgot-password-admin', forgotPassword);
+router.post('/resend-otp-admin',resendOtp);
+router.post('/reset-password-admin', resetPasswordValidator, resetPassword);
 
 router.get('/dashboard-stats', adminAuth, getDashboardStats);
 
-router.get('/all-vendors', getAllVendorsAdmin);
+router.get('/all-vendors', adminAuth,getAllVendorsAdmin);
 router.get('/one-vendor/:vendorId', authentication, adminAuth, getOneVendorAdmin)
 
 router.get('/all-pending-kyc', adminAuth, getPendingKycs);
@@ -45,7 +45,6 @@ router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 // // Notifications
 // router.get('/notifications', authentication, getNotifications);
 
-//contactUs
 router.get('/contact-message', adminAuth, getAllContactMessages);
 
 //pricingPackage

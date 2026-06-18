@@ -6,7 +6,7 @@ const router = require('express').Router();
 
 router.post('/sign-up', signupVendorValidator, createVendor);
 
-router.put("/update-profile/:vendorId", (req, res) => {
+router.put("/update-profile/:id", (req, res) => {
   upload.fields([
     { name: "profilePicture", maxCount: 1 },
     { name: "coverPhoto", maxCount: 1 },
