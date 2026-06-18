@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows vendors edit some of their data.
+paths:   
+  /api/v1/vendorSetting/get-settings:
+    get:
+      summary: Get vendor's settings to edit data
+      tags: [vendors]
+      security:
+        - bearerAuth: []  
+      content: 
+        application/json:
+          schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: The vendor's phone number
+              bio: 
+                type: string
+                description: The bio of the vendor's profile
+              stateOfResidence:
+                type: string
+                description: The state where the vendor lives or does his business
+              bankName: 
+                type: string
+                description: The name of the bank the vendor provides
+              accountNumber:
+                type: string
+                description: The account number provided by the vendor
+              pricing: 
+                type: string
+                description: The pricing and packages set by the vendor
+              calendar:
+                type: string   
+                description: The availability calendar should be reset every month 
+      
+      responses:
+        "200":
+          description: settings fetched successfully
+        "500":
+          description: something went wrong  
+
+  /api/vendorSetting/request-update:
+    post:
+      summary: Vendor request settings update
+      tags: [vendors]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+            type: object
+            properties:
+              phoneNumber:
+                type: string
+                description: The vendor's phone number
+              bio: 
+                type: string
+                description: The bio of the vendor's profile
+              stateOfResidence:
+                type: string
+                description: The state where the vendor lives or does his business
+              bankName: 
+                type: string
+                description: The name of the bank the vendor provides
+              accountNumber:
+                type: string
+                description: The account number provided by the vendor
+              pricing: 
+                type: string
+                description: The pricing and packages set by the vendor
+              calendar:
+                type: string   
+                description: The availability calendar should be reset every month 
+      responses:
+        "200":
+          description: OTP sent successfully
+        "404":
+          description: Vendor not found
+        "500":
+          description: Internal server error 
+
+             
+  /api/v1/vendorSetting/confirm-update:
+    post:
+      summary: Confirm recent update made
+      tags: [vendors]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+            type: object
+            properties:
+              otp: 
+                type: string
+                description: OTP sent to confirm recent settings update  
+      responses:
+        "200":
+          description: Settings updated successfully  
+        "400":
+          description: Invalid OTP
+        "500":
+          description: Internal server error             
