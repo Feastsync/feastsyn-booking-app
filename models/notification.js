@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
   },
   notificationType: {
     type: String,
-    enum: [ "bookingRequest", "bookingAccepted", "bookingDeclined", "paymentReceived"]
+    enum: [ "booking_request", "booking_accepted", "booking_declined", "payment_received"]
   },
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
