@@ -62,20 +62,13 @@ if (!selectedPackage) {
       pricingId,
       additionalDetails
     });
-    await createNotification({
-      recipientId: vendor._id,
-      recipientType: "vendor",
-      title: "New Booking",
-      message: `You have received a new ${eventType} booking request.`,
-      emailSubject: "New booking request"
-    });
-
-    await createNotification({
-     recipientId: userId,
-     recipientType: "user",
-     title: "Booking Submitted",
-     message: `Your ${eventType} booking request has been sent to the vendor.`,
-     emailSubject: "Booking request submitted"
+    await notificationModel.create({
+    recipientId: vendorId,
+    senderId: userId,
+    bookingId: bookingId,
+    notificationType: 'booking_request',
+    title: 'New Booking Request',
+    message: `${user.firstName} sent you a booking request`
 });
 
     return res.status(201).json({

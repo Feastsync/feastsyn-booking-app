@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema({
   recipientId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'vendor'
+    ref: 'vendors'
   },
   senderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user'
+    ref: 'users'
   },
-  type: {
+  notificationType: {
     type: String,
     enum: [ "bookingRequest", "bookingAccepted", "bookingDeclined", "paymentReceived"]
   },
