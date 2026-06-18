@@ -54,42 +54,42 @@ paths:
         content:
           application/json:
             schema:
-            type: object
-            required:
-              - phoneNumber
-              - bio
-              - stateOfResidence
-              - bankName
-              - accountNumber
-              - pricing
-              - calendar
-            properties:
-              phoneNumber:
-                type: string
-                description: The vendor's phone number
-              bio: 
-                type: string
-                description: The bio of the vendor's profile
-              stateOfResidence:
-                type: string
-                description: The state where the vendor lives or does his business
-              bankName: 
-                type: string
-                description: The name of the bank the vendor provides
-              accountNumber:
-                type: string
-                description: The account number provided by the vendor
-              pricing: 
-                type: string
-                description: The pricing and packages set by the vendor
-              calendar:
-                type: string   
-                description: The availability calendar should be reset every month 
+              type: object
+              required:
+                - phoneNumber
+                - bio
+                - stateOfResidence
+                - bankName
+                - accountNumber
+                - pricing
+                - calendar
+              properties:
+                phoneNumber:
+                  type: string
+                  description: The vendor's phone number
+                bio: 
+                  type: string
+                  description: The bio of the vendor's profile
+                stateOfResidence:
+                  type: string
+                  description: The state where the vendor lives or does his business
+                bankName: 
+                  type: string
+                  description: The name of the bank the vendor provides
+                accountNumber:
+                  type: string
+                  description: The account number provided by the vendor
+                pricing: 
+                  type: string
+                  description: The pricing and packages set by the vendor
+                calendar:
+                  type: string   
+                  description: The availability calendar should be reset every month 
       responses:
         "200":
           description: OTP sent successfully
         "404":
-          description: Vendor not found
+           description: Vendor not found
         "500":
           description: Internal server error 
 
@@ -105,13 +105,13 @@ paths:
         content:
           application/json:
             schema:
-            type: object
-            required:
-              - otp
-            properties:
-              otp: 
-                type: string
-                description: OTP sent to confirm recent settings update  
+              type: object
+              required:
+                - otp
+              properties:
+                otp: 
+                  type: string
+                  description: OTP sent to confirm recent settings update  
       responses:
         "200":
           description: Settings updated successfully  
