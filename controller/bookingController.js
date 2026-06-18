@@ -109,7 +109,7 @@ exports.getBookingDetails = async (req, res) => {
       });
     }
 
-    if (booking.vendorId._id.toString() !== req.user.id
+    if (booking.vendorId.toString() !== req.user.id
 ) {
   return res.status(403).json({
     message: "Unauthorized"
