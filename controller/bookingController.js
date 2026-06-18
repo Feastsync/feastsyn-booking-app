@@ -15,29 +15,56 @@ exports.createBooking = async (req, res) => {
         message: 'Please login first'
       });
     }
+
     const userId = req.user.id;
 
-    const { vendorId, pricingId, eventType, eventLocation, eventDate, duration, guestCount, additionalDetails} = req.body;
-    if ( !vendorId || !pricingId || !eventType || !eventLocation || !eventDate || !duration || !guestCount || !additionalDetails ) {
+    const {
+      vendorId,
+      pricingId,
+      eventType,
+      eventLocation,
+      eventDate,
+      duration,
+      guestCount,
+      additionalDetails
+    } = req.body;
+
+    if (
+      !vendorId ||
+      !pricingId ||
+      !eventType ||
+      !eventLocation ||
+      !eventDate ||
+      !duration ||
+      !guestCount ||
+      !additionalDetails
+    ) {
       return res.status(400).json({
         message: 'All required fields must be provided'
       });
     }
 
     const vendor = await vendorModel.findById(vendorId);
+
     if (!vendor) {
       return res.status(404).json({
         message: 'Vendor not found'
       });
     }
-    // Check package
-const selectedPackage = await pricingModel.findOne({ _id: pricingId, vendorId: vendorId});
 
-if (!selectedPackage) {
-    return res.status(404).json({
-        message: 'Package not found'
+    const user = await userModel.findById(userId);
+
+    const selectedPackage = await pricingModel.findOne({
+      _id: pricingId,
+      vendorId
     });
-}
+
+    if (!selectedPackage) {
+      return res.status(404).json({
+        message: 'Package not found'
+      });
+    }
+
     const existingBooking = await bookingModel.findOne({
       vendorId,
       eventDate: new Date(eventDate),
@@ -45,31 +72,34 @@ if (!selectedPackage) {
         $in: ['pending', 'confirmed', 'completed']
       }
     });
+
     if (existingBooking) {
       return res.status(400).json({
         message: 'Vendor is already booked on this date'
       });
     }
+
     const booking = await bookingModel.create({
       userId,
       vendorId,
       packageId: pricingId,
+      pricingId,
       eventType,
       eventLocation,
       eventDate: new Date(eventDate),
       duration,
       guestCount,
-      pricingId,
       additionalDetails
     });
+
     await notificationModel.create({
-    recipientId: vendorId,
-    senderId: userId,
-    bookingId: bookingId,
-    notificationType: 'booking_request',
-    title: 'New Booking Request',
-    message: `${user.firstName} sent you a booking request`
-});
+      recipientId: vendorId,
+      senderId: userId,
+      bookingId: booking._id,
+      notificationType: 'booking_request',
+      title: 'New Booking Request',
+      message: `${user.firstName} sent you a booking request`
+    });
 
     return res.status(201).json({
       message: 'Booking created successfully',
@@ -77,7 +107,8 @@ if (!selectedPackage) {
     });
 
   } catch (error) {
-    console.log(error)
+    console.log(error);
+
     return res.status(500).json({
       message: error.message
     });
