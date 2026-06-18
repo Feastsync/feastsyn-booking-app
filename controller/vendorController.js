@@ -66,7 +66,8 @@ exports.createVendor = async (req, res, next) => {
     
         next(error)        
     }
-  }
+  };
+
 exports.updateVendor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -533,7 +534,7 @@ exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const vendor = await vendorModel.findOne({ slug }).populate('pricingId')
+    const vendor = await vendorModel.findOne({ slug }).populate("pricingId").lean();
 
     if (!vendor) {
       return res.status(404).json({
@@ -541,15 +542,9 @@ exports.getOneVendor = async (req, res) => {
       });
     }
 
-    const vendorUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+    console.log("Vendor from DB:", vendor);
 
-    if (!vendor.vendorUrl) {
-      vendor.vendorUrl = vendorUrl;
-      await vendor.save();
-    }
-    console.log(vendor)
     return res.status(200).json({
-      vendorUrl, 
       data: vendor
     });
 

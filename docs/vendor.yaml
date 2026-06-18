@@ -160,7 +160,7 @@ paths:
                   description: The services offered by the vendor
                 category: 
                   type: string
-                  enum: [mc, Liveband, dj, photographer, videographer]
+                  enum: [mc, liveband, dj, photographer, videographer]
                   description: The area of profession  
       responses:          
         '200':
