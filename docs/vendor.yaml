@@ -186,9 +186,11 @@ paths:
               properties:
                 mediaType:
                   type: string
+                  format: binary
                   description: The vendor's type of media he wants to change or replace
                 publicId:
                   type: string
+                  format: binary
                   description: The ID of the media that wants to be changed or replaced 
       responses:          
         '200':

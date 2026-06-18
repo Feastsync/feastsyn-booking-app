@@ -24,7 +24,7 @@ router.put("/update-profile/:vendorId", (req, res) => {
 
     updateVendor(req, res);
   });
-});  
+});   
 
 router.put('/replace-media/:vendorId', upload.single('file'), replaceVendorMedia);
 
