@@ -238,6 +238,114 @@ console.log("c")
   }
 };
 
+exports.replaceVendorMedia = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const { mediaType, publicId } = req.body;
+
+    const vendor = await vendorModel.findById(vendorId);
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
+    }
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Please upload a file"
+      });
+    }
+    const uploadFile = async (file, resourceType) => {
+      const uploaded = await cloudinary.uploader.upload(
+        file.path, { resource_type: resourceType});
+
+      await fs.promises.unlink(file.path);
+      return {
+        secureUrl: uploaded.secure_url,
+        publicId: uploaded.public_id
+      };
+    };
+    // PROFILE PICTURE
+    if (mediaType === "profilePicture") {
+      if (vendor.profilePicture?.publicId) {
+        await cloudinary.uploader.destroy(
+          vendor.profilePicture.publicId
+        );
+      }
+      vendor.profilePicture = await uploadFile(req.file, "image");
+    }
+    // COVER PHOTO
+    else if (mediaType === "coverPhoto") {
+      if (vendor.coverPhoto?.publicId) {
+        await cloudinary.uploader.destroy(
+          vendor.coverPhoto.publicId
+        );
+      }
+      vendor.coverPhoto = await uploadFile(req.file, "image");
+    }
+    // COVER VIDEO
+    else if (mediaType === "coverVideo") {
+      if (vendor.coverVideo?.publicId) {
+        await cloudinary.uploader.destroy(
+          vendor.coverVideo.publicId,
+          {
+            resource_type: "video"
+          }
+        );
+      }
+      vendor.coverVideo = await uploadFile(req.file, "video");
+    }
+    // PHOTO CATALOGUE
+    else if (mediaType === "photoCatalogue") {
+      const index = vendor.photoCatalogue.findIndex(item => item.publicId === publicId);
+
+      if (index === -1) {
+        return res.status(404).json({
+          message: "Photo not found"
+        });
+      }
+
+      await cloudinary.uploader.destroy(publicId);
+      const uploaded = await uploadFile(req.file, "image");
+      vendor.photoCatalogue[index] = uploaded;
+    }
+    // VIDEO CATALOGUE
+    else if (mediaType === "videoCatalogue") {
+      const index = vendor.videoCatalogue.findIndex(item => item.publicId === publicId);
+      if (index === -1) {
+        return res.status(404).json({
+          message: "Video not found"
+        });
+      }
+
+      await cloudinary.uploader.destroy(
+        publicId,
+        { 
+          resource_type: "video"
+        }
+      );
+      const uploaded = await uploadFile( req.file, "video");
+      vendor.videoCatalogue[index] = uploaded;
+    }
+ 
+    else {
+      return res.status(400).json({
+        message: "Invalid media type"
+      });
+    }
+
+    await vendor.save();
+    return res.status(200).json({
+      message: "Media replaced successfully",
+      data: vendor
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
 exports.verifyVendorEmail = async (req, res) => {
   try {
     const { email, otp } = req.body;

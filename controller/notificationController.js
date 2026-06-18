@@ -38,6 +38,7 @@ exports.markNotificationAsRead = async (req, res) => {
   try {
 
     const { notificationId } = req.params;
+    console.log("notificationId:", notificationId);
     const notification = await notificationModel.findOneAndUpdate(
       {
         _id: notificationId,

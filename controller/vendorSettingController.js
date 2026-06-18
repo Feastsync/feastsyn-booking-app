@@ -9,7 +9,7 @@ exports.getSettings = async (req, res) => {
     try {
         const vendorId = req.user.id;
         const vendor = await vendorModel.findById(vendorId).select(
-                'stageName firstName lastName email phoneNumber bio stateOfResidence bankName accountNumber slug kycStatus');
+                'stageName email phoneNumber bio stateOfResidence bankName accountNumber slug calendar pricing kycStatus');
         if (!vendor) {
             return res.status(404).json({
                 message: 'Vendor not found'
@@ -41,7 +41,7 @@ exports.requestUpdate = async (req, res) => {
         }
 
         // Prevent display name update
-        if (req.body.stageName || req.body.firstName || req.body.lastName) {
+        if (req.body.stageName) {
             return res.status(400).json({
                 message: 'Display name and legal names cannot be edited'
             });
@@ -53,7 +53,7 @@ exports.requestUpdate = async (req, res) => {
         vendor.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         await vendor.save();
-        await brevo(vendor.email,vendor.firstName,OTP,emailTemplate(vendor.firstName, OTP));
+        await brevo(vendor.email, vendor.firstName,OTP, emailTemplate(vendor.firstName, OTP));
         return res.status(200).json({
             message: 'OTP sent successfully to your email'});
     } catch (error) {
@@ -89,13 +89,9 @@ exports.confirmUpdate = async (req, res) => {
         }
 
         Object.assign( vendor, vendor.pendingUpdate );
-
         vendor.pendingUpdate = null;
-
         vendor.otp = null;
-
         vendor.otpExpiresAt = null;
-
         await vendor.save();
 
         return res.status(200).json({
