@@ -19,7 +19,7 @@ const notificationSchema = new mongoose.Schema({
   recipientType: {
     type: String,
     enum: ['user', 'vendor', 'admin'],
-    required: true
+
   },
   title: {
     type: String,
