@@ -7,35 +7,32 @@ paths:
   /api/v1/admin/dashboard-stats:
     get:
       summary: Get admin dashboard statistics
-      tags: [admin]
       security:
         - bearerAuth: []
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                properties:
-                  totalUsers:
-                    type: integer
-                    example: 120
-                  totalVendors:
-                    type: integer
-                    example: 35
-                  pendingKYC:
-                    type: integer
-                    example: 8
-                  verifiedVendors:
-                    type: integer
-                    example: 27
-                  totalBookings:
-                    type: integer
-                    example: 90
-                  totalPayments:
-                    type: integer
-                    example: 76
+      tags: [admin]  
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totalUsers:
+                  type: integer
+                  example: 120
+                totalVendors:
+                  type: integer
+                  example: 35
+                pendingKYC:
+                  type: integer
+                  example: 8
+                verifiedVendors:
+                  type: integer
+                  example: 27
+                totalBookings:
+                  type: integer
+                  example: 90
+                totalPayments:
+                  type: integer
+                  example: 76
       responses:
         "200":
           description: Dashboard statistics fetched successfully              
