@@ -29,7 +29,7 @@ exports.upload = multer({
   }),
 
   limits: {
-    fileSize: 1024 * 1024 * 50 // 50MB
+    fileSize: 1024 * 1024 * 50
   },
 
   fileFilter: (req, file, cb) => {

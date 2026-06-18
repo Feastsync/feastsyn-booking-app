@@ -14,7 +14,7 @@ paths:
         "200":
           description: Notifications fetched successfully
 
-  /api/notification/read-notificatication/{notificationId}:
+  /api/v1/notification/read-notificatication/{notificationId}:
     put:
       summary: Mark one notification as read
       tags: [notifications]
@@ -27,7 +27,7 @@ paths:
         "200":
           description: Notification marked as read
 
-  /api/notification/mark-all-read:
+  /api/v1/notification/mark-all-read:
     put:
       summary: Mark all notifications as read
       tags: [notifications]

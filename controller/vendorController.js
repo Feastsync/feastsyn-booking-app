@@ -533,7 +533,6 @@ exports.getAllVendors = async (req, res) => {
 exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
-
     const vendor = await vendorModel.findOne({ slug }).populate("pricingId").lean();
 
     if (!vendor) {
@@ -541,9 +540,7 @@ exports.getOneVendor = async (req, res) => {
         message: "Vendor not found"
       });
     }
-
-    console.log("Vendor from DB:", vendor);
-
+    // console.log("Vendor from DB:", vendor);
     return res.status(200).json({
       data: vendor
     });
