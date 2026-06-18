@@ -100,7 +100,7 @@ paths:
           description: Vendor logged in successfully
 
           
-  /api/v1/vendor/update-profile/{id}:
+  /api/v1/vendor/update-profile/{vendorId}:
     put: 
       summary: this is the endpoint for vendor's profile update
       parameters:
@@ -165,6 +165,34 @@ paths:
       responses:          
         '200':
           description: Vendor profile updated successfully
+
+
+  /api/v1/vendor/replace-media/{vendorId}:
+    put: 
+      summary: this is the endpoint for vendor's media update
+      parameters:
+        - in: path
+          name: vendorId
+      tags: [vendors]    
+      requestBody:
+        required: true
+        content: 
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - mediaType
+                - publicId
+              properties:
+                mediaType:
+                  type: string
+                  description: The vendor's type of media he wants to change or replace
+                publicId:
+                  type: string
+                  description: The ID of the media that wants to be changed or replaced 
+      responses:          
+        '200':
+          description: Vendor media updated successfully
 
           
   /api/v1/vendor/forgot-password:
