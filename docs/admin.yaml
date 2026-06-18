@@ -10,35 +10,35 @@ paths:
       tags: [admin]
       security:
         - bearerAuth: []
-      responses:
-        "200":
-          description: Dashboard statistics fetched successfully
           content:
             application/json:
               schema:
                 type: object
-              properties:
-                data:
-                  type: object
-              properties:
-                totalUsers:
-                  type: integer
-                  example: 120
-                totalVendors:
-                  type: integer
-                  example: 35
-                pendingKYC:
-                  type: integer
-                  example: 8
-                verifiedVendors:
-                  type: integer
-                  example: 27
-                totalBookings:
-                  type: integer
-                  example: 90
-                totalPayments:
-                  type: integer
-                  example: 76
+                properties:
+                  data:
+                    type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                    example: 120
+                  totalVendors:
+                    type: integer
+                    example: 35
+                  pendingKYC:
+                    type: integer
+                    example: 8
+                  verifiedVendors:
+                    type: integer
+                    example: 27
+                  totalBookings:
+                    type: integer
+                    example: 90
+                  totalPayments:
+                    type: integer
+                    example: 76
+      responses:
+        "200":
+          description: Dashboard statistics fetched successfully              
         "401":
           description: Unauthorized
         "403":
@@ -46,67 +46,39 @@ paths:
         "500":
           description: Server error
 
-  # /api/v1/admin/all-users:
-  #   get:
-  #     summary: Get all users
-  #     tags:
-  #       - Admin Users
-  #     security:
-  #       - bearerAuth: []
-  #     responses:
-  #       "200":
-  #         description: Users fetched successfully
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 count:
-  #                   type: integer
-  #                   example: 10
-  #                 data:
-  #                   type: array
-  #                   items:
-  #                   $ref: "#/components/schemas/User"
-  #       "401":
-  #         description: Unauthorized
-  #       "403":
-  #         description: Admin access required
-  #       "500":
-  #         description: Server error
+  
 
-  # /api/v1/admin/users/{userId}:
-  #   get:
-  #     summary: Get one user
-  #     tags:
-  #       - Admin Users
-  #     security:
-  #       - bearerAuth: []
-  #     parameters:
-  #       - in: path
-  #         name: userId
-  #         required: true
-  #         schema:
-  #           type: string
-  #           example: 65f1a92c2b7c9a001234abcd
-  #     responses:
-  #       "200":
-  #         description: User fetched successfully
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 data:
-  #                   $ref: "#/components/schemas/User"
-  #     "401":
-  #       description: Unauthorized
-  #     "403":
-  #       description: Admin access required
-  #     "404":
-  #       description: User not found
-  #     "500":
-  #       description: Server error
+  /api/v1/admin/users/{userId}:
+    get:
+      summary: Get one user
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            example: 65f1a92c2b7c9a001234abcd
+      responses:
+        "200":
+          description: User fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+      "401":
+        description: Unauthorized
+      "403":
+        description: Admin access required
+      "404":
+        description: User not found
+      "500":
+        description: Server error
 
   /api/v1/admin/all-vendors:
     get:
@@ -137,8 +109,7 @@ paths:
   /api/v1/admin/vendors/{vendorId}:
     get:
       summary: Get one vendor
-      tags:
-        - Admin Vendors
+      tags: [admin]
       security:
         - bearerAuth: []
       parameters:
@@ -278,8 +249,7 @@ paths:
   /api/v1/admin/all-payments:
     get:
       summary: Get all payments
-      tags:
-        - Admin Payments
+      tags: [admin]
       security:
         - bearerAuth: []
       responses:
@@ -522,5 +492,30 @@ paths:
         "404":
           description: Package not found
         "500":
-          description: Server error            
+          description: Server error  
+          
+  /api/v1/admin/login:
+    post: 
+      summary: this is the endpoint for user login
+      tags: [users]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: The user's email address
+                password:
+                  type: string
+                  description: The user's password  
+                  example: password123
+      responses:          
+        '200':
+          description: User logged in successfully                  
   

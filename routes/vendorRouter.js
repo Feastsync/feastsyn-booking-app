@@ -6,8 +6,6 @@ const router = require('express').Router();
 
 router.post('/sign-up', signupVendorValidator, createVendor);
 
-
-
 router.put("/update-profile/:id", (req, res) => {
   upload.fields([
     { name: "profilePicture", maxCount: 1 },
@@ -18,7 +16,6 @@ router.put("/update-profile/:id", (req, res) => {
   ])(req, res, (err) => {
     if (err) {
       console.error("Multer Error:", err);
-
       return res.status(400).json({
         success: false,
         error: err.message,
@@ -35,11 +32,11 @@ router.post('/logout', authentication, vendorLogout);
 
 router.post('/forgot-password', vendorForgotPassword);
 router.post('/resend-otp', vendorResendOtp);
-router.post('/verify-otp', vendorVerifyResetOtp)
+router.post('/verify-otp', vendorVerifyResetOtp);
 router.post('/reset-password', resetPasswordValidator, vendorResetPassword);
 
-router.get('/all-vendors', getAllVendors)
- router.get('/one-vendor/:slug', getOneVendor)
+router.get('/all-vendors', getAllVendors);
+router.get('/one-vendor/:slug', getOneVendor);
 router.get("/vendor-dashboard", authentication, getVendorDashboard);
 
 module.exports = router; 
