@@ -21,10 +21,12 @@ paths:
               required:
                 - pricingId
                 - vendorId
-                - bookingDate
-                - bookingTitle
+                - eventDate
                 - eventType
                 - eventLocation
+                - duration
+                - guestCount
+                - additionalDetails
               properties:
                 pricingId:
                   type: string
@@ -32,19 +34,28 @@ paths:
                 vendorId:
                   type: string
                   description: The ID of the vendor
-                bookingDate:
+                eventDate:
                   type: string
                   format: date
-                  description: The date of the booking
-                bookingTitle:
+                  description: The date of the event
+                duration:
                   type: string
-                  description: The title of the booking
+                  enum: [2 hours, 4 hours, 6 hours, 8 hours, full day]
+                  description: The duration of the event
                 eventType:
                   type: string
+                  enum: [wedding, birthday party, corporate event, product launch, cultural festival, anniversary, graduation, burial]
                   description: The type of the event
                 eventLocation:
                   type: string
                   description: The location of the event
+                guestCount: 
+                  type: string
+                  enum: [50-100, 100-200, 200-300, 300-400, 400-500, 600+]
+                  description: The number of guests for the event
+                additionalDetails: 
+                  type: string
+                  description: Further information that is required    
       responses:          
         '201':
           description: Booking created successfully
