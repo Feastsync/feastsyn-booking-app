@@ -61,6 +61,20 @@ paths:
           description: Booking created successfully
 
   
+  /api/v1/bookings/booking-details/{bookingId}:
+    get:
+      summary: this is the endpoint to get booking details
+      tags: [bookings]
+      parameters: 
+        - in: path
+          name: bookingId 
+      responses:          
+        "200":
+          description: Booking accepted successfully 
+        "500": 
+          description: Something went wrong 
+          
+
   /api/v1/bookings/accept/{bookingId}:
     put:
       summary: this is the endpoint for accepting a new booking
@@ -76,7 +90,7 @@ paths:
         "200":
           description: Booking accepted successfully 
         "500": 
-          description: Something went wrong 
+          description: Something went wrong         
 
   /api/v1/bookings/reject/{bookingId}:
     put:

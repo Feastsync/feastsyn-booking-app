@@ -20,16 +20,7 @@ exports.createBooking = async (req, res) => {
 
     const {vendorId,pricingId,eventType,eventLocation,eventDate,duration,guestCount,additionalDetails} = req.body;
 
-    if (
-      !vendorId ||
-      !pricingId ||
-      !eventType ||
-      !eventLocation ||
-      !eventDate ||
-      !duration ||
-      !guestCount ||
-      !additionalDetails
-    ) {
+    if (!vendorId || !pricingId || !eventType || !eventLocation || !eventDate || !duration || !guestCount || !additionalDetails ) {
       return res.status(400).json({
         message: 'All required fields must be provided'
       });
@@ -106,6 +97,34 @@ exports.createBooking = async (req, res) => {
   }
 };
 
+
+exports.getBookingDetails = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId").populate("vendorId");
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found"
+      });
+    }
+
+    if (booking.vendorId._id.toString() !== req.user.id
+) {
+  return res.status(403).json({
+    message: "Unauthorized"
+  });
+}
+    return res.status(200).json({
+      data: booking
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
 // Vendor accepts a booking and auto cancels conflicting ones
 exports.acceptBooking = async (req, res) => {
   try {
