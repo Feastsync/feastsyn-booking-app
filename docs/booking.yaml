@@ -40,18 +40,18 @@ paths:
                   description: The date of the event
                 duration:
                   type: string
-                  enum: [2 hours, 4 hours, 6 hours, 8 hours, full day]
+                  enum: ['2 hours', '4 hours', '6 hours', '8 hours', 'full day']
                   description: The duration of the event
                 eventType:
                   type: string
-                  enum: [wedding, birthday party, corporate event, product launch, cultural festival, anniversary, graduation, burial]
+                  enum: ['wedding', 'birthday party', 'corporate event', 'product launch', 'cultural festival', 'anniversary', 'graduation', 'burial']
                   description: The type of the event
                 eventLocation:
                   type: string
                   description: The location of the event
                 guestCount: 
                   type: string
-                  enum: [50-100, 100-200, 200-300, 300-400, 400-500, 600+]
+                  enum: ['50-100', '100-200', '200-300', '300-400', '400-500', '600+']
                   description: The number of guests for the event
                 additionalDetails: 
                   type: string
