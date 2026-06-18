@@ -42,8 +42,8 @@ const options = {
         './docs/dispute.yaml',
         './docs/contact.yaml',
         './docs/calendar.yaml',
-        './docs/vendorSetting.yaml' 
-        // './docs/admin.yaml'
+        './docs/vendorSetting.yaml', 
+         //'./docs/admin.yaml'
     ]
     
 } 

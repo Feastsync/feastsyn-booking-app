@@ -46,39 +46,6 @@ paths:
         "500":
           description: Server error
 
-  
-
-  /api/v1/admin/users/{userId}:
-    get:
-      summary: Get one user
-      tags: [admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a001234abcd
-      responses:
-        "200":
-          description: User fetched successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/User"
-      "401":
-        description: Unauthorized
-      "403":
-        description: Admin access required
-      "404":
-        description: User not found
-      "500":
-        description: Server error
 
   /api/v1/admin/all-vendors:
     get:
@@ -106,37 +73,37 @@ paths:
         "500":
           description: Server error
 
-  /api/v1/admin/vendors/{vendorId}:
-    get:
-      summary: Get one vendor
-      tags: [admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: vendorId
-          required: true
-          schema:
-             type: string
-             example: 65f1a92c2b7c9a001234abcd
-      responses:
-        "200":
-          description: Vendor fetched successfully
-          content:
-            application/json:
-              schema:
-                type: object
-              properties:
-                data:
-                  $ref: "#/components/schemas/Vendor"
-        "401":
-         description: Unauthorized
-        "403":
-          description: Admin access required
-        "404":
-          description: Vendor not found
-        "500":
-          description: Server error
+  # /api/v1/admin/one-vendor/{vendorId}:
+  #   get:
+  #     summary: Get one vendor
+  #     tags: [admin]
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - in: path
+  #         name: vendorId
+  #         required: true
+  #         schema:
+  #            type: string
+  #            example: 65f1a92c2b7c9a001234abcd
+  #     responses:
+  #       "200":
+  #         description: Vendor fetched successfully
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #             properties:
+  #               data:
+  #                 $ref: "#/components/schemas/Vendor"
+  #       "401":
+  #        description: Unauthorized
+  #       "403":
+  #         description: Admin access required
+  #       "404":
+  #         description: Vendor not found
+  #       "500":
+  #         description: Server error
 
   /api/v1/admin/all-pending-kyc:
     get:
@@ -175,21 +142,9 @@ paths:
       parameters:
       - in: path
         name: kycId
-        required: true
-        schema:
-          type: string
-          example: 65f1a92c2b7c9a007777abcd
       responses:
         "200":
           description: KYC approved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: KYC approved successfully
         "401":
           description: Unauthorized
         "403":
@@ -208,10 +163,6 @@ paths:
       parameters:
         - in: path
           name: kycId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a007777abcd
       requestBody:
         required: true
         content:
@@ -227,14 +178,6 @@ paths:
       responses:
         "200":
           description: KYC rejected successfully
-          content:
-            application/json:
-              schema:
-                type: object
-              properties:
-                message:
-                  type: string
-                  example: KYC rejected successfully
         "400":
           description: Bad request
         "401":
@@ -277,7 +220,7 @@ paths:
         "500":
           description: Server error
 
-  /api/v1/admin/payments/{paymentId}:
+  /api/v1/admin/one-payment/{paymentId}:
     get:
       summary: Get one payment
       tags: [admin]
@@ -286,10 +229,6 @@ paths:
       parameters:
         - in: path
           name: paymentId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a005555abcd
       responses:
         "200":
           description: Payment fetched successfully
@@ -325,7 +264,7 @@ paths:
         "500":
           description: Server error
 
-  /api/v1/admin/bookings/{bookingId}:
+  /api/v1/admin/one-booking/{bookingId}:
     get:
       summary: Get one booking
       tags: [admin]
@@ -334,10 +273,6 @@ paths:
       parameters:
         - in: path
           name: bookingId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a001234abcd
       responses:
         "200":
           description: Booking retrieved successfully
@@ -359,10 +294,6 @@ paths:
       parameters:
         - in: path
           name: disputeId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a002222abcd
       requestBody:
         required: true
         content:
@@ -375,10 +306,10 @@ paths:
               properties:
                 status:
                   type: string
-                  example: resolved
+                  description: The status of the dispute
                 adminComment:
                   type: string
-                  example: Issue reviewed and resolved by admin.
+                  description: Issue reviewed and resolved by admin.
       responses:
         "200":
           description: Dispute updated successfully
@@ -400,10 +331,6 @@ paths:
       parameters:
         - in: path
           name: vendorId
-          required: true
-          schema:
-            type: string
-          example: 65f1a92c2b7c9a009999abcd
       responses:
         "200":
           description: Vendor reviews fetched successfully
@@ -423,10 +350,6 @@ paths:
       parameters:
         - in: path
           name: userId
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a001234abcd
       responses:
         "200":
           description: User reviews fetched successfully
@@ -453,51 +376,51 @@ paths:
         "500":
           description: Server error
 
-  /api/v1/admin/all-pricing:
-    get:
-      summary: Get vendor pricing packages
-      tags: [admin]
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: Pricing packages retrieved successfully
-        "401":
-          description: Unauthorized
-        "403":
-          description: Admin access required
-        "500":
-          description: Server error
+  # /api/v1/admin/all-pricing:
+  #   get:
+  #     summary: Get vendor pricing packages
+  #     tags: [admin]
+  #     security:
+  #       - bearerAuth: []
+  #     responses:
+  #       "200":
+  #         description: Pricing packages retrieved successfully
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Admin access required
+  #       "500":
+  #         description: Server error
 
-  /api/v1/admin/one-pricing/{id}:
-    get:
-      summary: Get one pricing package
-      tags: [admin]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            example: 65f1a92c2b7c9a003333abcd
-      responses:
-        "200":
-          description: Pricing package retrieved successfully
-        "401":
-          description: Unauthorized
-        "403":
-          description: Admin access required
-        "404":
-          description: Package not found
-        "500":
-          description: Server error  
+  # /api/v1/admin/one-pricing/{id}:
+  #   get:
+  #     summary: Get one pricing package
+  #     tags: [admin]
+  #     security:
+  #       - bearerAuth: []
+  #     parameters:
+  #       - in: path
+  #         name: id
+  #         required: true
+  #         schema:
+  #           type: string
+  #           example: 65f1a92c2b7c9a003333abcd
+  #     responses:
+  #       "200":
+  #         description: Pricing package retrieved successfully
+  #       "401":
+  #         description: Unauthorized
+  #       "403":
+  #         description: Admin access required
+  #       "404":
+  #         description: Package not found
+  #       "500":
+  #         description: Server error  
           
-  /api/v1/admin/login:
+  /api/v1/admin/login-admin:
     post: 
-      summary: this is the endpoint for user login
-      tags: [users]
+      summary: this is the endpoint for admin login
+      tags: [admin]
       requestBody:
         required: true
         content: 
@@ -510,12 +433,117 @@ paths:
               properties:
                 email:
                   type: string
-                  description: The user's email address
+                  description: The admin's email address
                 password:
                   type: string
-                  description: The user's password  
-                  example: password123
+                  description: The admin's password  
       responses:          
         '200':
-          description: User logged in successfully                  
+          description: admin logged in successfully  
+
+  /api/v1/admin/logout-admin:
+    post: 
+      summary: this is the endpoint for logging out
+      tags: [admin]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged out successfully
+        "500": 
+          description: Something went wrong     
+
+  /api/v1/admin/forgot-password-admin:
+    post: 
+      summary: this is the endpoint for forgot password
+      tags: [admin]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The admin's email address 
+      responses:          
+        '200':
+          description: Forgot password request submitted successfully
+  
+
+  /api/v1/admin/resend-otp-admin:
+    post: 
+      summary: this is the endpoint to resend otp
+      tags: [admin]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The admin's email address
+      responses:          
+        '200':
+          description: OTP resent successfully
+
+  /api/v1/admin/verify-otp-admin:
+    post: 
+      summary: this is the endpoint to verify reset otp
+      tags: [admin]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  description: The admin's email address
+                otp: 
+                  type: string
+                  description: One time password  
+      responses:          
+        '200':
+          description: Reset OTP verified successfully
+
+          
+  /api/v1/admin/reset-password-admin:
+    post: 
+      summary: this is the endpoint for resetting password  
+      tags: [admin]
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - confirmPassword
+              properties:
+                email:
+                  type: string
+                  description: The admin's email address
+                password:
+                  type: string
+                  description: The admin's password 
+                confirmPassword:
+                  type: string
+                  description: Confirmation of the admin's password
+      responses:          
+        '200':
+          description: admin's password reset successfully                           
   

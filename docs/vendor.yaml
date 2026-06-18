@@ -100,7 +100,7 @@ paths:
           description: Vendor logged in successfully
 
           
-  /api/v1/vendor/update-profile/{vendorId}:
+  /api/v1/vendor/update-profile/{id}:
     put: 
       summary: this is the endpoint for vendor's profile update
       parameters:

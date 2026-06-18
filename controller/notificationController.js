@@ -52,14 +52,12 @@ exports.markNotificationAsRead = async (req, res) => {
         new: true
       }
     );
-
     if (!notification) {
       return res.status(404).json({
         success: false,
         message: 'Notification not found'
       });
     }
-
     return res.status(200).json({
       success: true,
       message: 'Notification marked as read',
