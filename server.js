@@ -90,7 +90,7 @@ app.use('/api/v1/admin', adminRouter);
 app.use('api/v1/dispute', disputeRouter);
 app.use('/api/v1/review', reviewRouter);
 app.use('/api/v1/contact', contactRouter);
-app.use('/api/v1/settings', vendorSettingRouter)
+app.use('/api/v1/vendorSetting', vendorSettingRouter)
 
  app.use((req, res) => { 
   res.status(404).json({

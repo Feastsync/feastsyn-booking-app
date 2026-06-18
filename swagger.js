@@ -41,9 +41,10 @@ const options = {
         './docs/review.yaml',
         './docs/dispute.yaml',
         './docs/contact.yaml',
-        './docs/calendar.yaml' 
+        './docs/calendar.yaml',
+        './docs/vendorSetting.yaml' 
         // './docs/admin.yaml'
     ]
     
-}
+} 
 module.exports = swagger(options)
