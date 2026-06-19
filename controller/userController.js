@@ -51,9 +51,7 @@ const paymentModel = require('../models/payment')
         },
       });
     } catch (error) {
-      return res.status(500).json({
-        message: error.message,
-      });
+      next(error)
     }
   };
 

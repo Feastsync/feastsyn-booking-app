@@ -422,11 +422,7 @@ exports.vendorLogin = async (req, res) => {
     vendor.loginAttempts = 0;
     await vendor.save();
 
-    const token = jwt.sign(
-      { id: vendor._id },
-      process.env.SECRET_KEY,
-      { expiresIn: '1d' }
-    );
+    const token = jwt.sign({ id: vendor._id }, process.env.SECRET_KEY, { expiresIn: '1d' });
 
     res.status(200).json({
       message: 'Login sucessful',

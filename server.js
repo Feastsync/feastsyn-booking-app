@@ -75,7 +75,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 //   secret: 'dabest',
 //   resave: false,
 //   saveUninitialized: false
-//  }))
+//  })) 
 
  app.use('/api/v1/user', router);
 app.use('/api/v1/vendor', vendorRouter);

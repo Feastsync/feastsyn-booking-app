@@ -5,7 +5,7 @@ const bookingModel = require('../models/booking');
 
 exports.getNotifications = async (req, res) => {
   try {
-     const notificationId = req.user.id
+     const vendorId = req.user.id
     const notifications = await notificationModel.find({recipientId:req.user.id }).populate({path: 'bookingId',
   select: '_id eventDate eventLocation bookingStatus paymentStatus'}).sort({ createdAt: -1 });
 
