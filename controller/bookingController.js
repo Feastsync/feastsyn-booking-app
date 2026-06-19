@@ -102,29 +102,22 @@ exports.getBookingDetails = async (req, res) => {
   try {
     const vendorId = req.user.id
     const { bookingId } = req.params;
+    
+    if (bookingId !== vendorId
+) {
+  return res.status(403).json({
+    message: "Wrong Vendor mismatch"
+  });
+}
     const booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId").populate("vendorId");
-
     if (!booking) {
       return res.status(404).json({
         message: "Booking not found"
       });
     }
 
-    console.log("vendorId ", req.user.id)
-    console.log("bookingId ", booking.vendorId.toString())
 
 
-    res.json({vendorId : req.user.id,
-
-bookingId : booking.vendorId.toString()
-
-    })
-    if (booking.vendorId.toString() !== req.user.id
-) {
-  return res.status(403).json({
-    message: "Unauthorized fvgvgfvtgtfg"
-  });
-}
     return res.status(200).json({
       data: booking
     });
