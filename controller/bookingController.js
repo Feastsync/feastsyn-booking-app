@@ -102,14 +102,17 @@ exports.getBookingDetails = async (req, res) => {
   try {
     const vendorId = req.user.id
     const { bookingId } = req.params;
-    
-    if (bookingId !== vendorId
+
+
+    let booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId");
+ 
+    if (booking.vendorId.toString() !== vendorId
 ) {
   return res.status(403).json({
     message: "Wrong Vendor mismatch"
   });
 }
-    const booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId").populate("vendorId");
+     booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId").populate("vendorId");
     if (!booking) {
       return res.status(404).json({
         message: "Booking not found"
@@ -119,7 +122,15 @@ exports.getBookingDetails = async (req, res) => {
 
 
     return res.status(200).json({
-      data: booking
+      data: { bookingId: booking._id,
+         eventType: booking.eventType,
+        duration: booking.duration,
+        guestCount: booking.guestCount,
+        eventDate: booking.eventDate,
+        additionalDetails: booking.additionalDetails,
+        eventLocation: booking.eventLocation,
+        bookingStatus: booking.bookingStatus,
+        paymentStatus: booking.paymentStatus}
     });
 
   } catch (error) {
