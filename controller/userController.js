@@ -12,13 +12,16 @@ const paymentModel = require('../models/payment')
   exports.createUser = async (req, res) => {
     try {
       const { firstName, lastName, email, password, phoneNumber } = req.body;
+
+      const otp = otpGenerator.generate(4, {upperCaseAlphabets: false,lowerCaseAlphabets: false,specialChars: false,});
+      console.log("OTP:", otp);
+
       if (!password) {
         return res.status(400).json({
           message: "Please enter password",
         });
       }
-    const otp = otpGenerator.generate(4, {upperCaseAlphabets: false,lowerCaseAlphabets: false,specialChars: false,});
-      console.log("OTP:", otp);
+    
 
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
@@ -27,11 +30,15 @@ const paymentModel = require('../models/payment')
         lastName,
         email: email.toLowerCase(),
         password: hashPassword,
+        confirmPassword: hashPassword,
         phoneNumber,
-        otp, 
+        otp
       });
-        console.log("OTP being sent:", otp);
-      await brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, otp ));
+
+
+      brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, user.otp ));
+
+      const users = await userModel.find()
       return res.status(201).json({
         message: "User created successfully",
         data: {
