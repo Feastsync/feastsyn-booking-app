@@ -114,8 +114,8 @@ exports.initializePayment = async (req, res) => {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://www.feastsync.com/',
-            notification_url: 'https://feastsyn-booking-app.onrender.com/webhook'
+            redirect_url: 'https://www.google.com/',
+            notification_url: 'https://feastsyn-booking-app.onrender.com/payment/webhook'
         };
 
         const response = await axios.post(
@@ -155,166 +155,336 @@ exports.initializePayment = async (req, res) => {
     }
 };
 
-exports.verifyWebhook = async (req, res) => {
-    try {
-        const { event, data } = req.body;
-        const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
+// exports.verifyWebhook = async (req, res) => {
+//     try {
+//         const { event, data } = req.body;
+//         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
 
-        const signature = req.headers["x-korapay-signature"];
+//         const signature = req.headers["x-korapay-signature"];
 
-        if (hash !== signature) {
-            return res.status(401).json({
-                message: "Invalid webhook signature"
-            });
-        }
+//         if (hash !== signature) {
+//             return res.status(401).json({
+//                 message: "Invalid webhook signature"
+//             });
+//         }
 
-        const payment = await paymentModel.findOne({
-            reference: `TCA-FEASTSYNC-${data.reference}`
-        });
+//         const payment = await paymentModel.findOne({reference: data.reference});
 
-        if (!payment) {
-            return res.status(404).json({
-                message: "No payment record found"
-            });
-        }
+//         if (!payment) {
+//             return res.status(404).json({
+//                 message: "No payment record found"
+//             });
+//         }
 
-        if (event === "charge.success") {
+//         if (event === "charge.success") {
 
-            // Prevent duplicate processing
-            if (payment.paymentStatus === "successful") {
-                return res.status(200).json({
-                    message: "Payment already processed"
-                });
-            }
+//             // Prevent duplicate processing
+//             if (payment.paymentStatus === "successful") {
+//                 return res.status(200).json({
+//                     message: "Payment already processed"
+//                 });
+//             }
 
-            // Update payment
-            payment.paymentStatus = "successful";
-            await payment.save();
+//             // Update payment
+//             payment.paymentStatus = "successful";
+//             await payment.save();
 
-            // Update booking
-            if (payment.bookingId) {
-                await bookingModel.findByIdAndUpdate(
-                    payment.bookingId,
-                    {
-                        paymentStatus: "paid",
-                        bookingStatus: "confirmed"
-                    },
-                    {
-                        new: true
-                    }
-                );
-            }
-            // ESCROW CALCULATIONS
-            const totalAmount = Number(payment.amount);
+//             // Update booking
+//             if (payment.bookingId) {
+//                 await bookingModel.findByIdAndUpdate(
+//                     payment.bookingId,
+//                     {
+//                         paymentStatus: "paid",
+//                         bookingStatus: "confirmed"
+//                     },
+//                     {
+//                         new: true
+//                     }
+//                 );
+//             }
+//             // ESCROW CALCULATIONS
+//             const totalAmount = Number(payment.amount);
 
-            // FeastSync Commission (5%)
-            const commissionAmount = totalAmount * 0.05;
+//             // FeastSync Commission (5%)
+//             const commissionAmount = totalAmount * 0.05;
 
-            // Vendor gets remaining 95%
-            const vendorAmount = totalAmount - commissionAmount;
+//             // Vendor gets remaining 95%
+//             const vendorAmount = totalAmount - commissionAmount;
 
-            // 70% released immediately
-            const firstReleaseAmount = vendorAmount * 0.70;
+//             // 70% released immediately
+//             const firstReleaseAmount = vendorAmount * 0.70;
 
-            // 30% held in escrow
-            const finalReleaseAmount = vendorAmount * 0.30;
+//             // 30% held in escrow
+//             const finalReleaseAmount = vendorAmount * 0.30;
         
-            // CREATE ESCROW RECORD
-            const existingEscrow = await escrowModel.findOne({ paymentId: payment._id});
-            if (!existingEscrow) {
-                await escrowModel.create({
-                    bookingId: payment.bookingId,
-                    vendorId: payment.vendorId,
-                    paymentId: payment._id,
+//             // CREATE ESCROW RECORD
+//             const existingEscrow = await escrowModel.findOne({ paymentId: payment._id});
+//             if (!existingEscrow) {
+//                 await escrowModel.create({
+//                     bookingId: payment.bookingId,
+//                     vendorId: payment.vendorId,
+//                     paymentId: payment._id,
 
-                    totalAmount,
-                    commissionAmount,
+//                     totalAmount,
+//                     commissionAmount,
 
-                    firstReleaseAmount,
-                    finalReleaseAmount,
+//                     firstReleaseAmount,
+//                     finalReleaseAmount,
 
-                    firstReleaseStatus: "released",
-                    finalReleaseStatus: "pending"
-                });
-            }
-            // CREATE / UPDATE WALLET
-            let wallet = await walletModel.findOne({vendorId: payment.vendorId});
-            if (!wallet) {
-                wallet = await walletModel.create({
-                    vendorId: payment.vendorId,
-                    availableBalance: 0,
-                    escrowBalance: 0,
-                    totalEarned: 0
-                });
-            }
+//                     firstReleaseStatus: "released",
+//                     finalReleaseStatus: "pending"
+//                 });
+//             }
+//             // CREATE / UPDATE WALLET
+//             let wallet = await walletModel.findOne({vendorId: payment.vendorId});
+//             if (!wallet) {
+//                 wallet = await walletModel.create({
+//                     vendorId: payment.vendorId,
+//                     availableBalance: 0,
+//                     escrowBalance: 0,
+//                     totalEarned: 0
+//                 });
+//             }
 
-            wallet.availableBalance +=
-                firstReleaseAmount;
+//             wallet.availableBalance +=
+//                 firstReleaseAmount;
 
-            wallet.escrowBalance +=
-                finalReleaseAmount;
+//             wallet.escrowBalance +=
+//                 finalReleaseAmount;
 
-            wallet.totalEarned +=
-                vendorAmount;
+//             wallet.totalEarned +=
+//                 vendorAmount;
 
-            await wallet.save();
-            // TRANSACTION RECORDS
-            await transactionModel.create({
-                vendorId: payment.vendorId,
-                bookingId: payment.bookingId,
-                amount: commissionAmount,
-                transactionType: "commission",
-                status: "successful"
-            });
+//             await wallet.save();
+//             // TRANSACTION RECORDS
+//             await transactionModel.create({
+//                 vendorId: payment.vendorId,
+//                 bookingId: payment.bookingId,
+//                 amount: commissionAmount,
+//                 transactionType: "commission",
+//                 status: "successful"
+//             });
 
-            await transactionModel.create({
-                vendorId: payment.vendorId,
-                bookingId: payment.bookingId,
-                amount: firstReleaseAmount,
-                transactionType: "release",
-                status: "successful"
-            });
+//             await transactionModel.create({
+//                 vendorId: payment.vendorId,
+//                 bookingId: payment.bookingId,
+//                 amount: firstReleaseAmount,
+//                 transactionType: "release",
+//                 status: "successful"
+//             });
 
-            await transactionModel.create({
-                vendorId: payment.vendorId,
-                bookingId: payment.bookingId,
-                amount: finalReleaseAmount,
-                transactionType: "escrow",
-                status: "pending"
-            });
+//             await transactionModel.create({
+//                 vendorId: payment.vendorId,
+//                 bookingId: payment.bookingId,
+//                 amount: finalReleaseAmount,
+//                 transactionType: "escrow",
+//                 status: "pending"
+//             });
 
-            return res.status(200).json({
-                message: "Payment processed successfully"
-            });
-        }
+//             return res.status(200).json({
+//                 message: "Payment processed successfully"
+//             });
+//         }
 
-        if (event === "charge.pending") {
-            payment.paymentStatus = "processing";
-            await payment.save();
+//         if (event === "charge.pending") {
+//             payment.paymentStatus = "processing";
+//             await payment.save();
 
-            return res.status(200).json({
-                message: "Payment marked as processing"
-            });
-        }
+//             return res.status(200).json({
+//                 message: "Payment marked as processing"
+//             });
+//         }
 
-        if (event === "charge.failed") {
-            payment.paymentStatus = "failed";
-            await payment.save();
+//         if (event === "charge.failed") {
+//             payment.paymentStatus = "failed";
+//             await payment.save();
 
-            return res.status(200).json({
-                message: "Payment marked as failed"
-            });
-        }
+//             return res.status(200).json({
+//                 message: "Payment marked as failed"
+//             });
+//         }
 
-        return res.status(200).json({
-            message: "Webhook received"
-        });
+//         return res.status(200).json({
+//             message: "Webhook received"
+//         });
 
-    } catch (error) {
-        console.log(error);
+//     } catch (error) {
+//         console.log(error);
 
-        return res.status(500).json({
-            message: error.message
-        });
+//         return res.status(500).json({
+//             message: error.message
+//         });
+//     }
+// };
+
+exports.verifyWebhook = async (req, res) => {
+  try {
+    console.log("Webhook Headers:", req.headers);
+    console.log("Webhook Body:", req.body);
+
+    const signature = req.headers["x-korapay-signature"];
+
+    if (!signature) {
+      return res.status(401).json({
+        message: "Missing webhook signature",
+      });
     }
+
+    // Verify signature
+    const payload = JSON.stringify(req.body);
+
+    const hash = crypto
+      .createHmac("sha256", process.env.KORA_API_KEY)
+      .update(payload)
+      .digest("hex");
+
+    console.log("Generated Hash:", hash);
+    console.log("Received Signature:", signature);
+
+    if (hash !== signature) {
+      return res.status(401).json({
+        message: "Invalid webhook signature",
+      });
+    }
+
+    const { event, data } = req.body;
+
+    const payment = await paymentModel.findOne({
+      reference: data.reference,
+    });
+
+    if (!payment) {
+      console.log("Payment not found:", data.reference);
+
+      return res.status(404).json({
+        message: "No payment record found",
+      });
+    }
+
+    if (event === "charge.success") {
+      if (payment.paymentStatus === "successful") {
+        return res.status(200).json({
+          message: "Payment already processed",
+        });
+      }
+
+      payment.paymentStatus = "successful";
+      await payment.save();
+
+      if (payment.bookingId) {
+        await bookingModel.findByIdAndUpdate(
+          payment.bookingId,
+          {
+            paymentStatus: "paid",
+            bookingStatus: "confirmed",
+          },
+          { new: true }
+        );
+      }
+
+      const totalAmount = Number(payment.amount);
+
+      const commissionAmount = totalAmount * 0.05;
+      const vendorAmount = totalAmount - commissionAmount;
+
+      const firstReleaseAmount = vendorAmount * 0.7;
+      const finalReleaseAmount = vendorAmount * 0.3;
+
+      const existingEscrow = await escrowModel.findOne({
+        paymentId: payment._id,
+      });
+
+      if (!existingEscrow) {
+        await escrowModel.create({
+          bookingId: payment.bookingId,
+          vendorId: payment.vendorId,
+          paymentId: payment._id,
+
+          totalAmount,
+          commissionAmount,
+
+          firstReleaseAmount,
+          finalReleaseAmount,
+
+          firstReleaseStatus: "released",
+          finalReleaseStatus: "pending",
+        });
+      }
+
+      let wallet = await walletModel.findOne({
+        vendorId: payment.vendorId,
+      });
+
+      if (!wallet) {
+        wallet = await walletModel.create({
+          vendorId: payment.vendorId,
+          availableBalance: 0,
+          escrowBalance: 0,
+          totalEarned: 0,
+        });
+      }
+
+      wallet.availableBalance += firstReleaseAmount;
+      wallet.escrowBalance += finalReleaseAmount;
+      wallet.totalEarned += vendorAmount;
+
+      await wallet.save();
+
+      await transactionModel.create({
+        vendorId: payment.vendorId,
+        bookingId: payment.bookingId,
+        amount: commissionAmount,
+        transactionType: "commission",
+        status: "successful",
+      });
+
+      await transactionModel.create({
+        vendorId: payment.vendorId,
+        bookingId: payment.bookingId,
+        amount: firstReleaseAmount,
+        transactionType: "release",
+        status: "successful",
+      });
+
+      await transactionModel.create({
+        vendorId: payment.vendorId,
+        bookingId: payment.bookingId,
+        amount: finalReleaseAmount,
+        transactionType: "escrow",
+        status: "pending",
+      });
+
+      return res.status(200).json({
+        message: "Payment processed successfully",
+      });
+    }
+
+    if (event === "charge.pending") {
+      payment.paymentStatus = "processing";
+      await payment.save();
+
+      return res.status(200).json({
+        message: "Payment marked as processing",
+      });
+    }
+
+    if (event === "charge.failed") {
+      payment.paymentStatus = "failed";
+      await payment.save();
+
+      return res.status(200).json({
+        message: "Payment marked as failed",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Webhook received",
+    });
+  } catch (error) {
+    console.error("WEBHOOK ERROR:", error);
+
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
 };
