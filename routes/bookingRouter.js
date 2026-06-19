@@ -5,7 +5,7 @@ const { createBooking, getVendorBookings, acceptBooking, rejectBooking, getBooki
 
 
 router.post('/bookings',authentication, createBooking);
-router.get('/booking-details/:bookingId', getBookingDetails),
+router.get('/booking-details/:bookingId', authentication ,getBookingDetails),
 router.put('/accept/:bookingId', authentication,acceptBooking);
 router.put('/reject/:bookingId', authentication,rejectBooking);
 router.get('/vendor/:vendorId', getVendorBookings); 
