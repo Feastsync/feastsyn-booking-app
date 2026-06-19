@@ -66,8 +66,7 @@ const vendorSchema = new mongoose.Schema({
     category: {
         type: String,
         enum: [ 'mc', 'liveband', 'photographer', 'videographer', 'dj'
-        ],
-        immutable: true
+        ]
 },
  otp: {
         type: String,

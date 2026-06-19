@@ -112,7 +112,7 @@ exports.updateVendor = async (req, res) => {
       return res.status(400).json({
         message: `${stateOfResidence} is not a valid state`
       });
-    }
+    } 
 
     let categoryToUpdate;
     if (category) {
@@ -215,15 +215,15 @@ console.log("A")
     };
     console.log("B")
 
-    await vendorModel.findByIdAndUpdate(
+   const updatedVendor = await vendorModel.findByIdAndUpdate(
   id,
   updateData,
   {
+    new: true,
     runValidators: true
   }
 );
 
-const updatedVendor = await vendorModel.findById(id);
     return res.status(200).json({
   message: "Vendor information updated successfully",
   vendorUrl: publicUrl,
@@ -617,15 +617,17 @@ exports.getAllVendors = async (req, res) => {
     const { category } = req.query;
     let query = {};
 
-    if (category) {
-      query.category = {
+    if (category) {query.category = {
         $regex: `^${category}$`,
         $options: "i"
       };
     }
 
     const vendors = await vendorModel.find(query);
-
+    console.log(vendors.map(v => ({
+  id: v._id,
+  category: v.category
+})));
     return res.status(200).json({
       message: "Successfully retrieved vendors",
       count: vendors.length,
