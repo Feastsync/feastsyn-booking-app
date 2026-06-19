@@ -16,7 +16,7 @@ const pricingSchema = new mongoose.Schema({
     packageName: {
         type: String,
         required: true,
-        enum: ['basic', 'standard', 'premium', 'addMorePackages']
+        enum: ['Basic Package', 'Standard Package', 'Premium Package', 'addMorePackages']
     },
     packageDescription: {
         type: String,

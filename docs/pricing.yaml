@@ -15,7 +15,7 @@ paths:
       requestBody:
         required: true
         content: 
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -31,6 +31,7 @@ paths:
                   description: The description of the package
                 pacakageName:
                   type: string
+                  enum: [Basic Package, Standard Package, Premium Package]
                   description: The name of the package
       responses:          
         '201':
