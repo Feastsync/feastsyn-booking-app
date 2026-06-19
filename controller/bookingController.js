@@ -113,7 +113,7 @@ exports.getBookingDetails = async (req, res) => {
     if (booking.vendorId.toString() !== req.user.id
 ) {
   return res.status(403).json({
-    message: "Unauthorized"
+    message: "Unauthorized fvgvgfvtgtfg"
   });
 }
     return res.status(200).json({
@@ -126,6 +126,8 @@ exports.getBookingDetails = async (req, res) => {
     });
   }
 };
+
+
 // Vendor accepts a booking and auto cancels conflicting ones
 exports.acceptBooking = async (req, res) => {
   try {
