@@ -279,7 +279,7 @@ exports.getClientBookings = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -305,7 +305,7 @@ exports.getVendorBookings = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -335,7 +335,7 @@ exports.getSingleBooking = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ 
-      message: 'Server error', error });
+      message: error.message });
   }
 };
 
