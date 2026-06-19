@@ -615,24 +615,16 @@ exports.vendorResetPassword = async (req, res) => {
 exports.getAllVendors = async (req, res) => {
   try {
     const { category } = req.query;
-    let query = {};
 
-    if (category) {query.category = {
-        $regex: `^${category}$`,
-        $options: "i"
-      };
-    }
+    const vendors = category? await vendorModel.find({ category })
+    : await vendorModel.find().select('-password');
 
-    const vendors = await vendorModel.find(query);
-    console.log(vendors.map(v => ({
-  id: v._id,
-  category: v.category
-})));
     return res.status(200).json({
       message: "Successfully retrieved vendors",
       count: vendors.length,
       data: vendors
     });
+
   } catch (error) {
     return res.status(500).json({
       message: error.message
