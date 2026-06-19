@@ -158,33 +158,34 @@ exports.initializePayment = async (req, res) => {
 exports.verifyWebhook = async (req, res) => {
     try {
         const { event, data } = req.body;
+        console.log('checking for webhook')
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
-
+        
         const signature = req.headers["x-korapay-signature"];
-
+        
         if (hash !== signature) {
             return res.status(401).json({
                 message: "Invalid webhook signature"
             });
         }
-
-        const payment = await paymentModel.findOne({reference: data.reference});
-
+        
+        const payment = await paymentModel.findOne({ reference: data.reference });
+        
         if (!payment) {
             return res.status(404).json({
                 message: "No payment record found"
             });
         }
-
+        
         if (event === "charge.success") {
-
+            console.log('checking for success webhook')
             // Prevent duplicate processing
             // if (payment.paymentStatus === "successful") {
-            //     return res.status(200).json({
+                //     return res.status(200).json({
             //         message: "Payment already processed"
             //     });
             // }
-
+            
             // Update payment
             payment.paymentStatus = "successful";
             await payment.save();
@@ -204,30 +205,30 @@ exports.verifyWebhook = async (req, res) => {
             }
             // ESCROW CALCULATIONS
             const totalAmount = Number(payment.amount);
-
+            
             // FeastSync Commission (5%)
             const commissionAmount = totalAmount * 0.05;
-
+            
             // Vendor gets remaining 95%
             const vendorAmount = totalAmount - commissionAmount;
-
+            
             // 70% released immediately
             const firstReleaseAmount = vendorAmount * 0.70;
-
+            
             // 30% held in escrow
             const finalReleaseAmount = vendorAmount * 0.30;
-        
+            
             // CREATE ESCROW RECORD
-            const existingEscrow = await escrowModel.findOne({ paymentId: payment._id});
+            const existingEscrow = await escrowModel.findOne({ paymentId: payment._id });
             if (!existingEscrow) {
                 await escrowModel.create({
                     bookingId: payment.bookingId,
                     vendorId: payment.vendorId,
                     paymentId: payment._id,
-
+                    
                     totalAmount,
                     commissionAmount,
-
+                    
                     firstReleaseAmount,
                     finalReleaseAmount,
 
@@ -236,7 +237,7 @@ exports.verifyWebhook = async (req, res) => {
                 });
             }
             // CREATE / UPDATE WALLET
-            let wallet = await walletModel.findOne({vendorId: payment.vendorId});
+            let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
             if (!wallet) {
                 wallet = await walletModel.create({
                     vendorId: payment.vendorId,
@@ -245,16 +246,16 @@ exports.verifyWebhook = async (req, res) => {
                     totalEarned: 0
                 });
             }
-
+            
             wallet.availableBalance +=
-                firstReleaseAmount;
+            firstReleaseAmount;
 
             wallet.escrowBalance +=
-                finalReleaseAmount;
+            finalReleaseAmount;
 
             wallet.totalEarned +=
-                vendorAmount;
-
+            vendorAmount;
+            
             await wallet.save();
             // TRANSACTION RECORDS
             await transactionModel.create({
@@ -264,7 +265,7 @@ exports.verifyWebhook = async (req, res) => {
                 transactionType: "commission",
                 status: "successful"
             });
-
+            
             await transactionModel.create({
                 vendorId: payment.vendorId,
                 bookingId: payment.bookingId,
@@ -280,31 +281,32 @@ exports.verifyWebhook = async (req, res) => {
                 transactionType: "escrow",
                 status: "pending"
             });
-
+            
             return res.status(200).json({
                 status: true,
                 message: "Payment verified successfully"
             });
         }
-
+        
         if (event === "charge.pending") {
+            console.log('checking for pending webhook')
             payment.paymentStatus = "processing";
             await payment.save();
-
+            
             return res.status(200).json({
                 message: "Payment marked as processing"
             });
         }
-
+        
         if (event === "charge.failed") {
             payment.paymentStatus = "failed";
             await payment.save();
-
+            
             return res.status(200).json({
                 message: "Payment marked as failed"
             });
         }
-
+        
         return res.status(200).json({
             message: "Webhook received"
         });
@@ -318,46 +320,46 @@ exports.verifyWebhook = async (req, res) => {
     }
 };
 
-exports.verifyPayment = async (req, res)=>{
+exports.verifyPayment = async (req, res) => {
     try {
         //Extract the reference from the query params
-        const {reference} = req.query
+        const { reference } = req.query
         //verify the status of the payment from kora
-        const {data} = await axios.get(`https://api.korapay.com/merchant/api/v1/charges/${reference}`, {
+        const { data } = await axios.get(`https://api.korapay.com/merchant/api/v1/charges/${reference}`, {
             headers: {
                 Authorization: `Bearer ${process.env.KORA_API_KEY}`
             }
         });
-         //update the payment in our app
-            const payment = await paymentModel.findOne({reference})
-            if(!payment){
-                return res.status(404).json({
-                    message: 'Payment not found'
-                })
-            }
+        //update the payment in our app
+        const payment = await paymentModel.findOne({ reference })
+        if (!payment) {
+            return res.status(404).json({
+                message: 'Payment not found'
+            })
+        }
         //Check the status update
-        if(data?.status === true && data?.data.status === 'success'){
-           
+        if (data?.status === true && data?.data.status === 'success') {
+
             //Update the status of the payment
             payment.status = data?.data.status;
             await payment.save()
-            
+
             //send a success response
             return res.status(200).json({
                 message: 'Payment verified successfully',
                 data: payment
             })
-        }else {
+        } else {
             payment.status = data?.data.status
             await payment.save();
 
-             //Send a success response
-        return res.status(200).json({
-            message: 'payment verifification failed',
-            data: payment
-        })
+            //Send a success response
+            return res.status(200).json({
+                message: 'payment verifification failed',
+                data: payment
+            })
         }
-       
+
     } catch (error) {
         console.log(error.message)
         res.status(500).json({
