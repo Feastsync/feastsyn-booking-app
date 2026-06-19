@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const walletModel = require('../models/wallet')
 const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow')
+const crypto = require('crypto');
 
 exports.initializePayment = async (req, res) => {
     try {
