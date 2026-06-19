@@ -114,8 +114,7 @@ exports.initializePayment = async (req, res) => {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://www.google.com/',
-            notification_url: 'https://feastsyn-booking-app.onrender.com/api/v1/payment/webhook'
+            redirect_url: 'https://www.google.com/'
         };
 
         const response = await axios.post(
@@ -154,6 +153,7 @@ exports.initializePayment = async (req, res) => {
         });
     }
 };
+
 
 exports.verifyWebhook = async (req, res) => {
     try {
