@@ -183,10 +183,7 @@ exports.acceptBooking = async (req, res) => {
       message: 'Booking accepted successfully',
       booking: {
         ...booking.toObject(),
-        eventDate: booking.eventDate.toISOString().split('T')[0],
-        // bookingDate: booking.bookingDate.toISOString().split('T')[0],
-        createdAt: booking.createdAt.toISOString().split('T')[0],
-        updatedAt: booking.updatedAt.toISOString().split('T')[0]
+        eventDate: booking.eventDate.toISOString().split('T')[0]
       }
     });
 
@@ -266,10 +263,7 @@ exports.getClientBookings = async (req, res) => {
     }
     const formattedBookings = bookings.map(b => ({
       ...b.toObject(),
-      eventDate: b.eventDate.toISOString().split('T')[0],
-      bookingDate: b.bookingDate.toISOString().split('T')[0],
-      createdAt: b.createdAt.toISOString().split('T')[0],
-      updatedAt: b.updatedAt.toISOString().split('T')[0]
+      eventDate: b.eventDate.toISOString().split('T')[0]
     }));
 
     res.status(200).json({
@@ -292,10 +286,7 @@ exports.getVendorBookings = async (req, res) => {
     }
     const formattedBookings = bookings.map(b => ({
       ...b.toObject(),
-      eventDate: b.eventDate.toISOString().split('T')[0],
-      bookingDate: b.bookingDate.toISOString().split('T')[0],
-      createdAt: b.createdAt.toISOString().split('T')[0],
-      updatedAt: b.updatedAt.toISOString().split('T')[0]
+      eventDate: b.eventDate.toISOString().split('T')[0]
     }));
 
     res.status(200).json({
@@ -327,9 +318,7 @@ exports.getSingleBooking = async (req, res) => {
       booking: {
         ...booking.toObject(),
         eventDate: booking.eventDate.toISOString().split('T')[0],
-        bookingDate: booking.bookingDate.toISOString().split('T')[0],
-        createdAt: booking.createdAt.toISOString().split('T')[0],
-        updatedAt: booking.updatedAt.toISOString().split('T')[0]
+     
       }
     });
 
