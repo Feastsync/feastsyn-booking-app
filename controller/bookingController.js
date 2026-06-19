@@ -110,6 +110,15 @@ exports.getBookingDetails = async (req, res) => {
       });
     }
 
+    console.log("vendorId ", req.user.id)
+    console.log("bookingId ", booking.vendorId.toString())
+
+
+    res.json({vendorId : req.user.id,
+
+bookingId : booking.vendorId.toString()
+
+    })
     if (booking.vendorId.toString() !== req.user.id
 ) {
   return res.status(403).json({
