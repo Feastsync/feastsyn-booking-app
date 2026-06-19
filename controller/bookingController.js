@@ -100,6 +100,7 @@ exports.createBooking = async (req, res) => {
 
 exports.getBookingDetails = async (req, res) => {
   try {
+    const vendorId = req.user.id
     const { bookingId } = req.params;
     const booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId").populate("vendorId");
 
