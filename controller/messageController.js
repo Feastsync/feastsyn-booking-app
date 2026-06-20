@@ -14,8 +14,11 @@ exports.getMessages = async (req, res) => {
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     const senderId = req.user.id;
-    const receiverId = bookingModel.vendorId === senderId ? bookingModel.userId : bookingModel.vendorId;
+    const receiverId = booking.vendorId === senderId ? booking.userId : booking.vendorId;
+console.log(senderId)
 
+
+console.log("booking : " , booking)
     if (!receiverId) return res.status(400).json({ message: "You have not been assigned to user yet" });
 
     const messages = await Message.findAll({
