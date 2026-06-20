@@ -127,20 +127,21 @@ if (!pricing) {
 
 
     return res.status(200).json({
-      data: { bookingId: booking._id,
-        pricingId: pricing._id,
-        eventType: booking.eventType,
-        duration: booking.duration,
-        guestCount: booking.guestCount,
-        eventDate: booking.eventDate,
-        additionalDetails: booking.additionalDetails,
-        eventLocation: booking.eventLocation,
-        bookingStatus: booking.bookingStatus,
-        paymentStatus: booking.paymentStatus,
-        packageName: pricing.packageName,
-        packagePrice: pricing.packagePrice,
-        packageDetails: pricing.packageDetails
-      }
+      data:booking
+      //  { bookingId: booking._id,
+      //   pricingId: pricing._id,
+      //   eventType: booking.eventType,
+      //   duration: booking.duration,
+      //   guestCount: booking.guestCount,
+      //   eventDate: booking.eventDate,
+      //   additionalDetails: booking.additionalDetails,
+      //   eventLocation: booking.eventLocation,
+      //   bookingStatus: booking.bookingStatus,
+      //   paymentStatus: booking.paymentStatus,
+      //   packageName: pricing.packageName,
+      //   packagePrice: pricing.packagePrice,
+      //   packageDetails: pricing.packageDetails
+      // }
     });
 
   } catch (error) {
@@ -269,7 +270,9 @@ exports.getClientBookings = async (req, res) => {
     res.status(200).json({
       message: 'Bookings fetched successfully',
       totalBookings: bookings.length,
-      bookings: formattedBookings
+      bookings: booking
+      // formattedBookings
+      
     });
 
   } catch (error) {
@@ -295,7 +298,8 @@ exports.getVendorBookings = async (req, res) => {
     res.status(200).json({
       message: 'Bookings fetched successfully',
       totalBookings: bookings.length,
-      bookings: formattedBookings
+      bookings: booking 
+      //formattedBookings
     });
 
   } catch (error) {
