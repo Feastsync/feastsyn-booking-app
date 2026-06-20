@@ -57,7 +57,7 @@ console.log('booking:', bookingId)
     }
 
     // Save message
-    const message = await message.create({
+    const newMessage = await message.create({
       senderId,
       receiverId,
       text,
@@ -122,7 +122,7 @@ exports.getMessagesByRoom = async (req, res) => {
     }
 
     // Fetch messages for this room ONLY
-    const messages = await message.find({
+    const newMessage = await message.find({
       where: { roomId }, 
       include: [
         {
