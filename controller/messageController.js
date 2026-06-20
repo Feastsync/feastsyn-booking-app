@@ -9,35 +9,48 @@ exports.initializeIO = (io) => {
 };
 exports.getMessages = async (req, res) => {
   const { bookingId } = req.params;
+
   try {
     const booking = await bookingModel.findById(bookingId);
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    if (!booking) {
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
 
     const senderId = req.user.id;
-    const receiverId = booking.vendorId === senderId ? booking.userId : booking.vendorId;
-console.log(senderId)
 
+    const receiverId =
+      booking.vendorId.toString() === senderId
+        ? booking.userId
+        : booking.vendorId;
 
-console.log("booking : " , booking)
-    if (!receiverId) return res.status(400).json({ message: "You have not been assigned to user yet" });
+    if (!receiverId) {
+      return res.status(400).json({
+        message: "You have not been assigned to a user yet",
+      });
+    }
 
-    const messages = await message.find({
-      where: { roomId: `feastsync_${bookingId}`
- },
-      include: [
-        { model: userModel, as: "sender", attributes: ["id", "firstName", "lastName", "role"] },
-        { model: userModel, as: "receiver", attributes: ["id", "firstName", "lastName", "role"] },
-      ],
-      order: [["createdAt", "ASC"]],
-    });
+    const messages = await message
+      .find({
+        roomId: bookingId,
+      })
+      .populate("senderId", "firstName lastName role")
+      .populate("receiverId", "firstName lastName role")
+      .sort({ createdAt: 1 });
 
-    res.status(200).json({
-      message:` Found ${messages.length} messages for this errand`,
+    return res.status(200).json({
+      message: `Found ${messages.length} messages for this booking`,
       data: messages,
     });
   } catch (err) {
-    console.error("Error fetching messages:", err.message);
-    res.status(500).json({ message: "Failed to get messages", error: err.message });
+    console.error("Error fetching messages:", err);
+
+    return res.status(500).json({
+      message: "Failed to get messages",
+      error: err.message,
+    });
   }
 };
 
@@ -45,18 +58,13 @@ exports.sendMessage = async (req, res) => {
   try {
     const { text, senderId, receiverId, roomId } = req.body;
     const { bookingId } = req.params;
-console.log('senderId:',senderId)
-console.log('receiverId:',receiverId)
-console.log('text:',text)
-console.log('roomId:',roomId)
-console.log('booking:', bookingId)
+
     if (!bookingId || !text || !senderId || !receiverId || !roomId) {
       return res.status(400).json({
-        error: "Missing text, senderId, receiverId, errandId or roomId",
+        error: "Missing required fields",
       });
     }
 
-    // Save message
     const newMessage = await message.create({
       senderId,
       receiverId,
@@ -64,39 +72,23 @@ console.log('booking:', bookingId)
       roomId,
     });
 
-    // Fetch full message with relations
-    const fullMessage = await message.findById(message.id, {
-      include: [
-        {
-          model: userModel,
-          as: "sender",
-          attributes: ["id", "firstName", "lastName", "role"],
-        },
-        {
-          model: userModel,
-          as: "receiver",
-          attributes: ["id", "firstName", "lastName", "role"],
-        },
-      ],
-    });
+    const fullMessage = await message
+      .findById(newMessage._id)
+      .populate("senderId", "firstName lastName role")
+      .populate("receiverId", "firstName lastName role");
 
-    // REAL-TIME EMIT
     if (ioInstance) {
       ioInstance.to(roomId).emit("receive_message", fullMessage);
-      console.log( `Emitted message to room: ${roomId}`);
-    } else {
-      console.log("Socket.io not initialized");
     }
 
-    // API Response
-    res.status(201).json({
+    return res.status(201).json({
       message: "Message sent successfully",
       data: fullMessage,
     });
-
   } catch (err) {
-    console.error("Error sending message:", err.message);
-    res.status(500).json({
+    console.error(err);
+
+    return res.status(500).json({
       error: "Failed to send message",
       details: err.message,
     });
@@ -107,44 +99,40 @@ exports.getMessagesByRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
 
-    // Validate roomId format
-    if (!roomId || !roomId.startsWith("errand_")) {
-      return res.status(400).json({ message: "Invalid roomId format." });
+    // Validate room format
+    if (!roomId || !roomId.startsWith("feastsync_")) {
+      return res.status(400).json({
+        message: "Invalid roomId format",
+      });
     }
 
-    // Extract actual errandId
+    // Extract bookingId
     const bookingId = roomId.replace("feastsync_", "");
 
-    // Check errand exists
+    // Verify booking exists
     const booking = await bookingModel.findById(bookingId);
+
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      return res.status(404).json({
+        message: "Booking not found",
+      });
     }
 
-    // Fetch messages for this room ONLY
-    const newMessage = await message.find({
-      where: { roomId }, 
-      include: [
-        {
-          model: userModel,
-          as: "sender",
-          attributes: ["id", "firstName", "lastName", "role"],
-        },
-        {
-          model: userModel,
-          as: "receiver",
-          attributes: ["id", "firstName", "lastName", "role"],
-        },
-      ],
-      order: [["createdAt", "ASC"]],
-    });
+    // Fetch messages
+    const messages = await message
+      .find({ roomId })
+      .populate("senderId", "firstName lastName role")
+      .populate("receiverId", "firstName lastName role")
+      .sort({ createdAt: 1 });
 
-    res.status(201).json({
+    return res.status(200).json({
       message: `Found ${messages.length} messages`,
       data: messages,
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("Error fetching messages:", err);
+
+    return res.status(500).json({
       message: "Failed to fetch messages",
       error: err.message,
     });
