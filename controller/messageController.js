@@ -57,7 +57,7 @@ console.log('booking:', bookingId)
     }
 
     // Save message
-    const message = await Message.create({
+    const message = await message.create({
       senderId,
       receiverId,
       text,
@@ -65,7 +65,7 @@ console.log('booking:', bookingId)
     });
 
     // Fetch full message with relations
-    const fullMessage = await Message.findById(message.id, {
+    const fullMessage = await message.findById(message.id, {
       include: [
         {
           model: User,
