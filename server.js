@@ -39,22 +39,28 @@ const io = new Server(server, {
   },
 });
 
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // ⭐ Join room (correct way)
   socket.on("join_room", (roomId) => {
     socket.join(roomId);
     console.log("Joined room:", roomId);
   });
 
+  socket.on("send_message", (data) => {
+    console.log("Message received:", data);
+
+    socket.to(data.roomId).emit(
+      "receive_message",
+      data.message
+    );
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
 });
-
-
 
 
 const limiter = rateLimit({
