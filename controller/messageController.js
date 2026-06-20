@@ -2,7 +2,7 @@ const message = require('../models/message');
 const userModel = require('../models/user');
 const bookingModel = require('../models/booking');
 const vendorModel = require('../models/vendor')
-
+let ioInstance
 exports.initializeIO = (io) => {
   ioInstance = io;
   console.log("Socket.io instance initialized");
