@@ -45,7 +45,11 @@ exports.sendMessage = async (req, res) => {
   try {
     const { text, senderId, receiverId, roomId } = req.body;
     const { bookingId } = req.params;
-
+console.log('senderId:',senderId)
+console.log('receiverId:',receiverId)
+console.log('text:',text)
+console.log('roomId:',roomId)
+console.log('booking:', bookingId)
     if (!bookingId || !text || !senderId || !receiverId || !roomId) {
       return res.status(400).json({
         error: "Missing text, senderId, receiverId, errandId or roomId",
