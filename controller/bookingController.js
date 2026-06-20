@@ -270,7 +270,7 @@ exports.getClientBookings = async (req, res) => {
     res.status(200).json({
       message: 'Bookings fetched successfully',
       totalBookings: bookings.length,
-      bookings: booking
+      bookings: bookings
       // formattedBookings
       
     });
@@ -298,7 +298,7 @@ exports.getVendorBookings = async (req, res) => {
     res.status(200).json({
       message: 'Bookings fetched successfully',
       totalBookings: bookings.length,
-      bookings: booking 
+      bookings: bookings
       //formattedBookings
     });
 
