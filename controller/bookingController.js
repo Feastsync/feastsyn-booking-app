@@ -280,7 +280,7 @@ exports.getClientBookings = async (req, res) => {
 exports.getVendorBookings = async (req, res) => {
   try {
     const { id } = req.user;
-    const bookings = await bookingModel.find({ vendorId :id}).populate('vendorId', 'firstName lastName stageName email phoneNumber profilePicture category').sort({ createdAt: -1 });
+    const bookings = await bookingModel.find({ vendorId :id}).populate('vendorId', 'userId', 'firstName lastName stageName email phoneNumber profilePicture category').sort({ createdAt: -1 });
     if (!bookings) {
       return res.status(404).json({ message: 'No bookings found' });
     }
