@@ -21,7 +21,7 @@ console.log(senderId)
 console.log("booking : " , booking)
     if (!receiverId) return res.status(400).json({ message: "You have not been assigned to user yet" });
 
-    const messages = await Message.findAll({
+    const messages = await message.findAll({
       where: { roomId: `feastsync_${bookingId}`
  },
       include: [
@@ -122,7 +122,7 @@ exports.getMessagesByRoom = async (req, res) => {
     }
 
     // Fetch messages for this room ONLY
-    const messages = await Message.findAll({
+    const messages = await message.findAll({
       where: { roomId }, 
       include: [
         {
