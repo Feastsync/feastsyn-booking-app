@@ -25,8 +25,8 @@ console.log("booking : " , booking)
       where: { roomId: `feastsync_${bookingId}`
  },
       include: [
-        { model: User, as: "sender", attributes: ["id", "firstName", "lastName", "role"] },
-        { model: User, as: "receiver", attributes: ["id", "firstName", "lastName", "role"] },
+        { model: userModel, as: "sender", attributes: ["id", "firstName", "lastName", "role"] },
+        { model: userModel, as: "receiver", attributes: ["id", "firstName", "lastName", "role"] },
       ],
       order: [["createdAt", "ASC"]],
     });
@@ -68,12 +68,12 @@ console.log('booking:', bookingId)
     const fullMessage = await message.findById(message.id, {
       include: [
         {
-          model: User,
+          model: userModel,
           as: "sender",
           attributes: ["id", "firstName", "lastName", "role"],
         },
         {
-          model: User,
+          model: userModel,
           as: "receiver",
           attributes: ["id", "firstName", "lastName", "role"],
         },
@@ -126,12 +126,12 @@ exports.getMessagesByRoom = async (req, res) => {
       where: { roomId }, 
       include: [
         {
-          model: User,
+          model: userModel,
           as: "sender",
           attributes: ["id", "firstName", "lastName", "role"],
         },
         {
-          model: User,
+          model: userModel,
           as: "receiver",
           attributes: ["id", "firstName", "lastName", "role"],
         },
