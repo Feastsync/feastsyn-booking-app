@@ -36,7 +36,8 @@ const paymentModel = require('../models/payment')
       });
 
 
-      brevo(user.email,`${user.firstName} ${user.lastName}`,emailTemplate(`${user.firstName} ${user.lastName}`, user.otp ));
+      brevo(user.email,`${user.firstName} ${user.lastName}`,
+        emailTemplate(`${user.firstName} ${user.lastName}`, user.otp ));
 
       const users = await userModel.find()
       return res.status(201).json({
