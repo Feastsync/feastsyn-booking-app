@@ -612,8 +612,16 @@ exports.getAllVendors = async (req, res) => {
   try {
     const { category } = req.query;
 
-    const vendors = category? await vendorModel.find({ category })
-    : await vendorModel.find().select('-password');
+    const filter = {};
+
+    if (category) {
+      filter.category = {$regex: `^${category}$`, $options: 'i'};
+    }
+
+    const vendors = await vendorModel.find(filter).select('-password').populate({
+        path: 'pricingId',
+        select: 'basicPrice'
+      });
 
     return res.status(200).json({
       message: "Successfully retrieved vendors",
