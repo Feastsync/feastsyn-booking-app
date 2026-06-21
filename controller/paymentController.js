@@ -10,6 +10,7 @@ const walletModel = require('../models/wallet')
 const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow')
 const crypto = require('crypto');
+const calendarModel = require('../models/calendar');
 
 exports.initializePayment = async (req, res) => {
     try {
@@ -203,7 +204,21 @@ exports.verifyWebhook = async (req, res) => {
                         new: true
                     }
                 );
+            if (booking) {
+        await calendarModel.findOneAndUpdate({vendorId: booking.vendorId, date: booking.eventDate},
+            {
+                vendorId: booking.vendorId,
+                date: booking.eventDate,
+                isBooked: true
+            },
+            {
+                upsert: true,
+                new: true
             }
+        );
+    }
+}
+
             // ESCROW CALCULATIONS
             const totalAmount = Number(payment.amount);
             
@@ -410,11 +425,7 @@ exports.payoutFunds = async (req, res) => {
             });
         }
 
-        const ref = otpGenerator.generate(12, {
-            specialChars: false,
-            upperCaseAlphabets: false,
-            lowerCaseAlphabets: false
-        });
+        const ref = otpGenerator.generate(12, {specialChars: false,upperCaseAlphabets: false,lowerCaseAlphabets: false});
 
         const reference = `FS-PAYOUT-${ref}`;
 

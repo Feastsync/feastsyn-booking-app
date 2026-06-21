@@ -25,6 +25,8 @@ exports.getCalendar = async (req, res) => {
         bookingStatus: {
           $in: ['confirmed', 'completed']
         },
+        paymentStatus: 'paid',
+        
         eventDate: {
           $gte: startDate,
           $lt: endDate
