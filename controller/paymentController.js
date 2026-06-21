@@ -368,3 +368,126 @@ exports.verifyPayment = async (req, res) => {
         })
     }
 }
+
+exports.payoutFunds = async (req, res) => {
+    try {
+        const vendorId = req.user.id;
+        const { amount } = req.body;
+
+        const vendor = await vendorModel.findById(vendorId);
+
+        if (!vendor) {
+            return res.status(404).json({
+                message: "Vendor not found"
+            });
+        }
+
+        if (!vendor.bankName || !vendor.accountNumber) {
+            return res.status(400).json({
+                message: "Please update your bank details first"
+            });
+        }
+
+        const wallet = await walletModel.findOne({ vendorId });
+
+        if (!wallet) {
+            return res.status(404).json({
+                message: "Wallet not found"
+            });
+        }
+
+        const withdrawalAmount = Number(amount);
+
+        if (!withdrawalAmount || withdrawalAmount <= 0) {
+            return res.status(400).json({
+                message: "Invalid withdrawal amount"
+            });
+        }
+
+        if (wallet.availableBalance < withdrawalAmount) {
+            return res.status(400).json({
+                message: "Insufficient available balance"
+            });
+        }
+
+        const ref = otpGenerator.generate(12, {
+            specialChars: false,
+            upperCaseAlphabets: false,
+            lowerCaseAlphabets: false
+        });
+
+        const reference = `FS-PAYOUT-${ref}`;
+
+        const response = await axios.post(
+            "https://api.korapay.com/merchant/api/v1/transactions/disburse",
+            {
+                reference,
+                destination: {
+                    type: "bank_account",
+                    amount: withdrawalAmount,
+                    currency: "NGN",
+                    narration: "FeastSync Vendor Withdrawal",
+
+                    customer: {
+                        name: vendor.stageName ||
+                              `${vendor.firstName} ${vendor.lastName}`,
+                        email: vendor.email
+                    },
+
+                    bank_account: {
+                        bank: "044", // Replace with actual bank code lookup
+                        account: vendor.accountNumber
+                    }
+                }
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        // Save payout record
+        const payout = await payoutModel.create({
+            vendorId,
+            amount: withdrawalAmount,
+            reference,
+            bankName: vendor.bankName,
+            accountNumber: vendor.accountNumber,
+            status: "processing"
+        });
+
+        // Deduct balance
+        wallet.availableBalance -= withdrawalAmount;
+
+        await wallet.save();
+
+        // Create transaction
+        await transactionModel.create({
+            vendorId,
+            amount: withdrawalAmount,
+            transactionType: "withdrawal",
+            status: "successful",
+            reference
+        });
+
+        return res.status(200).json({
+            message: "Withdrawal initiated successfully",
+            payout,
+            walletBalance: wallet.availableBalance,
+            koraResponse: response.data
+        });
+
+    } catch (error) {
+
+        console.log(
+            "Payout Error:",
+            error.response?.data || error.message
+        );
+
+        return res.status(500).json({
+            message: error.response?.data?.message || error.message
+        });
+    }
+};
