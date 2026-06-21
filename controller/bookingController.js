@@ -175,6 +175,14 @@ exports.acceptBooking = async (req, res) => {
     // Confirm this booking
     booking.bookingStatus = 'confirmed';
     await booking.save();
+    await notificationModel.create({
+  recipientId: booking.userId,
+  senderId: booking.vendorId,
+  bookingId: booking._id,
+  notificationType: "booking_accepted",
+  title: "Booking Accepted",
+  message: `Your booking request has been accepted by the ${vendor.stageName}`
+});
 
     // Update availability
     await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
@@ -209,6 +217,15 @@ exports.rejectBooking = async (req, res) => {
 
     booking.bookingStatus = 'cancelled';
     await booking.save();
+
+    await notificationModel.create({
+  recipientId: booking.userId,
+  senderId: booking.vendorId,
+  bookingId: booking._id,
+  notificationType: "booking_declined",
+  title: "Booking Declined",
+  message: `Your booking request has been declined by the ${vendor.stageName}`
+});
 
     await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
       { status: 'available' },
