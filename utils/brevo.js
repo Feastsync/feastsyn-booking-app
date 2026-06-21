@@ -38,12 +38,13 @@ brevoClient.setApiKey(
   process.env.brevoApiKey
 );
 
-const brevo = async (userEmail, userName, html) => {
+const brevo = async (userEmail, userName, html, subject = "FeastSync Notification") => {
   const sendSmtpEmail = new BrevoClient.SendSmtpEmail();
 
   sendSmtpEmail.to = [
     {
       email: userEmail,
+      name: userName
     },
   ];
 
@@ -52,14 +53,15 @@ const brevo = async (userEmail, userName, html) => {
     name: "FeastSync Team",
   };
 
-  sendSmtpEmail.subject = "FeastSync Verification";
+  sendSmtpEmail.subject = subject;
 
   sendSmtpEmail.htmlContent = html;
 
   const response = await brevoClient.sendTransacEmail(sendSmtpEmail);
 
   console.log("BREVO RESPONSE:", response);
-  console.log("EMAIL BEING SENT TO:", userEmail);
+  
+  return response;
 };
 
 module.exports = { brevo };
