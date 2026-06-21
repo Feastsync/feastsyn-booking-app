@@ -27,25 +27,39 @@ exports.contactUs = async (req, res) => {
     const fullName = `${firstName} ${lastName}`;
 
     const emailMessage = `
-      New contact message from ${fullName}
+      <h2>New Contact Message</h2>
 
-      Email: ${email}
-      Phone Number: ${phoneNumber}
-      Sender Type: ${contactMessage.senderType}
+      <p><strong>Name:</strong> ${fullName}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone Number:</strong> ${phoneNumber}</p>
+      <p><strong>Sender Type:</strong> ${contactMessage.senderType}</p>
 
-      Message:
-      ${message}
+      <h3>Message</h3>
+      <p>${message}</p>
     `;
 
-    await brevo(process.env.USER_EMAIL,fullName,emailMessage,
-      "New Contact Message"
-    );
+    try {
+      const emailResponse = await brevo(
+        process.env.USER_EMAIL,
+        fullName,
+        emailMessage,
+        "New Contact Message"
+      );
 
+      console.log("EMAIL SENT:", emailResponse);
+    } catch (emailError) {
+      console.error("BREVO ERROR:", emailError);
+  
+    }
+
+    console.log('RETURNING SUCCESS');
+    
     return res.status(201).json({
       message: "Message sent successfully",
       data: contactMessage
     });
   } catch (error) {
+    console.error("CONTACT ERROR:", error);
     return res.status(500).json({
       message: error.message
     });
