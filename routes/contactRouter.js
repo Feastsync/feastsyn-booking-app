@@ -3,8 +3,8 @@ const router = express.Router();
 
 const { contactUs } = require("../controller/contactController");
 const { contactValidator } = require("../middlewares/validator");
-// const { optionalAuth } = require("../middlewares/optionalAuth");
+ //const { optionalAuth } = require("../middlewares/optionalAuth");
 
-router.post("/contact-us", contactValidator ,contactUs);
+router.post("/contact-us", contactUs);
 
 module.exports = router;
