@@ -74,14 +74,25 @@ exports.createBooking = async (req, res) => {
       additionalDetails
     });
 
-    await notificationModel.create({
-      recipientId: vendorId,
-      senderId: userId,
-      bookingId: booking._id,
-      notificationType: 'booking_request',
-      title: 'New Booking Request',
-      message: `${user.firstName} sent you a booking request`
-    });
+    // Vendor notification
+await notificationModel.create({
+  recipientId: vendorId,
+  senderId: userId,
+  bookingId: booking._id,
+  notificationType: 'booking_request',
+  title: 'New Booking Request',
+  message: `${user.firstName} sent you a booking request`
+});
+
+// User notification
+await notificationModel.create({
+  recipientId: userId,
+  senderId: vendorId,
+  bookingId: booking._id,
+  notificationType: 'booking_created',
+  title: 'Booking Submitted',
+  message: `Your booking request has been sent to ${vendor.stageName}`
+});
 
     return res.status(201).json({
       message: 'Booking created successfully',
