@@ -615,18 +615,32 @@ exports.getAllVendors = async (req, res) => {
     const filter = {};
 
     if (category) {
-      filter.category = {$regex: `^${category}$`, $options: 'i'};
+      filter.category = {
+        $regex: `^${category}$`,
+        $options: 'i'
+      };
     }
 
     const vendors = await vendorModel.find(filter).select('-password').populate({
         path: 'pricingId',
-        select: 'basicPrice'
+        select: 'packagePrice packageName'
       });
+
+    const formattedVendors = vendors.map(vendor => {
+      const basicPackage = vendor.pricingId.find(
+        item => item.packageName === 'Basic Package'
+      );
+
+      return {
+        ...vendor.toObject(),
+        basicPrice: basicPackage?.packagePrice || null
+      };
+    });
 
     return res.status(200).json({
       message: "Successfully retrieved vendors",
-      count: vendors.length,
-      data: vendors
+      count: formattedVendors.length,
+      data: formattedVendors
     });
 
   } catch (error) {
