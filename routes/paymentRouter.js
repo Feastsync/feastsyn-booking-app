@@ -6,3 +6,4 @@ router.post('/initialize-payment/:vendorId/:bookingId', authentication, initiali
 router.post('/webhook', verifyWebhook)
 
 module.exports = router; 
+ 

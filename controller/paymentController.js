@@ -124,7 +124,7 @@ if (booking.paymentStatus !== 'unpaid') {
             },
             redirect_url: 'https://feast-sync.vercel.app/chats/'
         };
-
+        console.log(paymentData)
         const response = await axios.post(
             'https://api.korapay.com/merchant/api/v1/charges/initialize',
             paymentData,
@@ -154,12 +154,17 @@ if (booking.paymentStatus !== 'unpaid') {
         });
 
     } catch (error) {
-        console.log(error.message);
+    console.log("FULL ERROR:", error);
 
-        return res.status(500).json({
-            message: 'Error initializing payment'
-        });
+    if (error.response) {
+        console.log("KORA ERROR:", error.response.data);
     }
+
+    return res.status(500).json({
+        message: error.message,
+        error: error.response?.data || error
+    });
+}
 };
 
 
