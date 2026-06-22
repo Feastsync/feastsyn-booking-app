@@ -106,7 +106,7 @@ exports.createBooking = async (req, res) => {
 
 exports.getBookingDetails = async (req, res) => {
   try {
-    const vendorId = req.user.id;
+    const {vendorId} = req.user.id;
     const { bookingId } = req.params;
 
     let booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId");
@@ -161,7 +161,7 @@ if (!pricing) {
 // Vendor accepts a booking and auto cancels conflicting ones
 exports.acceptBooking = async (req, res) => {
   try {
-    const vendorId = req.user.id;
+    const {vendorId} = req.user.id;
     const { bookingId } = req.params;
 
     const booking = await bookingModel.findById(bookingId);
