@@ -188,16 +188,17 @@ exports.acceptBooking = async (req, res) => {
     }
 
     
-if (booking.bookingStatus === 'accepted' ||booking.bookingStatus === 'confirmed'
+if (
+  booking.bookingStatus === 'accepted' ||
+  booking.bookingStatus === 'confirmed'
 ) {
   return res.status(400).json({
     message: 'Booking has already been accepted'
   });
 }
 
-    // Confirm booking
-    booking.bookingStatus = 'accepted';
-    booking.paymentStatus = 'unpaid'
+    // Accept booking
+    booking.bookingStatus = 'confirmed';
     await booking.save();
 
     // Create notification for the user
@@ -207,7 +208,7 @@ if (booking.bookingStatus === 'accepted' ||booking.bookingStatus === 'confirmed'
       bookingId: booking._id,
       notificationType: 'booking_accepted',
       title: 'Booking Accepted',
-      message: `Your booking request has been accepted by ${vendor.stageName}. You can now proceed to payment`
+      message: `Your booking request has been accepted by ${vendor.stageName}`
     });
 
     // Update vendor availability

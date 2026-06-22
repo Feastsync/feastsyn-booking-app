@@ -57,8 +57,7 @@ exports.createVendor = async (req, res, next) => {
               stageName: vendor.stageName,
               email: vendor.email.toLowerCase(),
               phoneNumber: vendor.phoneNumber,
-              _id: vendor._id,
-              otp: vendor.otp
+              _id: vendor._id
             }
         });
 
