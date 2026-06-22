@@ -44,6 +44,10 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    bookingReference: {
+        type: String,
+        unique: true
+    },
     bookingStatus: { 
         type: String,
         enum: ['pending', 'accepted','confirmed','completed','rejected','disputed'],

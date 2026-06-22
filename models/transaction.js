@@ -9,19 +9,23 @@ const transactionSchema = new mongoose.Schema({
 
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'booking'
+        ref: 'bookings'
     },
 
     amount: Number,
 
     transactionType: {
         type: String,
-        enum: ['commission','release','withdrawal','escrow']
+        enum: ['commission','release','withdrawal','escrow', 'refund']
     },
 
     status: {
         type: String,
+        enum: [ 'pending', 'successful', 'failed'],
         default: 'successful'
+    },
+    description: {
+        type: String
     }
 
 }, { timestamps: true });

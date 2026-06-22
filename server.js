@@ -24,6 +24,7 @@ const disputeRouter = require('./routes/disputeRouter');
 const reviewRouter = require('./routes/reviewRouter');
 const contactRouter = require('./routes/contactRouter');
 const vendorSettingRouter = require('./routes/vendorSettingRouter');
+const walletRouter = require('./routes/walletRouter')
 
 const rateLimit = require('express-rate-limit');
 
@@ -83,7 +84,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 //   saveUninitialized: false
 //  })) 
 
- app.use('/api/v1/user', router);
+app.use('/api/v1/user', router);
 app.use('/api/v1/vendor', vendorRouter);
 app.use('/api/v1', pricingRouter);
 app.use('/api/v1/payment', paymentRouter);
@@ -96,7 +97,8 @@ app.use('/api/v1/admin', adminRouter);
 app.use('api/v1/dispute', disputeRouter);
 app.use('/api/v1/review', reviewRouter);
 app.use('/api/v1/contact', contactRouter);
-app.use('/api/v1/vendorSetting', vendorSettingRouter)
+app.use('/api/v1/vendorSetting', vendorSettingRouter);
+app.use('/api/v1/wallet', walletRouter)
 
  app.use((req, res) => { 
   res.status(404).json({

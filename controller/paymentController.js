@@ -36,9 +36,9 @@ if (!booking) {
     });
 }
 
-if (booking.bookingStatus !== 'confirmed') {
+if (booking.bookingStatus !== 'accepted') {
     return res.status(400).json({
-        message: 'This booking has not been confirmed by the vendor yet'
+        message: 'This booking has not been accepted by the vendor yet'
     });
 }
 
@@ -193,30 +193,37 @@ exports.verifyWebhook = async (req, res) => {
         if (event === "charge.success") {
             console.log('checking for success webhook')
             // Prevent duplicate processing
-            // if (payment.paymentStatus === "successful") {
-                //     return res.status(200).json({
-            //         message: "Payment already processed"
-            //     });
-            // }
+        if (
+            event === "charge.success" && payment.paymentStatus === "successful") {
+        return res.status(200).json({
+        message: "Payment already processed"
+        });
+    }
             
             // Update payment
             payment.paymentStatus = "successful";
             await payment.save();
+            await wallet.save()
 
             // Update booking
-            if (payment.bookingId) {
-                const booking = await bookingModel.findByIdAndUpdate(
-                    payment.bookingId,
-                    {
-                        paymentStatus: "paid",
-                        // bookingStatus: "confirmed"
-                    },
-                    {
-                        new: true
-                    }
-                );
-            if (booking) {
-        await calendarModel.findOneAndUpdate({vendorId: booking.vendorId, date: booking.eventDate},
+    if (payment.bookingId) {
+    const booking = await bookingModel.findByIdAndUpdate(
+        payment.bookingId,
+        {
+            paymentStatus: "paid",
+            bookingStatus: "confirmed"
+        },
+        {
+            new: true
+        }
+    );
+
+    if (booking) {
+        await calendarModel.findOneAndUpdate(
+            {
+                vendorId: booking.vendorId,
+                date: booking.eventDate
+            },
             {
                 vendorId: booking.vendorId,
                 date: booking.eventDate,

@@ -14,6 +14,15 @@ const walletSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    withdrawnAmount: {
+        type: Number,
+        default: 0
+},
+
+    totalTransactions: {
+        type: Number,
+        default: 0
+},
     totalEarned: {
         type: Number,
         default: 0
