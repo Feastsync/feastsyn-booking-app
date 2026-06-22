@@ -38,7 +38,7 @@ if (!booking) {
 
 if (booking.bookingStatus !== 'confirmed') {
     return res.status(400).json({
-        message: 'This booking has not been accepted by the vendor yet'
+        message: 'This booking has not been confirmed by the vendor yet'
     });
 }
 
@@ -204,7 +204,7 @@ exports.verifyWebhook = async (req, res) => {
                     payment.bookingId,
                     {
                         paymentStatus: "paid",
-                        bookingStatus: "confirmed"
+                        // bookingStatus: "confirmed"
                     },
                     {
                         new: true
