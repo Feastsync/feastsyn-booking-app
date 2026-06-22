@@ -35,6 +35,11 @@ exports.createBooking = async (req, res) => {
     }
 
     const user = await userModel.findById(userId);
+    if(!user){
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
 
     const selectedPackage = await pricingModel.findOne({
       _id: pricingId,
