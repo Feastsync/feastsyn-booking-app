@@ -2,6 +2,7 @@ const message = require('../models/message');
 const userModel = require('../models/user');
 const bookingModel = require('../models/booking');
 const vendorModel = require('../models/vendor')
+
 let ioInstance
 exports.initializeIO = (io) => {
   ioInstance = io;
@@ -17,6 +18,11 @@ exports.getMessages = async (req, res) => {
       return res.status(404).json({
         message: "Booking not found",
       });
+    }
+
+    if (booking.bookingStatus !== "confirmed" || booking.paymentStatus !== "paid") {
+      return res.status(403).json({
+        message: "Messages are only available after booking confirmation and payment.",});
     }
 
     const senderId = req.user.id;
