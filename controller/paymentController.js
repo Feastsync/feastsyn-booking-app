@@ -194,7 +194,7 @@ exports.verifyWebhook = async (req, res) => {
 
             // Update booking
             if (payment.bookingId) {
-                await bookingModel.findByIdAndUpdate(
+                const booking = await bookingModel.findByIdAndUpdate(
                     payment.bookingId,
                     {
                         paymentStatus: "paid",
