@@ -158,43 +158,72 @@ if (!pricing) {
 };
 
 
-// Vendor accepts a booking and auto cancels conflicting ones
 exports.acceptBooking = async (req, res) => {
   try {
     const vendorId = req.user.id;
     const { bookingId } = req.params;
 
     const booking = await bookingModel.findById(bookingId);
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    // Find all other pending bookings on the same date
-    const otherBookings = await bookingModel.find({
-      vendorId: booking.vendorId,
-      eventDate: booking.eventDate,
-      bookingStatus: 'pending',
-      _id: { $ne: bookingId }
-    });
 
-    // Confirm this booking
+    if (!booking) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+
+    // Ensure the booking belongs to the logged-in vendor
+    if (booking.vendorId.toString() !== vendorId) {
+      return res.status(403).json({
+        message: 'You are not authorized to accept this booking'
+      });
+    }
+
+    // Get vendor details
+    const vendor = await vendorModel.findById(booking.vendorId);
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: 'Vendor not found'
+      });
+    }
+
+    // Check if booking is already confirmed
+    if (booking.bookingStatus === 'confirmed') {
+      return res.status(400).json({
+        message: 'Booking has already been accepted'
+      });
+    }
+
+    // Confirm booking
     booking.bookingStatus = 'confirmed';
     await booking.save();
-    await notificationModel.create({
-  recipientId: booking.userId,
-  senderId: booking.vendorId,
-  bookingId: booking._id,
-  notificationType: "booking_accepted",
-  title: "Booking Accepted",
-  message: `Your booking request has been accepted by the ${vendor.stageName}`
-});
 
-    // Update availability
-    await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
-      { status: 'booked', bookingId: booking._id },
-      { new: true }
+    // Create notification for the user
+    await notificationModel.create({
+      recipientId: booking.userId,
+      senderId: booking.vendorId,
+      bookingId: booking._id,
+      notificationType: 'booking_accepted',
+      title: 'Booking Accepted',
+      message: `Your booking request has been accepted by ${vendor.stageName}`
+    });
+
+    // Update vendor availability
+    await Availability.findOneAndUpdate(
+      {
+        vendorId: booking.vendorId,
+        bookingDate: booking.eventDate
+      },
+      {
+        status: 'booked',
+        bookingId: booking._id
+      },
+      {
+        new: true
+      }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Booking accepted successfully',
       booking: {
         ...booking.toObject(),
@@ -203,8 +232,11 @@ exports.acceptBooking = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message });
+    console.error(error);
+
+    return res.status(500).json({
+      message: error.message
+    });
   }
 };
 
