@@ -116,7 +116,7 @@ exports.initializePayment = async (req, res) => {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://www.google.com/'
+            redirect_url: 'https://feast-sync.vercel.app/chats/'
         };
 
         const response = await axios.post(
