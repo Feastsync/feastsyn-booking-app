@@ -137,7 +137,7 @@ paths:
         '200':
           description: OTP resent successfully 
 
-  /api/v1/user/verify-otp:
+  /api/v1/user/verify-reset-otp:
     post: 
       summary: this is the endpoint to verify reset otp
       tags: [users]

@@ -41,4 +41,4 @@ router.get('/all-vendors', getAllVendors);
 router.get('/one-vendor/:slug', getOneVendor);
 router.get("/vendor-dashboard", authentication, getVendorDashboard);
 
-module.exports = router; 
+module.exports = router;  
