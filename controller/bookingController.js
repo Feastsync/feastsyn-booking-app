@@ -85,7 +85,7 @@ exports.createBooking = async (req, res) => {
       bookingId: booking._id,
       notificationType: 'booking_request',
       title: 'New Booking Request',
-      message: `user sent you a booking request`
+      message: `${user} sent you a booking request`
     });
 
 
@@ -187,15 +187,17 @@ exports.acceptBooking = async (req, res) => {
       });
     }
 
-    // Check if booking is already confirmed
-    if (booking.bookingStatus === 'confirmed') {
-      return res.status(400).json({
-        message: 'Booking has already been accepted'
-      });
-    }
+    
+if (booking.bookingStatus === 'accepted' ||booking.bookingStatus === 'confirmed'
+) {
+  return res.status(400).json({
+    message: 'Booking has already been accepted'
+  });
+}
 
     // Confirm booking
-    booking.bookingStatus = 'confirmed';
+    booking.bookingStatus = 'accepted';
+    booking.paymentStatus = 'unpaid'
     await booking.save();
 
     // Create notification for the user
@@ -205,7 +207,7 @@ exports.acceptBooking = async (req, res) => {
       bookingId: booking._id,
       notificationType: 'booking_accepted',
       title: 'Booking Accepted',
-      message: `Your booking request has been accepted by ${vendor.stageName}`
+      message: `Your booking request has been accepted by ${vendor.stageName}. You can now proceed to payment`
     });
 
     // Update vendor availability

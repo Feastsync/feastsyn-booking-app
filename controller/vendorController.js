@@ -94,7 +94,7 @@ exports.updateVendor = async (req, res) => {
       await vendor.save();
     }
 
-    const publicUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+    const publicUrl = `https://feast-sync.vercel.app/vendor/${vendor.slug}`;
 
     const {bankName,accountNumber,bio,servicesOffered,stateOfResidence,category,onboardingStep} = req.body;
 

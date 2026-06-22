@@ -28,19 +28,25 @@ exports.initializePayment = async (req, res) => {
                 });
             }
 
-            booking = await bookingModel.findOne({ _id: bookingId, userId });
+  booking = await bookingModel.findOne({ _id: bookingId, userId });
 
-            if (!booking) {
-                return res.status(404).json({
-                    message: 'Booking not found for this user'
-                });
-            }
+if (!booking) {
+    return res.status(404).json({
+        message: 'Booking not found for this user'
+    });
+}
 
-            if (booking.paymentStatus !== 'unpaid') {
-                return res.status(400).json({
-                    message: 'This booking has already been paid for'
-                });
-            }
+if (booking.bookingStatus !== 'confirmed') {
+    return res.status(400).json({
+        message: 'This booking has not been accepted by the vendor yet'
+    });
+}
+
+if (booking.paymentStatus !== 'unpaid') {
+    return res.status(400).json({
+        message: 'This booking has already been paid for'
+    });
+}
 
             selectedVendorId = booking.vendorId;
 
