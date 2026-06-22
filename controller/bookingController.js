@@ -91,7 +91,7 @@ exports.createBooking = async (req, res) => {
 
     return res.status(201).json({
       message: 'Booking created successfully',
-      data: booking 
+      data: booking
     });
 
   } catch (error) {
