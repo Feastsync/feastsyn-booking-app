@@ -106,7 +106,7 @@ exports.createBooking = async (req, res) => {
 
 exports.getBookingDetails = async (req, res) => {
   try {
-    const {vendorId} = req.user.id;
+    const vendorId = req.user.id;
     const { bookingId } = req.params;
 
     let booking = await bookingModel.findById(bookingId).populate("userId").populate("pricingId");
@@ -161,50 +161,71 @@ if (!pricing) {
 // Vendor accepts a booking and auto cancels conflicting ones
 exports.acceptBooking = async (req, res) => {
   try {
-    const {vendorId} = req.user.id;
+    const vendorId = req.user.id;
     const { bookingId } = req.params;
 
-    const booking = await bookingModel.findById(bookingId);
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    // Find all other pending bookings on the same date
-    const otherBookings = await bookingModel.find({
-      vendorId: booking.vendorId,
-      eventDate: booking.eventDate,
-      bookingStatus: 'pending',
-      _id: { $ne: bookingId }
-    });
+    const vendor = await vendorModel.findById(vendorId);
 
-    // Confirm this booking
+    if (!vendor) {
+      return res.status(404).json({
+        message: 'Vendor not found'
+      });
+    }
+
+    const booking = await bookingModel.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+
+    console.log("Logged in Vendor:", vendorId);
+console.log("Booking Vendor:", booking.vendorId.toString());
+
+    if (booking.vendorId.toString() !== vendorId.toString()) {
+      return res.status(403).json({
+        message: 'Vendor mismatch'
+      });
+    }
+
     booking.bookingStatus = 'confirmed';
     await booking.save();
-    await notificationModel.create({
-  recipientId: booking.userId,
-  senderId: booking.vendorId,
-  bookingId: booking._id,
-  notificationType: "booking_accepted",
-  title: "Booking Accepted",
-  message: `Your booking request has been accepted by the ${vendor.stageName}`
-});
 
-    // Update availability
-    await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
-      { status: 'booked', bookingId: booking._id },
-      { new: true }
+    await notificationModel.create({
+      recipientId: booking.userId,
+      recipientType: 'user',
+      senderId: booking.vendorId,
+      bookingId: booking._id,
+      notificationType: 'booking_accepted',
+      title: 'Booking Accepted',
+      message: `Your booking request has been accepted by ${vendor.stageName}`
+    });
+
+    await Availability.findOneAndUpdate(
+      {
+        vendorId: booking.vendorId,
+        bookingDate: booking.eventDate
+      },
+      {
+        status: 'booked',
+        bookingId: booking._id
+      },
+      {
+        new: true
+      }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Booking accepted successfully',
-      booking: {
-        ...booking.toObject(),
-        eventDate: booking.eventDate.toISOString().split('T')[0]
-      }
+      booking
     });
 
   } catch (error) {
-    res.status(500).json({ 
-      message: error.message });
+    console.log(error);
+    return res.status(500).json({
+      message: error.message
+    });
   }
 };
 
@@ -214,34 +235,63 @@ exports.rejectBooking = async (req, res) => {
     const vendorId = req.user.id;
     const { bookingId } = req.params;
 
+    const vendor = await vendorModel.findById(vendorId);
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: 'Vendor not found'
+      });
+    }
+
     const booking = await bookingModel.findById(bookingId);
+
     if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
+      return res.status(404).json({
+        message: 'Booking not found'
+      });
+    }
+
+    if (booking.vendorId.toString() !== vendorId.toString()) {
+      return res.status(403).json({
+        message: 'Vendor mismatch'
+      });
     }
 
     booking.bookingStatus = 'cancelled';
     await booking.save();
 
     await notificationModel.create({
-  recipientId: booking.userId,
-  senderId: booking.vendorId,
-  bookingId: booking._id,
-  notificationType: "booking_declined",
-  title: "Booking Declined",
-  message: `Your booking request has been declined by the ${vendor.stageName}`
-});
+      recipientId: booking.userId,
+      recipientType: 'user',
+      senderId: booking.vendorId,
+      bookingId: booking._id,
+      notificationType: 'booking_declined',
+      title: 'Booking Declined',
+      message: `Your booking request has been declined by ${vendor.stageName}`
+    });
 
-    await Availability.findOneAndUpdate({ vendorId: booking.vendorId, bookingDate: booking.eventDate },
-      { status: 'available' },
-      { new: true }
+    await Availability.findOneAndUpdate(
+      {
+        vendorId: booking.vendorId,
+        bookingDate: booking.eventDate
+      },
+      {
+        status: 'available'
+      },
+      {
+        new: true
+      }
     );
 
-    res.status(200).json({
-      message: 'Booking declined successfully',
+    return res.status(200).json({
+      message: 'Booking declined successfully'
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log(error);
+    return res.status(500).json({
+      message: error.message
+    });
   }
 };
 

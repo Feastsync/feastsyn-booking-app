@@ -193,11 +193,7 @@ onboardingStep: {
    totalBookings: {
     type: Number,
     default: 0       
-},
-   responseRate: {
-    type: Number,
-    default: 100
-   }, 
+}, 
    bufferTime: {
     type: Number,
     default: 60 
