@@ -32,8 +32,6 @@ exports.createNotification = async ({recipientId,recipientType,title,message, em
     message,
     emailSubject || title
   );
-
-  console.log("Brevo response:", response);
   } catch (error) {
      console.error("Brevo failed:", error.response?.body || error);
   }
