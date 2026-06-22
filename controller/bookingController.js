@@ -189,7 +189,7 @@ console.log("Booking Vendor:", booking.vendorId.toString());
       });
     }
 
-    booking.bookingStatus = 'confirmed';
+    booking.bookingStatus = 'accepted';
     await booking.save();
 
     await notificationModel.create({
@@ -257,7 +257,7 @@ exports.rejectBooking = async (req, res) => {
       });
     }
 
-    booking.bookingStatus = 'cancelled';
+    booking.bookingStatus = 'rejected';
     await booking.save();
 
     await notificationModel.create({
