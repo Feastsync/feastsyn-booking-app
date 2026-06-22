@@ -173,7 +173,6 @@ paths:
               type: object
               required:
                 - email
-                - otp
                 - password
                 - confirmPassword
               properties:

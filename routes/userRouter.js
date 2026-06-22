@@ -17,4 +17,4 @@ router.post('/reset-password', resetPasswordValidator, resetPassword);
 router.get('/user-dashboard', authentication, userDashboard  )
 // router.delete('/user/:id', authentication, adminAuth, deleteUser)
 
-module.exports = router; 
+module.exports = router;  
