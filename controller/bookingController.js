@@ -88,7 +88,7 @@ exports.createBooking = async (req, res) => {
       bookingId: booking._id,
       notificationType: 'booking_request',
       title: 'New Booking Request',
-      message: `${user.firstName} sent you a booking request`
+      message: `${user.firstName} ${user.lastName} sent you a booking request`
     });
 
 

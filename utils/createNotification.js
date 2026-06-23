@@ -28,12 +28,21 @@ exports.createNotification = async ({recipientId,recipientType,title,message, em
   try {
     const response = await brevo(
     recipient.email,
-    recipient.firstName || recipient.businessName,
+    recipient.firstName || recipient.stageName || "Vendor",
     message,
     emailSubject || title
   );
   } catch (error) {
-     console.error("Brevo failed:", error.response?.body || error);
+     console.error("Brevo failed:");
+     console.error(error.message);
+
+  if (error.response) {
+    console.error(error.response);
+  }
+
+  if (error.body) {
+    console.error(error.body);
+  }
   }
 
   return notification;
