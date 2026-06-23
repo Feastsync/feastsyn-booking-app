@@ -24,12 +24,16 @@ const walletSchema = new mongoose.Schema({
         type: Number,
         default: 0
 },
+pendingWithdrawals: {
+    type: Number,
+    default: 0
+},
     totalEarned: {
         type: Number,
         default: 0
     },
     lastWithdrawnDate: Date
-    
+
 }, { timestamps: true });
 
 const walletModel = mongoose.model('wallet', walletSchema);

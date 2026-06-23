@@ -184,6 +184,10 @@ onboardingStep: {
     type: Number,
     default: 0
 },
+bankCode: {
+  type: String,
+  trim: true
+},
   reviews: [
     {
         type: mongoose.Schema.Types.ObjectId,
