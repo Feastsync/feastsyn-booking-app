@@ -56,7 +56,7 @@ exports.createBooking = async (req, res) => {
       vendorId,
       eventDate: new Date(eventDate),
       bookingStatus: {
-        $in: ['pending', 'confirmed', 'completed']
+        $in: ['pending', 'accepted', 'confirmed', 'completed']
       }
     });
 
@@ -76,16 +76,19 @@ exports.createBooking = async (req, res) => {
       eventDate: new Date(eventDate),
       duration,
       guestCount,
-      additionalDetails
+      additionalDetails,
+      bookingStatus: 'pending', 
+      paymentStatus: 'unpaid'
     });
 
     await notificationModel.create({
       recipientId: vendorId,
+      recipientType: 'vendor',
       senderId: userId,
       bookingId: booking._id,
       notificationType: 'booking_request',
       title: 'New Booking Request',
-      message: `${user} sent you a booking request`
+      message: `${user.firstName} sent you a booking request`
     });
 
 
@@ -189,6 +192,15 @@ console.log("Booking Vendor:", booking.vendorId.toString());
       });
     }
 
+    if ( booking.bookingStatus === 'accepted' || booking.bookingStatus === 'confirmed' ) { 
+      return res.status(400).json({ 
+        message: 'Booking has already been accepted' }); 
+      } 
+      if (booking.bookingStatus === 'cancelled') {
+         return res.status(400).json({ 
+          message: 'Cancelled bookings cannot be accepted' });
+         }
+
     booking.bookingStatus = 'accepted';
     await booking.save();
 
@@ -199,7 +211,7 @@ console.log("Booking Vendor:", booking.vendorId.toString());
       bookingId: booking._id,
       notificationType: 'booking_accepted',
       title: 'Booking Accepted',
-      message: `Your booking request has been accepted by ${vendor.stageName}`
+      message: `Your booking request has been accepted by ${vendor.stageName}. Proceed to payment to confirm your booking.`
     });
 
     await Availability.findOneAndUpdate(
@@ -212,6 +224,7 @@ console.log("Booking Vendor:", booking.vendorId.toString());
         bookingId: booking._id
       },
       {
+        upsert: true,
         new: true
       }
     );
