@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: FeastSync Booking App API
+  version: 1.0.0
+  description: API documentation for the FeastSync Booking App, which allows vendors see all the transaction activities in their wallet.
+paths:
+  /api/v1/wallet/wallet-summary:
+    get:
+      summary: this end point is to get vendor's wallet 
+      tags: [wallet]
+      security: 
+        - bearerAuth: []
+      responses: 
+        "201":
+          description: One user dashboard retrieved successfully
+        "500":
+          description: something went wrong
+
+
+          
+  /api/v1/wallet/wallet-transactions:
+    get:
+      summary: this end point is to get vendor's wallet transactions
+      tags: [wallet]
+      security: 
+        - bearerAuth: []
+      responses: 
+        "201":
+          description: One user dashboard retrieved successfully
+        "500":
+          description: something went wrong       

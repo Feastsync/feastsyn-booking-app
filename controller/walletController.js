@@ -3,7 +3,6 @@ const walletModel = require('../models/wallet');
 const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow');
 const bookingModel = require('../models/booking');
-const description = require('../utils/description');
 
 exports.getWalletSummary = async (req, res) => {
   try {
@@ -117,11 +116,9 @@ exports.getWalletTransactions = async (req, res) => {
     const {page = 1, limit = 10, type, search } = req.query;
 
     const query = {vendorId};
-
     if (type && type !== 'all') {
       query.transactionType = type;
     }
-
     const transactions = await transactionModel.find(query).populate({
         path: 'bookingId',
         select: 'eventType'
@@ -148,7 +145,7 @@ exports.getWalletTransactions = async (req, res) => {
 
         bookingId: item.bookingId?._id || null,
 
-        description:item.description || getDescription(item),
+        description:item.description ,
 
         date: item.createdAt.toISOString().split('T')[0],
         amount: item.amount,
