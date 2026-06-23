@@ -12,7 +12,7 @@ paths:
         - bearerAuth: []
       responses: 
         "201":
-          description: One user dashboard retrieved successfully
+          description: Vendor's wallet dashboard retrieved successfully
         "500":
           description: something went wrong
 
@@ -26,6 +26,6 @@ paths:
         - bearerAuth: []
       responses: 
         "201":
-          description: One user dashboard retrieved successfully
+          description: Vendor's wallet transactions retrieved successfully
         "500":
           description: something went wrong       
