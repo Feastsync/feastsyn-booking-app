@@ -20,10 +20,11 @@ exports.getMessages = async (req, res) => {
       });
     }
 
-    if (booking.bookingStatus !== "confirmed" || booking.paymentStatus !== "paid") {
-      return res.status(403).json({
-        message: "Messages are only available after booking confirmation and payment.",});
-    }
+    if (booking.bookingStatus !== "accepted" && booking.bookingStatus !== "confirmed") {
+  return res.status(403).json({
+    message: "Messages are only available after the vendor accepts the booking.",
+  });
+}
 
     const senderId = req.user.id;
 
