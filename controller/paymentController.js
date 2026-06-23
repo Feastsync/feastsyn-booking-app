@@ -203,7 +203,7 @@ exports.verifyWebhook = async (req, res) => {
             // Update payment
             payment.paymentStatus = "successful";
             await payment.save();
-            await wallet.save()
+        
 
             // Update booking
     if (payment.bookingId) {
@@ -273,14 +273,16 @@ exports.verifyWebhook = async (req, res) => {
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
             if (!wallet) {
-                wallet = await walletModel.create({
-                    vendorId: payment.vendorId,
-                    availableBalance: 0,
-                    escrowBalance: 0,
-                    totalEarned: 0
-                });
-            }
-            
+            wallet = await walletModel.create({
+            vendorId: payment.vendorId,
+            availableBalance: 0,
+            escrowBalance: 0,
+            totalEarned: 0,
+            withdrawnAmount: 0,
+            totalTransactions: 0
+  });
+}
+        
             wallet.availableBalance +=
             firstReleaseAmount;
 
@@ -297,6 +299,7 @@ exports.verifyWebhook = async (req, res) => {
                 bookingId: payment.bookingId,
                 amount: commissionAmount,
                 transactionType: "commission",
+                description: "platform commission",
                 status: "successful"
             });
             
@@ -305,6 +308,7 @@ exports.verifyWebhook = async (req, res) => {
                 bookingId: payment.bookingId,
                 amount: firstReleaseAmount,
                 transactionType: "release",
+                description: "70% milestone released",
                 status: "successful"
             });
 
@@ -313,6 +317,7 @@ exports.verifyWebhook = async (req, res) => {
                 bookingId: payment.bookingId,
                 amount: finalReleaseAmount,
                 transactionType: "escrow",
+                description: "30% held in escrow",
                 status: "pending"
             });
             
@@ -468,7 +473,7 @@ exports.payoutFunds = async (req, res) => {
                         account: vendor.accountNumber
                     }
                 }
-            },
+            }, 
             {
                 headers: {
                     Authorization: `Bearer ${process.env.KORA_API_KEY}`,

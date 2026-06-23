@@ -4,7 +4,8 @@ const walletSchema = new mongoose.Schema({
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'vendors',
-        unique: true
+        unique: true,
+        required: true
     },
     availableBalance: {
         type: Number,
@@ -26,7 +27,9 @@ const walletSchema = new mongoose.Schema({
     totalEarned: {
         type: Number,
         default: 0
-    }
+    },
+    lastWithdrawnDate: Date
+    
 }, { timestamps: true });
 
 const walletModel = mongoose.model('wallet', walletSchema);

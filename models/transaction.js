@@ -6,13 +6,21 @@ const transactionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'vendors'
     },
+     walletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "wallet",
+        required: true
+  },
 
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'bookings'
     },
 
-    amount: Number,
+    amount: {
+        type: Number,
+        required: true
+    },
 
     transactionType: {
         type: String,
@@ -25,7 +33,8 @@ const transactionSchema = new mongoose.Schema({
         default: 'successful'
     },
     description: {
-        type: String
+        type: String,
+        trim: true
     }
 
 }, { timestamps: true });
