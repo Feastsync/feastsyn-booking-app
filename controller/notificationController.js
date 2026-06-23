@@ -12,7 +12,7 @@ exports.getNotifications = async (req, res) => {
         message: "Unauthorized"
       });
     }
-    const notifications = await notificationModel.find({recipientId:req.user.id }).populate({path: 'bookingId',
+    const notifications = await notificationModel.find({recipientId}).populate({path: 'bookingId',
   select: '_id eventDate eventLocation bookingStatus paymentStatus'}).sort({ createdAt: -1 });
 
     const formattedNotifications = notifications.map(notification => ({
@@ -42,13 +42,15 @@ exports.getNotifications = async (req, res) => {
 };
 
 exports.markNotificationAsRead = async (req, res) => {
-  try { 
+  try {
     const { notificationId } = req.params;
-    console.log("notificationId:", notificationId);
+
+    const recipientId = req.user?.id || req.vendor?.id;
+
     const notification = await notificationModel.findOneAndUpdate(
       {
         _id: notificationId,
-        recipientId: req.user.id
+        recipientId
       },
       {
         isRead: true
@@ -57,12 +59,14 @@ exports.markNotificationAsRead = async (req, res) => {
         new: true
       }
     );
+
     if (!notification) {
       return res.status(404).json({
         success: false,
         message: 'Notification not found'
       });
     }
+
     return res.status(200).json({
       success: true,
       message: 'Notification marked as read',
@@ -80,9 +84,11 @@ exports.markNotificationAsRead = async (req, res) => {
 exports.markAllNotificationsAsRead = async (req, res) => {
   try {
 
+    const recipientId = req.user?.id || req.vendor?.id;
+
     const result = await notificationModel.updateMany(
       {
-        recipientId: req.user.id,
+        recipientId,
         isRead: false
       },
       {
