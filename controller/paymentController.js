@@ -36,15 +36,15 @@ if (!booking) {
     });
 }
 
-if (booking.bookingStatus !== 'accepted') {
+if (booking.paymentStatus === 'paid') {
     return res.status(400).json({
-        message: 'This booking has not been accepted by the vendor yet'
+        message: 'This booking has already been paid for'
     });
 }
 
-if (booking.paymentStatus !== 'unpaid') {
+if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
     return res.status(400).json({
-        message: 'This booking has already been paid for'
+        message: 'This booking has not been accepted by the vendor yet'
     });
 }
 
