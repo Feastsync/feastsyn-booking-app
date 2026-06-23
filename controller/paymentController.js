@@ -122,7 +122,8 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
                 vendorName,
                 bookingId: booking?._id?.toString()
             },
-            redirect_url: 'https://feast-sync.vercel.app/chats/'
+            redirect_url: 'https://feast-sync.vercel.app/chats/',
+            notification_url: 'https://feastsync-api.onrender.com/api/v1/payment/webhook'
         };
         console.log(paymentData)
         const response = await axios.post(
@@ -182,11 +183,11 @@ exports.verifyWebhook = async (req, res) => {
             });
         }
         
-        const payment = await paymentModel.findOne({ reference });
+        const payment = await paymentModel.findOne({ reference: data.reference });
         console.log("PAYMENT:", payment);
         console.log("VENDOR ID:", payment.vendorId);
         console.log("BOOKING ID:", payment.bookingId);
-
+          
         if (!payment) {
             return res.status(404).json({
                 message: "No payment record found"
