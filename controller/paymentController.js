@@ -420,7 +420,7 @@ exports.payoutFunds = async (req, res) => {
             });
         }
 
-        if (!vendor.bankName || !vendor.accountNumber) {
+        if (!vendor.bankName || !vendor.accountNumber || !vendor.bankCode) {
             return res.status(400).json({
                 message: "Please update your bank details first"
             });
@@ -442,9 +442,21 @@ exports.payoutFunds = async (req, res) => {
             });
         }
 
+        if (withdrawalAmount < 100) {
+            return res.status(400).json({
+                message: "Minimum withdrawal amount is ₦100"
+            });
+        }
+
         if (wallet.availableBalance < withdrawalAmount) {
             return res.status(400).json({
                 message: "Insufficient available balance"
+            });
+        }
+
+        if (!/^\d{10}$/.test(vendor.accountNumber)) {
+            return res.status(400).json({
+                message: "Invalid account number"
             });
         }
 
@@ -463,13 +475,12 @@ exports.payoutFunds = async (req, res) => {
                     narration: "FeastSync Vendor Withdrawal",
 
                     customer: {
-                        name: vendor.stageName ||
-                              `${vendor.firstName} ${vendor.lastName}`,
+                        name: vendor.stageName || `${vendor.firstName} ${vendor.lastName}`,
                         email: vendor.email
                     },
 
                     bank_account: {
-                        bank: "044", // Replace with actual bank code lookup
+                        bank: vendor.bankCode,
                         account: vendor.accountNumber
                     }
                 }
@@ -479,7 +490,7 @@ exports.payoutFunds = async (req, res) => {
                     Authorization: `Bearer ${process.env.KORA_API_KEY}`,
                     "Content-Type": "application/json"
                 }
-            }
+            } 
         );
 
         // Save payout record
@@ -492,8 +503,10 @@ exports.payoutFunds = async (req, res) => {
             status: "processing"
         });
 
-        // Deduct balance
+        // Reserve the funds immediately
         wallet.availableBalance -= withdrawalAmount;
+        wallet.pendingWithdrawals += withdrawalAmount;
+        wallet.totalTransactions += 1;
 
         await wallet.save();
 
@@ -502,15 +515,15 @@ exports.payoutFunds = async (req, res) => {
             vendorId,
             amount: withdrawalAmount,
             transactionType: "withdrawal",
-            status: "successful",
-            reference
+            status: "pending",
+            reference,
+            description: "Withdrawal initiated"
         });
 
         return res.status(200).json({
             message: "Withdrawal initiated successfully",
             payout,
-            walletBalance: wallet.availableBalance,
-            koraResponse: response.data
+            walletBalance: wallet.availableBalance
         });
 
     } catch (error) {
