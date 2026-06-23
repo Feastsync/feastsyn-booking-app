@@ -182,8 +182,11 @@ exports.verifyWebhook = async (req, res) => {
             });
         }
         
-        const payment = await paymentModel.findOne({ reference: data.reference });
-        
+        const payment = await paymentModel.findOne({ reference });
+        console.log("PAYMENT:", payment);
+        console.log("VENDOR ID:", payment.vendorId);
+        console.log("BOOKING ID:", payment.bookingId);
+
         if (!payment) {
             return res.status(404).json({
                 message: "No payment record found"
@@ -191,20 +194,16 @@ exports.verifyWebhook = async (req, res) => {
         }
         
         if (event === "charge.success") {
-            console.log('checking for success webhook')
-            // Prevent duplicate processing
-        if (
-            event === "charge.success" && payment.paymentStatus === "successful") {
+
+    if(payment.paymentStatus === "successful") {
         return res.status(200).json({
-        message: "Payment already processed"
+            message: "Payment already processed"
         });
     }
-            
-            // Update payment
-            payment.paymentStatus = "successful";
-            await payment.save();
-        
 
+    payment.paymentStatus = "successful";
+    await payment.save();
+        
             // Update booking
     if (payment.bookingId) {
     const booking = await bookingModel.findByIdAndUpdate(
@@ -237,6 +236,7 @@ exports.verifyWebhook = async (req, res) => {
     }
 }
 
+            console.log("REACHED ESCROW/WALLET SECTION");
             // ESCROW CALCULATIONS
             const totalAmount = Number(payment.amount);
             
@@ -272,6 +272,8 @@ exports.verifyWebhook = async (req, res) => {
             }
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
+            
+            console.log("WALLET BEFORE:", wallet);
             if (!wallet) {
             wallet = await walletModel.create({
             vendorId: payment.vendorId,
@@ -281,6 +283,8 @@ exports.verifyWebhook = async (req, res) => {
             withdrawnAmount: 0,
             totalTransactions: 0
   });
+
+  console.log("NEW WALLET CREATED:", wallet);
 }
         
             wallet.availableBalance +=
@@ -292,7 +296,11 @@ exports.verifyWebhook = async (req, res) => {
             wallet.totalEarned +=
             vendorAmount;
             
+            wallet.totalTransactions += 1;
+
             await wallet.save();
+
+            console.log("WALLET AFTER:", wallet);
             // TRANSACTION RECORDS
             await transactionModel.create({
                 vendorId: payment.vendorId,
