@@ -25,7 +25,7 @@ exports.upload = multer({
       console.log('Generated filename:', fileName);
 
       cb(null, fileName);
-    }
+    } 
   }),
 
   limits: {
