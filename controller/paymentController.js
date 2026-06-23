@@ -176,7 +176,8 @@ exports.verifyWebhook = async (req, res) => {
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
-        
+        console.log("GENERATED HASH:", hash);
+console.log("SIGNATURE:", signature);
         if (hash !== signature) {
             return res.status(401).json({
                 message: "Invalid webhook signature"
@@ -189,11 +190,16 @@ exports.verifyWebhook = async (req, res) => {
         console.log("BOOKING ID:", payment.bookingId);
           
         if (!payment) {
+        console.log("Payment not found for reference:", data.reference);    
             return res.status(404).json({
                 message: "No payment record found"
             });
         }
         
+        console.log("PAYMENT:", payment);
+    console.log("VENDOR ID:", payment.vendorId);
+    console.log("BOOKING ID:", payment.bookingId);
+
         if (event === "charge.success") {
 
     if(payment.paymentStatus === "successful") {
@@ -274,7 +280,7 @@ exports.verifyWebhook = async (req, res) => {
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
             
-            console.log("WALLET BEFORE:", wallet);
+            console.log("WALLET BEFORE SAVED:", wallet);
             if (!wallet) {
             wallet = await walletModel.create({
             vendorId: payment.vendorId,
@@ -301,7 +307,7 @@ exports.verifyWebhook = async (req, res) => {
 
             await wallet.save();
 
-            console.log("WALLET AFTER:", wallet);
+            console.log("WALLET AFTER SAVED:", wallet);
             // TRANSACTION RECORDS
             await transactionModel.create({
                 vendorId: payment.vendorId,
