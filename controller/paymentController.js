@@ -127,7 +127,7 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
             paymentData,
             {
                 headers: {
-                    Authorization: `Bearer ${process.env.KORA_API_KEY}`
+                    Authorization: `Bearer ${process.env.KORA_API_KEY}` 
                 }
             }
         );
@@ -202,7 +202,7 @@ exports.verifyWebhook = async (req, res) => {
     console.log("Event Status:", event);
 
         if (event === "charge.success") {
-
+console.log('checking for success')
     if(payment.paymentStatus === "success") {
         return res.status(200).json({
             message: "Payment already processed"
