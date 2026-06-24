@@ -238,10 +238,8 @@ exports.verifyWebhook = async (req, res) => {
         console.log("CALENDAR UPDATED:", calendarEntry);
 
     } catch (calendarError) {
-        console.error(
-            "CALENDAR UPDATE FAILED:",
-            calendarError.message
-        );
+    console.error("FULL CALENDAR ERROR:");
+    console.error(calendarError);
 }
     }
 }
