@@ -111,7 +111,6 @@ exports.getWalletSummary = async (req, res) => {
 exports.getWalletTransactions = async (req, res) => {
   try {
     const vendorId = req.user.id;
-
     const {
       page = 1,
       limit = 10,

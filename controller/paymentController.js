@@ -168,8 +168,7 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 exports.verifyWebhook = async (req, res) => {
     try {
         const { event, data } = req.body;
-        
-
+    
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
@@ -193,16 +192,11 @@ exports.verifyWebhook = async (req, res) => {
             message: "Payment already processed"
         });
     }
-    console.log('Payment status before: ', payment.paymentStatus)
 
     payment.paymentStatus = "success";
     await payment.save();
-    console.log('Payment status after: ', payment.paymentStatus);
-
-    console.log('Payment booking: ', payment.bookingId)
-
-        
-            // Update booking
+    
+     // Update booking
     if (payment.bookingId) {
     const booking = await bookingModel.findByIdAndUpdate(
         payment.bookingId,
@@ -214,7 +208,6 @@ exports.verifyWebhook = async (req, res) => {
             new: true
         }
     );
-    console.log('Booking: ',  booking)
 
     if (booking) {
     try {
@@ -235,23 +228,19 @@ exports.verifyWebhook = async (req, res) => {
             }
         );
 
-        console.log("CALENDAR UPDATED:", calendarEntry);
-
     } catch (calendarError) {
     console.error("FULL CALENDAR ERROR:");
     console.error(calendarError);
 }
     }
 }
-
-            console.log("REACHED ESCROW/WALLET SECTION");
             // ESCROW CALCULATIONS
             const totalAmount = Number(payment.amount);
             
-            // FeastSync Commission (5%)
-            const commissionAmount = totalAmount * 0.05;
+            // FeastSync Commission (3%)
+            const commissionAmount = totalAmount * 0.03;
             
-            // Vendor gets remaining 95%
+            // Vendor gets remaining 97%
             const vendorAmount = totalAmount - commissionAmount;
             
             // 70% released immediately
@@ -278,7 +267,6 @@ exports.verifyWebhook = async (req, res) => {
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
             
-            console.log("WALLET BEFORE SAVED:", wallet);
             if (!wallet) {
             wallet = await walletModel.create({
             vendorId: payment.vendorId,
@@ -289,7 +277,6 @@ exports.verifyWebhook = async (req, res) => {
             totalTransactions: 0
   });
 
-  console.log("NEW WALLET CREATED:", wallet);
 }
         
             wallet.availableBalance += firstReleaseAmount;
@@ -302,28 +289,6 @@ exports.verifyWebhook = async (req, res) => {
 
             await wallet.save();
 
-            console.log("WALLET AFTER SAVED:", wallet);
-
-            console.log(
-    "ESCROW COUNT:",
-    await escrowModel.countDocuments({
-        vendorId: payment.vendorId
-    })
-);
-
-console.log(
-    "TRANSACTION COUNT:",
-    await transactionModel.countDocuments({
-        vendorId: payment.vendorId
-    })
-);
-
-console.log(
-    "WALLET FROM DB:",
-    await walletModel.findOne({
-        vendorId: payment.vendorId
-    })
-);
 
             // TRANSACTION RECORDS
             await transactionModel.create({
