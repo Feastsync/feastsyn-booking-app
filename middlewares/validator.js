@@ -48,7 +48,6 @@ exports.signupVendorValidator = (req, res, next) => {
 };
 
 exports.signupUserValidator = (req, res, next) => {
-
     const schema = joi.object({
         firstName: joi.string().trim().pattern(/^[a-zA-Z]+(-[a-zA-Z]+)*$/).required().messages({
             'any.required': 'First name is required', 
@@ -110,34 +109,6 @@ exports.resetPasswordValidator = (req, res, next)=>{
 
     const { error } = schema.validate(req.body);
     // console.log(error.details[0])
-    if (error) {
-        return res.status(400).json({
-            message: error.details[0].message
-        })
-    }
-
-    next()
-}
-
-exports.changePasswordValidator = (req, res, next)=>{
-    const schema = joi.object({
-        oldPassword: joi.string().pattern(/^(?=.*[A-Z]).{8,}$/).required().messages({
-          'any.required': 'old password is required',
-          'string.empty': 'old password cannot be empty',
-          'string.pattern.base': 'old password must be at least 8 characters and must include 1 uppercase and 1 lowercase'
-        }),
-        newPassword: joi.string().pattern(/^(?=.*[A-Z]).{8,}$/).required().messages({
-          'any.required': 'new password is required',
-          'string.empty': 'new password cannot be empty',
-          'string.pattern.base': 'new password must be at least 8 characters and must include 1 uppercase and 1 lowercase' 
-        }),
-        confirmPassword: joi.string().required().valid(joi.ref('newPassword')).messages({
-          'any.only': 'confirm password must match New password',
-          'any.required': 'confirm password is required'
-        })
-    })
-
-    const { error } = schema.validate(req.body);
     if (error) {
         return res.status(400).json({
             message: error.details[0].message
