@@ -12,7 +12,7 @@ exports.getWalletSummary = async (req, res) => {
 
     if (!wallet) {
       return res.status(404).json({
-        message: 'Wallet not found'
+        message: "Wallet not found"
       });
     }
 
@@ -21,12 +21,12 @@ exports.getWalletSummary = async (req, res) => {
     const startOfYear = new Date(currentYear, 0, 1);
     const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
 
-    // Total earned this year
-    const yearlyTransactions = await transactionModel.aggregate([
+    // TOTAL EARNED THIS YEAR
+    // (Total vendor share after commission)
+    const yearlyEarnings = await escrowModel.aggregate([
       {
         $match: {
           vendorId: wallet.vendorId,
-          transactionType: 'release',
           createdAt: {
             $gte: startOfYear,
             $lte: endOfYear
@@ -37,39 +37,10 @@ exports.getWalletSummary = async (req, res) => {
         $group: {
           _id: null,
           total: {
-            $sum: '$amount'
-          }
-        }
-      }
-    ]);
-
-    // Pending escrow
-    const escrowSummary = await escrowModel.aggregate([
-      {
-        $match: {
-          vendorId: wallet.vendorId
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
             $sum: {
-              $add: [
-                {
-                  $cond: [
-                    { $eq: ['$firstReleaseStatus', 'pending'] },
-                    '$firstReleaseAmount',
-                    0
-                  ]
-                },
-                {
-                  $cond: [
-                    { $eq: ['$finalReleaseStatus', 'pending'] },
-                    '$finalReleaseAmount',
-                    0
-                  ]
-                }
+              $subtract: [
+                "$totalAmount",
+                "$commissionAmount"
               ]
             }
           }
@@ -77,33 +48,96 @@ exports.getWalletSummary = async (req, res) => {
       }
     ]);
 
-    // Completed bookings
+    // PENDING ESCROW (30% not released)
+    const escrowSummary = await escrowModel.aggregate([
+      {
+        $match: {
+          vendorId: wallet.vendorId,
+          finalReleaseStatus: "pending"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$finalReleaseAmount"
+          }
+        }
+      }
+    ]);
+
+    // COMPLETED BOOKINGS
     const completedBookings = await bookingModel.countDocuments({
       vendorId,
-      bookingStatus: 'completed'
+      bookingStatus: "completed"
     });
 
-    // Pending bookings
+    // PENDING BOOKINGS
     const pendingBookings = await bookingModel.countDocuments({
       vendorId,
-      bookingStatus: 'confirmed'
+      bookingStatus: "confirmed"
     });
 
+    // TOTAL SUCCESSFUL
+    // Earnings from completed events only
+    const completedBookingIds = await bookingModel
+      .find({
+        vendorId,
+        bookingStatus: "completed"
+      })
+      .select("_id");
+
+    const bookingIds = completedBookingIds.map(
+      item => item._id
+    );
+
+    const successfulEarnings = await escrowModel.aggregate([
+      {
+        $match: {
+          bookingId: {
+            $in: bookingIds
+          }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: {
+              $subtract: [
+                "$totalAmount",
+                "$commissionAmount"
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
     return res.status(200).json({
-      message: 'Wallet summary fetched successfully',
+      message: "Wallet summary fetched successfully",
 
-      data: {availableBalance: wallet.availableBalance,
+      data: {
+        availableBalance: wallet.availableBalance,
 
-        totalEarnedThisYear: yearlyTransactions[0]?.total || 0,
+        totalEarnedThisYear:
+          yearlyEarnings[0]?.total || 0,
 
-        pendingEscrow: escrowSummary[0]?.total || 0,
+        totalSuccessful:
+          successfulEarnings[0]?.total || 0,
 
-        completedBookings, pendingBookings
+        pendingEscrow:
+          escrowSummary[0]?.total || 0,
+
+        completedBookings,
+
+        pendingBookings
       }
     });
 
   } catch (error) {
     console.log(error);
+
     return res.status(500).json({
       message: error.message
     });
@@ -113,45 +147,150 @@ exports.getWalletSummary = async (req, res) => {
 exports.getWalletTransactions = async (req, res) => {
   try {
     const vendorId = req.user.id;
-    const {page = 1, limit = 10, type, search } = req.query;
 
-    const query = {vendorId};
-    if (type && type !== 'all') {
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      search
+    } = req.query;
+
+    const query = {
+      vendorId
+    };
+
+    if (
+      type &&
+      type !== "all" &&
+      type !== "pending"
+    ) {
       query.transactionType = type;
     }
-    const transactions = await transactionModel.find(query).populate({
-        path: 'bookingId',
-        select: 'eventType'
-      }).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit));
 
-    let filteredTransactions = transactions;
+    if (type === "pending") {
+      query.status = "pending";
+    }
+
+    let transactions = await transactionModel
+      .find(query)
+      .populate({
+        path: "bookingId",
+        select: "eventType"
+      })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * Number(limit))
+      .limit(Number(limit));
 
     if (search) {
-      filteredTransactions = transactions.filter(
-        (item) => item.bookingId?._id?.toString().includes(search));
+      transactions = transactions.filter(item =>
+        item.bookingId?._id
+          ?.toString()
+          .includes(search)
+      );
     }
 
     const total = await transactionModel.countDocuments(query);
 
+    // Dashboard totals
+
+    const totalSuccessful = await transactionModel.aggregate([
+      {
+        $match: {
+          vendorId,
+          transactionType: "release",
+          status: "successful"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$amount"
+          }
+        }
+      }
+    ]);
+
+    const totalCommission = await transactionModel.aggregate([
+      {
+        $match: {
+          vendorId,
+          transactionType: "commission"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$amount"
+          }
+        }
+      }
+    ]);
+
+    const escrowHeld = await transactionModel.aggregate([
+      {
+        $match: {
+          vendorId,
+          transactionType: "escrow",
+          status: "pending"
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: {
+            $sum: "$amount"
+          }
+        }
+      }
+    ]);
+
     return res.status(200).json({
-      message: 'Transactions fetched successfully',
+      message: "Transactions fetched successfully",
 
-      pagination: {currentPage: Number(page),
+      summary: {
+        totalSuccessful:
+          totalSuccessful[0]?.total || 0,
+
+        totalCommission:
+          totalCommission[0]?.total || 0,
+
+        escrowHeld:
+          escrowHeld[0]?.total || 0,
+
+        totalRecords: total
+      },
+
+      pagination: {
+        currentPage: Number(page),
         totalPages: Math.ceil(total / limit),
-        totalRecords: total},
+        totalRecords: total
+      },
 
-      data: filteredTransactions.map((item) => ({
+      data: transactions.map(item => ({
         id: item._id,
 
-        bookingId: item.bookingId?._id || null,
+        bookingId:
+          item.bookingId?._id || null,
 
-        description:item.description ,
+        eventType:
+          item.bookingId?.eventType || null,
 
-        date: item.createdAt.toISOString().split('T')[0],
+        description: item.description,
+
         amount: item.amount,
 
-        transactionType: item.transactionType,
-        status: item.status}))
+        transactionType:
+          item.transactionType,
+
+        status: item.status,
+
+        date:
+          item.createdAt
+            .toISOString()
+            .split("T")[0]
+      }))
     });
 
   } catch (error) {
