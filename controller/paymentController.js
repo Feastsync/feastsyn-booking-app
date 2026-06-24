@@ -203,7 +203,7 @@ exports.verifyWebhook = async (req, res) => {
 
         if (event === "charge.success") {
 console.log('checking for success')
-    if(payment.paymentStatus === "success") {
+    if(payment.paymentStatus === "success") { 
         return res.status(200).json({
             message: "Payment already processed"
         });
@@ -232,21 +232,32 @@ console.log('checking for success')
     console.log('Booking: ',  booking)
 
     if (booking) {
-        await calendarModel.findOneAndUpdate(
+    try {
+        const calendarEntry = await calendarModel.findOneAndUpdate(
             {
                 vendorId: booking.vendorId,
-                date: booking.eventDate
+                bookingDate: booking.eventDate
             },
             {
                 vendorId: booking.vendorId,
-                date: booking.eventDate,
-                isBooked: true
+                bookingDate: booking.eventDate,
+                status: "booked",
+                bookingId: booking._id
             },
             {
                 upsert: true,
                 new: true
             }
         );
+
+        console.log("CALENDAR UPDATED:", calendarEntry);
+
+    } catch (calendarError) {
+        console.error(
+            "CALENDAR UPDATE FAILED:",
+            calendarError.message
+        );
+}
     }
 }
 
