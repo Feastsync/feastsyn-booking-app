@@ -34,8 +34,10 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
      otpExpires: {
-        type: Date,
-        default: null
+        type: Number,
+        default: () => {
+        return Date.now() + ( 10 * 60 * 1000)   
+    }
 },
 otpVerified: {
   type: Boolean,
