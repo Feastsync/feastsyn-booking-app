@@ -13,6 +13,13 @@ paths:
       parameters: 
         - in: path
           name: vendorId 
+        - in: query
+          name: month 
+          required: true
+          schema:
+            type: string
+            example: "2026-06"
+          description: Month to retrieve bookings for in YYYY-MM format 
       responses:
         "200":
           description: vendor's availability fetched successfully
