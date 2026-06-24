@@ -8,21 +8,9 @@ const paymentModel = require('../models/payment');
 
 
 exports.getCalendar = async (req, res) => {
-
-  console.log("==============");
-  console.log("GET CALENDAR HIT");
-  console.log("PARAMS:", req.params);
-  console.log("QUERY:", req.query);
-  console.log("==============");
   try {
     const { vendorId } = req.params;
     const { month } = req.query;
-
-    if (!month) {
-      return res.status(400).json({
-        message: "Month is required. Format: YYYY-MM"
-      });
-    }
 
     const [year, monthNumber] = month.split("-").map(Number);
 
@@ -37,23 +25,19 @@ exports.getCalendar = async (req, res) => {
         $lt: endDate
       }
     });
-    console.log("CALENDAR ENTRIES:", calendarEntries);
+
     const bookedDates = calendarEntries.map((entry) => ({
-      date: entry.bookingDate.toISOString().split("T")[0],
-      status: entry.status,
-      bookingId: entry.bookingId
+      date: entry.bookingDate.toISOString().split("T")[0]
     }));
 
     return res.status(200).json({
       vendorId,
       month,
-      totalBookings: bookedDates.length,
-      bookedDates
+      bookedDates,
+      totalBookings: bookedDates.length
     });
 
   } catch (error) {
-    console.error("GET CALENDAR ERROR:", error);
-
     return res.status(500).json({
       message: error.message
     });
