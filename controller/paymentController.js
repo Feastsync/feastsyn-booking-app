@@ -199,6 +199,7 @@ exports.verifyWebhook = async (req, res) => {
         console.log("PAYMENT:", payment);
     console.log("VENDOR ID:", payment.vendorId);
     console.log("BOOKING ID:", payment.bookingId);
+    console.log("Event Status:", event);
 
         if (event === "charge.success") {
 
@@ -207,9 +208,14 @@ exports.verifyWebhook = async (req, res) => {
             message: "Payment already processed"
         });
     }
+    console.log('Payment status before: ', payment.paymentStatus)
 
     payment.paymentStatus = "success";
     await payment.save();
+    console.log('Payment status after: ', payment.paymentStatus);
+
+    console.log('Payment booking: ', payment.bookingId)
+
         
             // Update booking
     if (payment.bookingId) {
@@ -223,6 +229,7 @@ exports.verifyWebhook = async (req, res) => {
             new: true
         }
     );
+    console.log('Booking: ',  booking)
 
     if (booking) {
         await calendarModel.findOneAndUpdate(

@@ -8,6 +8,7 @@ const cors = require('cors');
 const swagger = require('./swagger');
 const swaggerUi = require('swagger-ui-express');
 // const session = require('express-session')
+const morgan = require('morgan');
 
 
 const vendorRouter = require('./routes/vendorRouter');
@@ -76,6 +77,7 @@ const limiter = rateLimit({
 
 app.use(express.json());
 app.use(cors());
+app.use(morgan('dev'))
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 
 // app.use(session({
