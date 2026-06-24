@@ -31,37 +31,63 @@
 
 const BrevoClient = require("@getbrevo/brevo");
 
-const brevoClient = new BrevoClient.TransactionalEmailsApi();
+const brevoClient =
+  new BrevoClient.TransactionalEmailsApi();
 
 brevoClient.setApiKey(
   BrevoClient.TransactionalEmailsApiApiKeys.apiKey,
   process.env.brevoApiKey
 );
 
-const brevo = async (userEmail, userName, html, subject = "FeastSync Notification") => {
-  const sendSmtpEmail = new BrevoClient.SendSmtpEmail();
+const brevo = async (
+  userEmail,
+  userName,
+  html,
+  subject = "FeastSync Notification"
+) => {
+  try {
+    const sendSmtpEmail =
+      new BrevoClient.SendSmtpEmail();
 
-  sendSmtpEmail.to = [
-    {
-      email: userEmail,
-      name: userName
-    },
-  ];
+    sendSmtpEmail.to = [
+      {
+        email: userEmail,
+        name: userName
+      }
+    ];
 
-  sendSmtpEmail.sender = {
-    email: process.env.USER_EMAIL,
-    name: "FeastSync Team",
-  };
+    sendSmtpEmail.sender = {
+      email: process.env.USER_EMAIL,
+      name: "FeastSync Team"
+    };
 
-  sendSmtpEmail.subject = subject;
+    sendSmtpEmail.subject = subject;
 
-  sendSmtpEmail.htmlContent = html;
+    sendSmtpEmail.htmlContent = html;
 
-  const response = await brevoClient.sendTransacEmail(sendSmtpEmail);
+    const response =
+      await brevoClient.sendTransacEmail(
+        sendSmtpEmail
+      );
 
-  console.log("BREVO RESPONSE:", response);
-  
-  return response;
+    console.log(
+      "BREVO SUCCESS:",
+      response
+    );
+
+    return response;
+
+  } catch (error) {
+
+    console.error(
+      "BREVO FAILED:",
+      error.response?.body ||
+      error.response?.data ||
+      error.message
+    );
+
+    throw error;
+  }
 };
 
 module.exports = { brevo };
