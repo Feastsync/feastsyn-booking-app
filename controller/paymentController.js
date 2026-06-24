@@ -119,7 +119,7 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
                 bookingId: booking?._id?.toString()
             },
             redirect_url: 'https://feast-sync.vercel.app/chats/',
-            notification_url: 'https://feastsync-api.onrender.com/api/v1/payment/webhook'
+            notification_url: 'https://feastsyn-booking-app.onrender.com/api/v1/payment/webhook'
         };
         console.log(paymentData)
         const response = await axios.post(
