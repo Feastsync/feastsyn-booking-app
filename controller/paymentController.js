@@ -100,11 +100,7 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 
         const vendorName = vendor.stageName || `${vendor.firstName} ${vendor.lastName}`;
 
-        const ref = otpGenerator.generate(12, {
-            specialChars: false,
-            upperCaseAlphabets: false,
-            lowerCaseAlphabets: false
-        });
+        const ref = otpGenerator.generate(12, {specialChars: false, upperCaseAlphabets: false, lowerCaseAlphabets: false});
 
         const reference = `TCA-FEASTSYNC-${ref}`;
 
@@ -171,13 +167,17 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 
 exports.verifyWebhook = async (req, res) => {
     try {
+          console.log("====== WEBHOOK HIT ======");
+        console.log("BODY:", req.body);
         const { event, data } = req.body;
         console.log('checking for webhook')
+
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
+
         console.log("GENERATED HASH:", hash);
-console.log("SIGNATURE:", signature);
+        console.log("SIGNATURE:", signature);
         if (hash !== signature) {
             return res.status(401).json({
                 message: "Invalid webhook signature"
@@ -202,13 +202,13 @@ console.log("SIGNATURE:", signature);
 
         if (event === "charge.success") {
 
-    if(payment.paymentStatus === "successful") {
+    if(payment.paymentStatus === "success") {
         return res.status(200).json({
             message: "Payment already processed"
         });
     }
 
-    payment.paymentStatus = "successful";
+    payment.paymentStatus = "success";
     await payment.save();
         
             // Update booking
@@ -265,14 +265,11 @@ console.log("SIGNATURE:", signature);
                 await escrowModel.create({
                     bookingId: payment.bookingId,
                     vendorId: payment.vendorId,
-                    paymentId: payment._id,
-                    
+                    paymentId: payment._id, 
                     totalAmount,
-                    commissionAmount,
-                    
+                    commissionAmount,  
                     firstReleaseAmount,
                     finalReleaseAmount,
-
                     firstReleaseStatus: "released",
                     finalReleaseStatus: "pending"
                 });
@@ -294,14 +291,11 @@ console.log("SIGNATURE:", signature);
   console.log("NEW WALLET CREATED:", wallet);
 }
         
-            wallet.availableBalance +=
-            firstReleaseAmount;
+            wallet.availableBalance += firstReleaseAmount;
 
-            wallet.escrowBalance +=
-            finalReleaseAmount;
+            wallet.escrowBalance += finalReleaseAmount;
 
-            wallet.totalEarned +=
-            vendorAmount;
+            wallet.totalEarned += vendorAmount;
             
             wallet.totalTransactions += 1;
 
