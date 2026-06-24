@@ -4,7 +4,7 @@ const escrowSchema = new mongoose.Schema({
 
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'booking',
+        ref: 'bookings',
         required: true
     },
 

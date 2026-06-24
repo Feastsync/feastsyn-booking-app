@@ -3,6 +3,7 @@ const walletModel = require('../models/wallet');
 const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow');
 const bookingModel = require('../models/booking');
+const paymentModel = require('../models/payment')
 
 exports.getWalletSummary = async (req, res) => {
   try {
@@ -16,40 +17,17 @@ exports.getWalletSummary = async (req, res) => {
       });
     }
 
-    const currentYear = new Date().getFullYear();
+    const completedBookings = await bookingModel.countDocuments({
+      vendorId,
+      bookingStatus: "completed"
+    });
 
-    const startOfYear = new Date(currentYear, 0, 1);
-    const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
+    const pendingBookings = await bookingModel.countDocuments({
+      vendorId,
+      bookingStatus: "confirmed"
+    });
 
-    // TOTAL EARNED THIS YEAR
-    // (Total vendor share after commission)
-    const yearlyEarnings = await escrowModel.aggregate([
-      {
-        $match: {
-          vendorId: wallet.vendorId,
-          createdAt: {
-            $gte: startOfYear,
-            $lte: endOfYear
-          }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: {
-              $subtract: [
-                "$totalAmount",
-                "$commissionAmount"
-              ]
-            }
-          }
-        }
-      }
-    ]);
-
-    // PENDING ESCROW (30% not released)
-    const escrowSummary = await escrowModel.aggregate([
+    const pendingEscrow = await escrowModel.aggregate([
       {
         $match: {
           vendorId: wallet.vendorId,
@@ -66,20 +44,6 @@ exports.getWalletSummary = async (req, res) => {
       }
     ]);
 
-    // COMPLETED BOOKINGS
-    const completedBookings = await bookingModel.countDocuments({
-      vendorId,
-      bookingStatus: "completed"
-    });
-
-    // PENDING BOOKINGS
-    const pendingBookings = await bookingModel.countDocuments({
-      vendorId,
-      bookingStatus: "confirmed"
-    });
-
-    // TOTAL SUCCESSFUL
-    // Earnings from completed events only
     const completedBookingIds = await bookingModel
       .find({
         vendorId,
@@ -118,16 +82,16 @@ exports.getWalletSummary = async (req, res) => {
       message: "Wallet summary fetched successfully",
 
       data: {
-        availableBalance: wallet.availableBalance,
+        availableBalance: wallet.availableBalance || 0,
 
         totalEarnedThisYear:
-          yearlyEarnings[0]?.total || 0,
+          wallet.totalEarned || 0,
 
         totalSuccessful:
           successfulEarnings[0]?.total || 0,
 
         pendingEscrow:
-          escrowSummary[0]?.total || 0,
+          pendingEscrow[0]?.total || 0,
 
         completedBookings,
 
@@ -151,7 +115,7 @@ exports.getWalletTransactions = async (req, res) => {
     const {
       page = 1,
       limit = 10,
-      type,
+      type = "all",
       search
     } = req.query;
 
@@ -159,19 +123,23 @@ exports.getWalletTransactions = async (req, res) => {
       vendorId
     };
 
-    if (
-      type &&
-      type !== "all" &&
-      type !== "pending"
-    ) {
-      query.transactionType = type;
+    if (type === "commission") {
+      query.transactionType = "commission";
+    }
+
+    if (type === "escrow") {
+      query.transactionType = "escrow";
+    }
+
+    if (type === "release") {
+      query.transactionType = "release";
     }
 
     if (type === "pending") {
       query.status = "pending";
     }
 
-    let transactions = await transactionModel
+    const transactions = await transactionModel
       .find(query)
       .populate({
         path: "bookingId",
@@ -181,115 +149,108 @@ exports.getWalletTransactions = async (req, res) => {
       .skip((page - 1) * Number(limit))
       .limit(Number(limit));
 
-    if (search) {
-      transactions = transactions.filter(item =>
-        item.bookingId?._id
-          ?.toString()
-          .includes(search)
-      );
-    }
+    const filteredTransactions = search
+      ? transactions.filter(item =>
+          item.bookingId?._id
+            ?.toString()
+            .includes(search)
+        )
+      : transactions;
 
-    const total = await transactionModel.countDocuments(query);
+    const totalRecords =
+      await transactionModel.countDocuments(query);
 
-    // Dashboard totals
-
-    const totalSuccessful = await transactionModel.aggregate([
-      {
-        $match: {
-          vendorId,
-          transactionType: "release",
-          status: "successful"
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: "$amount"
+    const commissionTotal =
+      await transactionModel.aggregate([
+        {
+          $match: {
+            vendorId,
+            transactionType: "commission"
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: "$amount"
+            }
           }
         }
-      }
-    ]);
+      ]);
 
-    const totalCommission = await transactionModel.aggregate([
-      {
-        $match: {
-          vendorId,
-          transactionType: "commission"
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: "$amount"
+    const escrowTotal =
+      await transactionModel.aggregate([
+        {
+          $match: {
+            vendorId,
+            transactionType: "escrow",
+            status: "pending"
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: "$amount"
+            }
           }
         }
-      }
-    ]);
+      ]);
 
-    const escrowHeld = await transactionModel.aggregate([
-      {
-        $match: {
-          vendorId,
-          transactionType: "escrow",
-          status: "pending"
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          total: {
-            $sum: "$amount"
+    const releaseTotal =
+      await transactionModel.aggregate([
+        {
+          $match: {
+            vendorId,
+            transactionType: "release",
+            status: "successful"
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: "$amount"
+            }
           }
         }
-      }
-    ]);
+      ]);
 
     return res.status(200).json({
       message: "Transactions fetched successfully",
 
       summary: {
         totalSuccessful:
-          totalSuccessful[0]?.total || 0,
+          releaseTotal[0]?.total || 0,
 
         totalCommission:
-          totalCommission[0]?.total || 0,
+          commissionTotal[0]?.total || 0,
 
         escrowHeld:
-          escrowHeld[0]?.total || 0,
+          escrowTotal[0]?.total || 0,
 
-        totalRecords: total
+        totalRecords
       },
 
       pagination: {
         currentPage: Number(page),
-        totalPages: Math.ceil(total / limit),
-        totalRecords: total
+        totalPages: Math.ceil(
+          totalRecords / Number(limit)
+        ),
+        totalRecords
       },
 
-      data: transactions.map(item => ({
+      data: filteredTransactions.map(item => ({
         id: item._id,
-
-        bookingId:
-          item.bookingId?._id || null,
-
-        eventType:
-          item.bookingId?.eventType || null,
-
+        bookingId: item.bookingId?._id || null,
+        eventType: item.bookingId?.eventType || null,
         description: item.description,
-
         amount: item.amount,
-
-        transactionType:
-          item.transactionType,
-
+        transactionType: item.transactionType,
         status: item.status,
-
-        date:
-          item.createdAt
-            .toISOString()
-            .split("T")[0]
+        date: item.createdAt
+          .toISOString()
+          .split("T")[0]
       }))
     });
 

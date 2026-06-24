@@ -167,17 +167,12 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 
 exports.verifyWebhook = async (req, res) => {
     try {
-          console.log("====== WEBHOOK HIT ======");
-        console.log("BODY:", req.body);
         const { event, data } = req.body;
-        console.log('checking for webhook')
+        
 
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
-
-        console.log("GENERATED HASH:", hash);
-        console.log("SIGNATURE:", signature);
         if (hash !== signature) {
             return res.status(401).json({
                 message: "Invalid webhook signature"
@@ -185,24 +180,14 @@ exports.verifyWebhook = async (req, res) => {
         }
         
         const payment = await paymentModel.findOne({ reference: data.reference });
-        console.log("PAYMENT:", payment);
-        console.log("VENDOR ID:", payment.vendorId);
-        console.log("BOOKING ID:", payment.bookingId);
           
-        if (!payment) {
-        console.log("Payment not found for reference:", data.reference);    
+        if (!payment) {  
             return res.status(404).json({
                 message: "No payment record found"
             });
         }
-        
-        console.log("PAYMENT:", payment);
-    console.log("VENDOR ID:", payment.vendorId);
-    console.log("BOOKING ID:", payment.bookingId);
-    console.log("Event Status:", event);
 
         if (event === "charge.success") {
-console.log('checking for success')
     if(payment.paymentStatus === "success") { 
         return res.status(200).json({
             message: "Payment already processed"
@@ -320,9 +305,32 @@ console.log('checking for success')
             await wallet.save();
 
             console.log("WALLET AFTER SAVED:", wallet);
+
+            console.log(
+    "ESCROW COUNT:",
+    await escrowModel.countDocuments({
+        vendorId: payment.vendorId
+    })
+);
+
+console.log(
+    "TRANSACTION COUNT:",
+    await transactionModel.countDocuments({
+        vendorId: payment.vendorId
+    })
+);
+
+console.log(
+    "WALLET FROM DB:",
+    await walletModel.findOne({
+        vendorId: payment.vendorId
+    })
+);
+
             // TRANSACTION RECORDS
             await transactionModel.create({
                 vendorId: payment.vendorId,
+                walletId: wallet._id,
                 bookingId: payment.bookingId,
                 amount: commissionAmount,
                 transactionType: "commission",
@@ -332,6 +340,7 @@ console.log('checking for success')
             
             await transactionModel.create({
                 vendorId: payment.vendorId,
+                walletId: wallet._id,
                 bookingId: payment.bookingId,
                 amount: firstReleaseAmount,
                 transactionType: "release",
@@ -341,6 +350,7 @@ console.log('checking for success')
 
             await transactionModel.create({
                 vendorId: payment.vendorId,
+                walletId: wallet._id,
                 bookingId: payment.bookingId,
                 amount: finalReleaseAmount,
                 transactionType: "escrow",
