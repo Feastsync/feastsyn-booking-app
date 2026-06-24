@@ -26,5 +26,15 @@ const calendarSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+calendarSchema.index(
+  {
+    vendorId: 1,
+    bookingDate: 1
+  },
+  {
+    unique: true
+  }
+);
+
 const calendarModel = mongoose.model('calendar', calendarSchema);
 module.exports = calendarModel;  
