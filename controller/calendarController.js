@@ -8,6 +8,12 @@ const paymentModel = require('../models/payment');
 
 
 exports.getCalendar = async (req, res) => {
+
+  console.log("==============");
+  console.log("GET CALENDAR HIT");
+  console.log("PARAMS:", req.params);
+  console.log("QUERY:", req.query);
+  console.log("==============");
   try {
     const { vendorId } = req.params;
     const { month } = req.query;
@@ -31,7 +37,7 @@ exports.getCalendar = async (req, res) => {
         $lt: endDate
       }
     });
-
+    console.log("CALENDAR ENTRIES:", calendarEntries);
     const bookedDates = calendarEntries.map((entry) => ({
       date: entry.bookingDate.toISOString().split("T")[0],
       status: entry.status,
