@@ -532,6 +532,7 @@ exports.payoutFunds = async (req, res) => {
         // Create transaction
         await transactionModel.create({
             vendorId,
+            walletId: wallet._id,
             amount: withdrawalAmount,
             transactionType: "withdrawal",
             status: "pending",
