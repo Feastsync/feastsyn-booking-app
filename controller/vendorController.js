@@ -95,7 +95,14 @@ exports.updateVendor = async (req, res) => {
 
     const publicUrl = `https://feast-sync.vercel.app/vendor/${vendor.slug}`;
 
-    const {bankName,accountNumber,bio,servicesOffered,stateOfResidence,category,onboardingStep} = req.body;
+    const {bankName,accountNumber, bankCode,bio,servicesOffered,stateOfResidence,category,onboardingStep} = req.body;
+    if (bankName || bankCode || accountNumber) {
+  if (!bankName || !bankCode || !accountNumber) {
+    return res.status(400).json({
+      message: "bankName, bankCode and accountNumber are required together"
+    });
+  }
+}
 
     const allowedStates = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa","Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
       "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano","Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa","Niger", "Ogun", "Ondo", 
@@ -195,6 +202,7 @@ exports.updateVendor = async (req, res) => {
 console.log("A")
     const updateData = {
       ...(normalizedBankName && { bankName: normalizedBankName }),
+      ...(bankCode && { bankCode }),
       ...(accountNumber && { accountNumber }),
       ...(bio && { bio }),
       ...(servicesOffered && { servicesOffered }),
