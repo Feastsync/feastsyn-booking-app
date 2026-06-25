@@ -6,29 +6,29 @@ const pricingModel = require('../models/pricing')
 const calendarModel = require('../models/calendar')
 
 exports.getSettings = async (req, res) => {
-    try {
-        const vendorId = req.user.id;
+  try {
+    const vendorId = req.user.id;
 
-        const vendor = await vendorModel.findById(vendorId).select(
-            'stageName email phoneNumber bio stateOfResidence bankName bankCode accountNumber slug calendar pricing kycStatus'
-        );
+    const vendor = await vendorModel.findById(vendorId).select(
+      "stageName email phoneNumber bio stateOfResidence bankName bankCode accountNumber slug calendar pricing kycStatus"
+    );
 
-        if (!vendor) {
-            return res.status(404).json({
-                message: 'Vendor not found'
-            });
-        }
-
-        return res.status(200).json({
-            message: 'Settings fetched successfully',
-            data: vendor
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        });
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
     }
+
+    return res.status(200).json({
+      message: "Settings fetched successfully",
+      data: vendor
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
 };
 
 exports.requestUpdate = async (req, res) => {
@@ -45,21 +45,22 @@ exports.requestUpdate = async (req, res) => {
 
     if (req.body.stageName) {
       return res.status(400).json({
-        message: "Display name and legal names cannot be edited"
+        message:
+          "Display name and legal names cannot be edited"
       });
     }
 
     // Validate bank details
     const updatingBankDetails =
       req.body.bankName ||
-      req.body.accountNumber ||
-      req.body.bankCode;
+      req.body.bankCode ||
+      req.body.accountNumber;
 
     if (updatingBankDetails) {
       if (
         !req.body.bankName ||
-        !req.body.accountNumber ||
-        !req.body.bankCode
+        !req.body.bankCode ||
+        !req.body.accountNumber
       ) {
         return res.status(400).json({
           message:
@@ -81,7 +82,10 @@ exports.requestUpdate = async (req, res) => {
     vendor.markModified("pendingUpdate");
 
     vendor.otp = OTP;
-    vendor.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+    vendor.otpExpires = new Date(
+      Date.now() + 5 * 60 * 1000
+    );
 
     await vendor.save();
 
@@ -93,7 +97,8 @@ exports.requestUpdate = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: "OTP sent successfully to your email"
+      message:
+        "OTP sent successfully to your email"
     });
 
   } catch (error) {
@@ -121,7 +126,8 @@ exports.confirmUpdate = async (req, res) => {
     if (
       vendor.otp !== otp ||
       !vendor.otpExpires ||
-      Date.now() > new Date(vendor.otpExpires).getTime()
+      Date.now() >
+        new Date(vendor.otpExpires).getTime()
     ) {
       return res.status(400).json({
         message: "Invalid or expired OTP"
@@ -134,7 +140,41 @@ exports.confirmUpdate = async (req, res) => {
       });
     }
 
-    Object.assign(vendor, vendor.pendingUpdate);
+    const updates = vendor.pendingUpdate;
+
+    // General settings
+    if (updates.phoneNumber !== undefined) {
+      vendor.phoneNumber = updates.phoneNumber;
+    }
+
+    if (updates.bio !== undefined) {
+      vendor.bio = updates.bio;
+    }
+
+    if (updates.stateOfResidence !== undefined) {
+      vendor.stateOfResidence =
+        updates.stateOfResidence;
+    }
+
+    // Bank details
+    if (updates.bankName !== undefined) {
+      vendor.bankName = updates.bankName;
+    }
+
+    if (updates.bankCode !== undefined) {
+      vendor.bankCode = updates.bankCode;
+    }
+
+    if (updates.accountNumber !== undefined) {
+      vendor.accountNumber =
+        updates.accountNumber;
+    }
+
+    console.log("BANK DETAILS BEFORE SAVE:", {
+      bankName: vendor.bankName,
+      bankCode: vendor.bankCode,
+      accountNumber: vendor.accountNumber
+    });
 
     vendor.pendingUpdate = null;
     vendor.otp = null;
@@ -142,8 +182,15 @@ exports.confirmUpdate = async (req, res) => {
 
     await vendor.save();
 
+    console.log("BANK DETAILS AFTER SAVE:", {
+      bankName: vendor.bankName,
+      bankCode: vendor.bankCode,
+      accountNumber: vendor.accountNumber
+    });
+
     return res.status(200).json({
-      message: "Settings updated successfully",
+      message:
+        "Settings updated successfully",
       data: vendor
     });
 

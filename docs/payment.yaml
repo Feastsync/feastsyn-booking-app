@@ -30,12 +30,11 @@ paths:
           
   /api/v1/payment/payout-funds:
     post: 
-      summary: this is the endpoint for initializing a payment
+      summary: this is the endpoint for withdrawal
       tags: [payments]
       security:
         - bearerAuth: []
-          name: Authorization
-          in: headers 
+        
       requestBody:
         required: true
         content:
@@ -45,11 +44,28 @@ paths:
               required:
                 - amount
               properties:
-                amount: number
-                description: The amount to be paid out      
+                amount: 
+                  type: integer
+                  minimum: 100
+                  example: 5000
+                  description: The amount to be paid out      
       responses:          
         '200':
           description: withdrawal initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Withdrawal initiated successfully
+        '400':
+           description: Invalid request data
+
+        '401':
+          description: Unauthorized
+
         '500': 
           description: Something went wrong
 
