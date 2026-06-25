@@ -349,50 +349,135 @@ console.log("AFTER RESET SAVE:", {
 exports.userDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await userModel.findById(userId).select("firstName lastName email");
+
+    const user = await userModel
+      .findById(userId)
+      .select("firstName lastName email profilePicture");
+
     if (!user) {
       return res.status(404).json({
-        message: "User not found"
+        message: "User not found",
       });
     }
 
-    const totalBookings = await bookingModel.countDocuments({userId});
-    const completedBookings = await bookingModel.countDocuments({userId, bookingStatus: "completed"});
+    const [
+      completedBookings,
+      totalReviews,
+      totalSpentResult,
+      uniqueEvents,
+      upcomingEvents,
+      recentBookings,
+    ] = await Promise.all([
 
-    const totalReviews = await reviewModel.countDocuments({userId});
+      // Completed bookings
+      bookingModel.countDocuments({
+        userId,
+        bookingStatus: "completed",
+      }),
 
-    const payments = await paymentModel.find({userId, paymentStatus: "successful"});
+      // Reviews given by user
+      reviewModel.countDocuments({
+        userId,
+      }),
 
-    const totalSpent = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+      // Total amount spent
+      paymentModel.aggregate([
+        {
+          $match: {
+            userId: user._id,
+            paymentStatus: "success",
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalSpent: {
+              $sum: "$amount",
+            },
+          },
+        },
+      ]),
 
-    const upcomingEvents = await bookingModel.find({userId,
+      // Unique events hosted
+      bookingModel.aggregate([
+        {
+          $match: {
+            userId: user._id,
+          },
+        },
+        {
+          $group: {
+            _id: {
+              eventType: "$eventType",
+              eventDate: "$eventDate",
+              eventLocation: "$eventLocation",
+            },
+          },
+        },
+        {
+          $count: "totalEventsHosted",
+        },
+      ]),
+
+      // Upcoming events
+      bookingModel
+        .find({
+          userId,
           bookingStatus: {
-            $in: ["confirmed"]
+            $in: ["accepted", "confirmed"],
           },
           eventDate: {
-            $gte: new Date()
-          }}).populate("vendorId", "stageName profilePicture").sort({ eventDate: 1 }).limit(3);
-    const recentBookings = await bookingModel.find({ userId }).sort({ createdAt: -1 }).limit(5).populate("vendorId","stageName");
+            $gte: new Date(),
+          },
+        })
+        .populate(
+          "vendorId",
+          "stageName profilePicture"
+        )
+        .sort({ eventDate: 1 })
+        .limit(5),
+
+      // Recent bookings
+      bookingModel
+        .find({ userId })
+        .populate("vendorId", "stageName profilePicture")
+        .sort({ createdAt: -1 })
+        .limit(5),
+    ]);
+
+    const totalSpent =
+      totalSpentResult.length > 0
+        ? totalSpentResult[0].totalSpent
+        : 0;
+
+    const totalEventsHosted =
+      uniqueEvents.length > 0
+        ? uniqueEvents[0].totalEventsHosted
+        : 0;
 
     return res.status(200).json({
       message: "Dashboard fetched successfully",
-      data: {user,
+      data: {
+        user,
+
         statistics: {
-          totalBookings,
+          totalEventsHosted,
           completedBookings,
-          totalReviews,
-          totalSpent
+          totalSpent,
+          reviewsGiven: totalReviews,
         },
+
         upcomingEvents,
-        recentBookings
-      }
-    });
 
+        recentBookings,
+      },
+    });
   } catch (error) {
-    return res.status(500).json({
-      message: error.message
-    });
+    console.error("Dashboard Error:", error);
 
+    return res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
