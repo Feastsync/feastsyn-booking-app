@@ -36,7 +36,7 @@ const paymentModel = require('../models/payment')
       });
 
 
-      brevo(user.email,`${user.firstName} ${user.lastName}`,
+      await brevo(user.email,`${user.firstName} ${user.lastName}`,
         emailTemplate(`${user.firstName} ${user.lastName}`, user.otp ));
 
       const users = await userModel.find()
@@ -83,7 +83,11 @@ exports.verifyEmail = async (req, res) => {
 }
 
   user.isVerified = true;
+  user.otp = null;
+  user.otpExpires = null;
+
     await user.save();
+
     res.status(200).json({
       message: 'OTP Verified successfully',
       data: user
@@ -117,6 +121,11 @@ exports.userLogin = async (req, res) => {
     if (!correctPassword) {
       user.loginAttempts += 1;
 
+      console.log("LOGIN ATTEMPT:", {
+  email: user.email,
+  isVerified: user.isVerified,
+  otpVerified: user.otpVerified
+});
       if (user.loginAttempts >= 5) {
         user.isLocked = true;
         console.log(user.loginAttempts);
@@ -310,12 +319,23 @@ exports.resetPassword = async (req, res) => {
     user.loginAttempts = 0;
     user.isLocked = false;
 
-    user.otp = undefined;
-    user.otpExpires = undefined;
+    user.otp = null;
+    user.otpExpires = null;
     user.otpVerified = false;
+    console.log("BEFORE RESET SAVE:", {
+  email: user.email,
+  isVerified: user.isVerified
+});
 
     await user.save();
 
+    const updatedUser =
+  await userModel.findById(user._id);
+
+console.log("AFTER RESET SAVE:", {
+  email: updatedUser.email,
+  isVerified: updatedUser.isVerified
+});
     return res.status(200).json({
       message: "Password reset successfully"
     });

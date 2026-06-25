@@ -408,6 +408,7 @@ exports.verifyPayment = async (req, res) => {
 }
 
 exports.payoutFunds = async (req, res) => {
+     console.log("PAYOUT CONTROLLER HIT");
     try {
         const vendorId = req.user.id;
         const { amount } = req.body;
