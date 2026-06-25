@@ -11,6 +11,7 @@ const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow')
 const crypto = require('crypto');
 const calendarModel = require('../models/calendar');
+const payoutModel = require('../models/payout')
 
 exports.initializePayment = async (req, res) => {
     try {
@@ -420,7 +421,11 @@ exports.payoutFunds = async (req, res) => {
                 message: "Vendor not found"
             });
         }
-
+        console.log("Vendor Bank Details:", {
+    bankName: vendor.bankName,
+    accountNumber: vendor.accountNumber,
+    bankCode: vendor.bankCode
+});
         if (!vendor.bankName || !vendor.accountNumber || !vendor.bankCode) {
             return res.status(400).json({
                 message: "Please update your bank details first"
