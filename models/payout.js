@@ -14,6 +14,9 @@ const payoutSchema = new mongoose.Schema({
     bankName: {
         type: String
         },
+        bankCode: {
+            type: String
+        },
 
     accountNumber: {
         type: String

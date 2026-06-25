@@ -427,10 +427,10 @@ exports.payoutFunds = async (req, res) => {
     bankCode: vendor.bankCode
 });
         if (!vendor.bankName || !vendor.accountNumber || !vendor.bankCode) {
-            return res.status(400).json({
-                message: "Please update your bank details first"
-            });
-        }
+        return res.status(400).json({
+        message: "Bank details are incomplete. Please update your bank details in Settings."
+    });
+}
 
         const wallet = await walletModel.findOne({ vendorId });
 
@@ -442,7 +442,7 @@ exports.payoutFunds = async (req, res) => {
 
         const withdrawalAmount = Number(amount);
 
-        if (!withdrawalAmount || withdrawalAmount <= 0) {
+        if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
             return res.status(400).json({
                 message: "Invalid withdrawal amount"
             });
@@ -499,20 +499,31 @@ exports.payoutFunds = async (req, res) => {
             } 
         );
 
+        console.log("KORA PAYOUT RESPONSE:", koraResponse.data);
+
+         // Verify Kora accepted the payout
+    if (
+      koraResponse.data.status === false ||
+      koraResponse.data.error
+    ) {
+      return res.status(400).json({
+        message: koraResponse.data.message || "Payout initiation failed"});
+    }
         // Save payout record
         const payout = await payoutModel.create({
             vendorId,
             amount: withdrawalAmount,
             reference,
             bankName: vendor.bankName,
+            bankCode: vendor.bankCode,
             accountNumber: vendor.accountNumber,
             status: "processing"
         });
 
         // Reserve the funds immediately
         wallet.availableBalance -= withdrawalAmount;
-        wallet.pendingWithdrawals += withdrawalAmount;
-        wallet.totalTransactions += 1;
+        wallet.pendingWithdrawals = (wallet.pendingWithdrawals || 0) + withdrawalAmount;
+        wallet.totalTransactions = (wallet.totalTransactions || 0) + 1;
 
         await wallet.save();
 
@@ -527,6 +538,7 @@ exports.payoutFunds = async (req, res) => {
         });
 
         return res.status(200).json({
+            success: true,
             message: "Withdrawal initiated successfully",
             payout,
             walletBalance: wallet.availableBalance
@@ -540,6 +552,7 @@ exports.payoutFunds = async (req, res) => {
         );
 
         return res.status(500).json({
+            success: false,
             message: error.response?.data?.message || error.message
         });
     }
