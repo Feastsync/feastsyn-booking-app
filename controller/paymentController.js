@@ -510,6 +510,7 @@ exports.payoutFunds = async (req, res) => {
     }
         // Save payout record
         const payout = await payoutModel.create({
+            walletId: wallet._id,
             vendorId,
             amount: withdrawalAmount,
             reference,
