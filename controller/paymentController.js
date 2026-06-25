@@ -499,15 +499,14 @@ exports.payoutFunds = async (req, res) => {
             } 
         );
 
-        console.log("KORA PAYOUT RESPONSE:", koraResponse.data);
+        console.log(" PAYOUT RESPONSE:", response.data);
 
          // Verify Kora accepted the payout
-    if (
-      koraResponse.data.status === false ||
-      koraResponse.data.error
-    ) {
+    if ( response.data.status === false ) {
       return res.status(400).json({
-        message: koraResponse.data.message || "Payout initiation failed"});
+        success: false,
+        message: response.data.message || "Payout initiation failed"
+    });
     }
         // Save payout record
         const payout = await payoutModel.create({
@@ -517,7 +516,9 @@ exports.payoutFunds = async (req, res) => {
             bankName: vendor.bankName,
             bankCode: vendor.bankCode,
             accountNumber: vendor.accountNumber,
-            status: "processing"
+            status: "processing",
+            providerReference: response.data?.data?.reference
+            
         });
 
         // Reserve the funds immediately
