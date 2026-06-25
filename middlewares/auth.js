@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const authentication = async (req, res, next) => {
+     console.log("AUTH MIDDLEWARE HIT");
     try {
         const token = req.headers.authorization?.split(" ")[1]
 
