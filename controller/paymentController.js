@@ -411,44 +411,25 @@ exports.verifyPayment = async (req, res) => {
 exports.payoutFunds = async (req, res) => {
     try {
         const vendorId = req.user.id;
-
-        const { amount, bankName, bankCode, accountNumber } = req.body;
+        const { amount } = req.body;
 
         const vendor = await vendorModel.findById(vendorId);
 
         if (!vendor) {
             return res.status(404).json({
-                success: false,
                 message: "Vendor not found"
             });
         }
-
-        //Update vendor automatically
-        if (bankName && bankCode && accountNumber) {
-            vendor.bankName = bankName;
-            vendor.bankCode = bankCode;
-            vendor.accountNumber = accountNumber;
-
-            await vendor.save();
-        }
-
-        // Use the saved values
-        const payoutBankName = vendor.bankName;
-        const payoutBankCode = vendor.bankCode;
-        const payoutAccountNumber = vendor.accountNumber;
-
-        if (!payoutBankName || !payoutBankCode || !payoutAccountNumber) {
-            return res.status(400).json({
-                success: false,
-                message: "Bank details are required."
-            });
-        }
+        if (!vendor.bankName || !vendor.accountNumber) {
+        return res.status(400).json({
+        message: "Bank details are required."
+    });
+}
 
         const wallet = await walletModel.findOne({ vendorId });
 
         if (!wallet) {
             return res.status(404).json({
-                success: false,
                 message: "Wallet not found"
             });
         }
@@ -457,30 +438,31 @@ exports.payoutFunds = async (req, res) => {
 
         if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
             return res.status(400).json({
-                success: false,
                 message: "Invalid withdrawal amount"
             });
         }
 
         if (withdrawalAmount < 100) {
             return res.status(400).json({
-                success: false,
                 message: "Minimum withdrawal amount is ₦100"
             });
         }
 
         if (wallet.availableBalance < withdrawalAmount) {
             return res.status(400).json({
-                success: false,
                 message: "Insufficient available balance"
             });
         }
 
-        const reference = "FS-PAYOUT-" + otpGenerator.generate(12, {
-                specialChars: false,
-                upperCaseAlphabets: false,
-                lowerCaseAlphabets: false
+        if (!/^\d{10}$/.test(vendor.accountNumber)) {
+            return res.status(400).json({
+                message: "Invalid account number"
             });
+        }
+
+        const ref = otpGenerator.generate(12, {specialChars: false,upperCaseAlphabets: false,lowerCaseAlphabets: false});
+
+        const reference = `FS-PAYOUT-${ref}`;
 
         const response = await axios.post(
             "https://api.korapay.com/merchant/api/v1/transactions/disburse",
@@ -493,51 +475,55 @@ exports.payoutFunds = async (req, res) => {
                     narration: "FeastSync Vendor Withdrawal",
 
                     customer: {
-                        name:
-                            vendor.stageName ||
-                            `${vendor.firstName} ${vendor.lastName}`,
+                        name: vendor.stageName || `${vendor.firstName} ${vendor.lastName}`,
                         email: vendor.email
                     },
 
                     bank_account: {
-                        bank: payoutBankCode,
-                        account: payoutAccountNumber
+                        bank: vendor.bankCode,
+                        account: vendor.accountNumber
                     }
                 }
-            },
+            }, 
             {
                 headers: {
                     Authorization: `Bearer ${process.env.KORA_API_KEY}`,
                     "Content-Type": "application/json"
                 }
-            }
+            } 
         );
 
-        if (response.data.status === false) {
-            return res.status(400).json({
-                success: false,
-                message: response.data.message || "Payout initiation failed"
-            });
-        }
+        console.log(" PAYOUT RESPONSE:", response.data);
 
+         // Verify Kora accepted the payout
+    if ( response.data.status === false ) {
+      return res.status(400).json({
+        success: false,
+        message: response.data.message || "Payout initiation failed"
+    });
+    }
+        // Save payout record
         const payout = await payoutModel.create({
             walletId: wallet._id,
             vendorId,
             amount: withdrawalAmount,
             reference,
-            bankName: payoutBankName,
-            bankCode: payoutBankCode,
-            accountNumber: payoutAccountNumber,
-            providerReference: response.data?.data?.reference,
-            status: "processing"
+            bankName: vendor.bankName,
+            bankCode: vendor.bankCode,
+            accountNumber: vendor.accountNumber,
+            status: "processing",
+            providerReference: response.data?.data?.reference
+            
         });
 
+        // Reserve the funds immediately
         wallet.availableBalance -= withdrawalAmount;
-        wallet.pendingWithdrawals += withdrawalAmount;
-        wallet.totalTransactions += 1;
+        wallet.pendingWithdrawals = (wallet.pendingWithdrawals || 0) + withdrawalAmount;
+        wallet.totalTransactions = (wallet.totalTransactions || 0) + 1;
 
         await wallet.save();
 
+        // Create transaction
         await transactionModel.create({
             vendorId,
             walletId: wallet._id,
@@ -556,7 +542,12 @@ exports.payoutFunds = async (req, res) => {
         });
 
     } catch (error) {
-        console.log( "Payout Error:", error.response?.data || error.message);
+
+        console.log(
+            "Payout Error:",
+            error.response?.data || error.message
+        );
+
         return res.status(500).json({
             success: false,
             message: error.response?.data?.message || error.message
