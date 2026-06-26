@@ -422,7 +422,7 @@ exports.payoutFunds = async (req, res) => {
         }
         if (!vendor.bankName || !vendor.accountNumber || !vendor.bankCode) {
         return res.status(400).json({
-        message: "Bank details are incomplete. Please update your bank details in Settings."
+        message: "Your bank details are incomplete."
     });
 }
 
