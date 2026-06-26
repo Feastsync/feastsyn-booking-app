@@ -3,19 +3,19 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
   vendorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'vendor',
+    ref: 'vendors',
     required: true
   },
 
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'users',
     required: true
   },
 
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'booking',
+    ref: 'bookings',
     required: true
   },
 

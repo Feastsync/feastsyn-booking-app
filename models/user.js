@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema({
         default: "user"
     },
     password: {
-        type: String
+        type: String,
+        required: true
     },
     phoneNumber: {
         type: String,
@@ -31,13 +32,11 @@ const userSchema = new mongoose.Schema({
     },
     otp: {
         type: String,
-        trim: true
+        default: null
     },
      otpExpires: {
-        type: Number,
-        default: () => {
-        return Date.now() + ( 10 * 60 * 1000)   
-    }
+        type: Date,
+        default: null
 },
 otpVerified: {
   type: Boolean,

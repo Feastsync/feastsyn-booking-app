@@ -11,6 +11,7 @@ const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow')
 const crypto = require('crypto');
 const calendarModel = require('../models/calendar');
+const payoutModel = require('../models/payout')
 
 exports.initializePayment = async (req, res) => {
     try {
@@ -168,8 +169,7 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 exports.verifyWebhook = async (req, res) => {
     try {
         const { event, data } = req.body;
-        
-
+    
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
@@ -193,16 +193,11 @@ exports.verifyWebhook = async (req, res) => {
             message: "Payment already processed"
         });
     }
-    console.log('Payment status before: ', payment.paymentStatus)
 
     payment.paymentStatus = "success";
     await payment.save();
-    console.log('Payment status after: ', payment.paymentStatus);
-
-    console.log('Payment booking: ', payment.bookingId)
-
-        
-            // Update booking
+    
+     // Update booking
     if (payment.bookingId) {
     const booking = await bookingModel.findByIdAndUpdate(
         payment.bookingId,
@@ -214,7 +209,6 @@ exports.verifyWebhook = async (req, res) => {
             new: true
         }
     );
-    console.log('Booking: ',  booking)
 
     if (booking) {
     try {
@@ -235,25 +229,19 @@ exports.verifyWebhook = async (req, res) => {
             }
         );
 
-        console.log("CALENDAR UPDATED:", calendarEntry);
-
     } catch (calendarError) {
-        console.error(
-            "CALENDAR UPDATE FAILED:",
-            calendarError.message
-        );
+    console.error("FULL CALENDAR ERROR:");
+    console.error(calendarError);
 }
     }
 }
-
-            console.log("REACHED ESCROW/WALLET SECTION");
             // ESCROW CALCULATIONS
             const totalAmount = Number(payment.amount);
             
-            // FeastSync Commission (5%)
-            const commissionAmount = totalAmount * 0.05;
+            // FeastSync Commission (3%)
+            const commissionAmount = totalAmount * 0.03;
             
-            // Vendor gets remaining 95%
+            // Vendor gets remaining 97%
             const vendorAmount = totalAmount - commissionAmount;
             
             // 70% released immediately
@@ -280,7 +268,6 @@ exports.verifyWebhook = async (req, res) => {
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
             
-            console.log("WALLET BEFORE SAVED:", wallet);
             if (!wallet) {
             wallet = await walletModel.create({
             vendorId: payment.vendorId,
@@ -291,7 +278,6 @@ exports.verifyWebhook = async (req, res) => {
             totalTransactions: 0
   });
 
-  console.log("NEW WALLET CREATED:", wallet);
 }
         
             wallet.availableBalance += firstReleaseAmount;
@@ -304,28 +290,6 @@ exports.verifyWebhook = async (req, res) => {
 
             await wallet.save();
 
-            console.log("WALLET AFTER SAVED:", wallet);
-
-            console.log(
-    "ESCROW COUNT:",
-    await escrowModel.countDocuments({
-        vendorId: payment.vendorId
-    })
-);
-
-console.log(
-    "TRANSACTION COUNT:",
-    await transactionModel.countDocuments({
-        vendorId: payment.vendorId
-    })
-);
-
-console.log(
-    "WALLET FROM DB:",
-    await walletModel.findOne({
-        vendorId: payment.vendorId
-    })
-);
 
             // TRANSACTION RECORDS
             await transactionModel.create({
@@ -447,19 +411,36 @@ exports.verifyPayment = async (req, res) => {
 exports.payoutFunds = async (req, res) => {
     try {
         const vendorId = req.user.id;
-        const { amount } = req.body;
+
+        const { amount, bankName, bankCode, accountNumber } = req.body;
 
         const vendor = await vendorModel.findById(vendorId);
 
         if (!vendor) {
             return res.status(404).json({
+                success: false,
                 message: "Vendor not found"
             });
         }
 
-        if (!vendor.bankName || !vendor.accountNumber || !vendor.bankCode) {
+        //Update vendor automatically
+        if (bankName && bankCode && accountNumber) {
+            vendor.bankName = bankName;
+            vendor.bankCode = bankCode;
+            vendor.accountNumber = accountNumber;
+
+            await vendor.save();
+        }
+
+        // Use the saved values
+        const payoutBankName = vendor.bankName;
+        const payoutBankCode = vendor.bankCode;
+        const payoutAccountNumber = vendor.accountNumber;
+
+        if (!payoutBankName || !payoutBankCode || !payoutAccountNumber) {
             return res.status(400).json({
-                message: "Please update your bank details first"
+                success: false,
+                message: "Bank details are required."
             });
         }
 
@@ -467,39 +448,39 @@ exports.payoutFunds = async (req, res) => {
 
         if (!wallet) {
             return res.status(404).json({
+                success: false,
                 message: "Wallet not found"
             });
         }
 
         const withdrawalAmount = Number(amount);
 
-        if (!withdrawalAmount || withdrawalAmount <= 0) {
+        if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
             return res.status(400).json({
+                success: false,
                 message: "Invalid withdrawal amount"
             });
         }
 
         if (withdrawalAmount < 100) {
             return res.status(400).json({
+                success: false,
                 message: "Minimum withdrawal amount is ₦100"
             });
         }
 
         if (wallet.availableBalance < withdrawalAmount) {
             return res.status(400).json({
+                success: false,
                 message: "Insufficient available balance"
             });
         }
 
-        if (!/^\d{10}$/.test(vendor.accountNumber)) {
-            return res.status(400).json({
-                message: "Invalid account number"
+        const reference = "FS-PAYOUT-" + otpGenerator.generate(12, {
+                specialChars: false,
+                upperCaseAlphabets: false,
+                lowerCaseAlphabets: false
             });
-        }
-
-        const ref = otpGenerator.generate(12, {specialChars: false,upperCaseAlphabets: false,lowerCaseAlphabets: false});
-
-        const reference = `FS-PAYOUT-${ref}`;
 
         const response = await axios.post(
             "https://api.korapay.com/merchant/api/v1/transactions/disburse",
@@ -512,44 +493,54 @@ exports.payoutFunds = async (req, res) => {
                     narration: "FeastSync Vendor Withdrawal",
 
                     customer: {
-                        name: vendor.stageName || `${vendor.firstName} ${vendor.lastName}`,
+                        name:
+                            vendor.stageName ||
+                            `${vendor.firstName} ${vendor.lastName}`,
                         email: vendor.email
                     },
 
                     bank_account: {
-                        bank: vendor.bankCode,
-                        account: vendor.accountNumber
+                        bank: payoutBankCode,
+                        account: payoutAccountNumber
                     }
                 }
-            }, 
+            },
             {
                 headers: {
                     Authorization: `Bearer ${process.env.KORA_API_KEY}`,
                     "Content-Type": "application/json"
                 }
-            } 
+            }
         );
 
-        // Save payout record
+        if (response.data.status === false) {
+            return res.status(400).json({
+                success: false,
+                message: response.data.message || "Payout initiation failed"
+            });
+        }
+
         const payout = await payoutModel.create({
+            walletId: wallet._id,
             vendorId,
             amount: withdrawalAmount,
             reference,
-            bankName: vendor.bankName,
-            accountNumber: vendor.accountNumber,
+            bankName: payoutBankName,
+            bankCode: payoutBankCode,
+            accountNumber: payoutAccountNumber,
+            providerReference: response.data?.data?.reference,
             status: "processing"
         });
 
-        // Reserve the funds immediately
         wallet.availableBalance -= withdrawalAmount;
         wallet.pendingWithdrawals += withdrawalAmount;
         wallet.totalTransactions += 1;
 
         await wallet.save();
 
-        // Create transaction
         await transactionModel.create({
             vendorId,
+            walletId: wallet._id,
             amount: withdrawalAmount,
             transactionType: "withdrawal",
             status: "pending",
@@ -558,19 +549,16 @@ exports.payoutFunds = async (req, res) => {
         });
 
         return res.status(200).json({
+            success: true,
             message: "Withdrawal initiated successfully",
             payout,
             walletBalance: wallet.availableBalance
         });
 
     } catch (error) {
-
-        console.log(
-            "Payout Error:",
-            error.response?.data || error.message
-        );
-
+        console.log( "Payout Error:", error.response?.data || error.message);
         return res.status(500).json({
+            success: false,
             message: error.response?.data?.message || error.message
         });
     }

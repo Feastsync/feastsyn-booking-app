@@ -78,6 +78,10 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'))
+app.use((req, res, next) => {
+  console.log("REQUEST:", req.method, req.originalUrl);
+  next();
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swagger));
 
 // app.use(session({

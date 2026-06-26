@@ -4,6 +4,10 @@ const payoutSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "vendors"
         },
+    walletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "wallet"
+},
     amount: {
         type: Number
         },
@@ -14,6 +18,12 @@ const payoutSchema = new mongoose.Schema({
     bankName: {
         type: String
         },
+        bankCode: {
+            type: String
+        },
+    providerReference: {
+        type: String
+  },
 
     accountNumber: {
         type: String

@@ -4,7 +4,6 @@ const router = require('express').Router();
 
 router.post('/initialize-payment/:vendorId/:bookingId', authentication, initializePayment);
 router.post('/webhook', verifyWebhook);
-router.post('/payout-funds', authentication, payoutFunds)
-
+router.post('/payout-funds', authentication, payoutFunds);
 module.exports = router; 
  

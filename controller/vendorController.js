@@ -96,6 +96,7 @@ exports.updateVendor = async (req, res) => {
     const publicUrl = `https://feast-sync.vercel.app/vendor/${vendor.slug}`;
 
     const {bankName,accountNumber,bio,servicesOffered,stateOfResidence,category,onboardingStep} = req.body;
+   
 
     const allowedStates = ["Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa","Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
       "Ekiti", "Enugu", "Gombe", "Imo", "Jigawa", "Kaduna", "Kano","Katsina", "Kebbi", "Kogi", "Kwara", "Lagos", "Nasarawa","Niger", "Ogun", "Ondo", 

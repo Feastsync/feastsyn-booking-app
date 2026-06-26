@@ -70,13 +70,11 @@ const vendorSchema = new mongoose.Schema({
 },
  otp: {
         type: String,
-        trim: true 
+        default: null
 },
   otpExpires: {
    type: Number,
-    default: () => {
-    return Date.now() + ( 10 * 60 * 1000)   
-    }
+    default: null   
 },
 pendingUpdate: {
     type: mongoose.Schema.Types.Mixed,
