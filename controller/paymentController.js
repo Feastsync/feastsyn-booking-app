@@ -51,17 +51,14 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 
             selectedVendorId = booking.vendorId;
 
-            if (booking.pricingId) {
-                const pricing = await pricingModel.findById(booking.pricingId);
+            // Use the amount saved when the booking was created
+          amount = booking.amount;
 
-                if (!pricing) {
-                    return res.status(404).json({
-                        message: 'Pricing package not found'
-                    });
-                }
-
-                amount = pricing.packagePrice;
-            }
+           if (!amount) {
+             return res.status(400).json({
+             message: "No amount found for this booking"
+        });
+}
         }
         if (!mongoose.Types.ObjectId.isValid(selectedVendorId)) {
             return res.status(400).json({

@@ -30,6 +30,21 @@ exports.createVendor = async (req, res, next) => {
                 message: 'Passwords do not match'
             });
         }
+
+        const emailExists = await vendorModel.findOne({ email: email.trim().toLowerCase() });
+        if (emailExists) {
+            return res.status(400).json({
+                message: "Email already exists"
+            });
+        }
+
+        const phoneExists = await vendorModel.findOne({ phoneNumber: phoneNumber.trim() });
+        if (phoneExists) {
+            return res.status(400).json({
+                message: "Phone number already exists"
+            });
+        }
+        
         const salt = await bcrypt.genSalt(10);
         const hashPassword = await bcrypt.hash(password, salt);
 

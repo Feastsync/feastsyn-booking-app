@@ -21,7 +21,20 @@ const paymentModel = require('../models/payment')
           message: "Please enter password",
         });
       }
-    
+
+    const emailExists = await userModel.findOne({ email: email.trim().toLowerCase() });
+    if (emailExists) {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
+    }
+
+    const phoneExists = await userModel.findOne({ phoneNumber: phoneNumber.trim() });
+    if (phoneExists) {
+      return res.status(400).json({
+        message: "Phone number already exists",
+      });
+    }
 
       const salt = await bcrypt.genSalt(10);
       const hashPassword = await bcrypt.hash(password, salt);
