@@ -9,30 +9,40 @@ exports.getCalendar = async (req, res) => {
     const { vendorId } = req.params;
     const { month } = req.query;
 
+    if (!month) {
+      return res.status(400).json({
+        message: 'Month is required. Format: YYYY-MM'
+      });
+    }
+
     const [year, monthNumber] = month.split('-').map(Number);
 
     const startDate = new Date(year, monthNumber - 1, 1);
+
     const endDate = new Date(year, monthNumber, 1);
 
-    const bookedDates = await calendarModel.find({
-      vendorId,
-      status: "booked",
-      bookingDate: {
-        $gte: startDate,
-        $lt: endDate
-      }
-    });
+    const bookings = await bookingModel.find({ vendorId,
+        bookingStatus: {
+          $in: ['confirmed', 'completed']
+        },
+        eventDate: {
+          $gte: startDate,
+          $lt: endDate
+        }
+      });
 
+    const bookedDates = bookings.map(booking => booking.eventDate.toISOString().split('T')[0]);
     return res.status(200).json({
       vendorId,
       month,
       bookedDates,
-      totalBookings: bookedDates.length
+      totalBookings: bookings.length
     });
 
   } catch (error) {
     return res.status(500).json({
       message: error.message
     });
+
   }
 };
