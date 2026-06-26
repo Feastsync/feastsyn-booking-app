@@ -67,10 +67,13 @@ exports.createBooking = async (req, res) => {
     }
 
     const booking = await bookingModel.create({
-      userId,
+      userId, 
       vendorId,
       packageId: pricingId,
       pricingId,
+      // Snapshot of package details at the time of booking
+      packageName: selectedPackage.packageName,
+      amount: selectedPackage.packagePrice,
       eventType,
       eventLocation,
       eventDate: new Date(eventDate),

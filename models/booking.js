@@ -14,9 +14,17 @@ const bookingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'pricing'
     },
+    amount: {
+    type: Number,
+    required: true
+},
     packageName: {
         type: String,
-        enum: ['basic', 'standard', 'premium', 'addMorePackages']
+        enum: [
+        'Basic Package',
+        'Standard Package',
+        'Premium Package'
+    ]
     },
     eventType: {
         type: String,
