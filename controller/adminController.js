@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt')
 const otpGenerator = require('otp-generator')
 const {brevo} = require('../utils/brevo')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const releaseEscrow = require('../utils/releaseEscrow');
 
 exports.createAdmin = async (req, res) => {
   try {
@@ -315,19 +316,139 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
-exports.getAllVendorsAdmin = async (req, res) => {
-  try {
-    const vendors = await vendorModel.find().select('-password');
-    res.status(200).json({
-      count: vendors.length,
-      data: vendors
-    });
+exports.releaseEscrow = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const escrow = await escrowModel.findOne({
+            bookingId,
+            finalReleaseStatus: "pending"
+        });
 
-  } catch (error) {
-    res.status(500).json({
-      message: error.message
-    });
-  }
+        if (!escrow) {
+            return res.status(404).json({
+                message: "Pending escrow not found."
+            });
+        }
+
+        const wallet = await walletModel.findOne({
+            vendorId: escrow.vendorId
+        });
+
+        if (!wallet) {
+            return res.status(404).json({
+                message: "Vendor wallet not found."
+            });
+        }
+
+        wallet.availableBalance += escrow.finalReleaseAmount;
+
+        wallet.escrowBalance -= escrow.finalReleaseAmount;
+
+        await wallet.save();
+
+        escrow.finalReleaseStatus = "released";
+
+        escrow.releaseReason = "admin_release";
+
+        escrow.releasedBy = req.user.id;
+
+        escrow.releasedAt = new Date();
+
+        await escrow.save();
+
+        await bookingModel.findByIdAndUpdate(
+            bookingId,
+            {
+                bookingStatus: "completed",
+                completedAt: new Date()
+            }
+        );
+
+        await transactionModel.create({
+
+            vendorId: escrow.vendorId,
+
+            walletId: wallet._id,
+
+            bookingId,
+
+            amount: escrow.finalReleaseAmount,
+
+            transactionType: "release",
+
+            description: "Escrow released by admin",
+
+            status: "successful"
+
+        });
+
+        return res.status(200).json({
+            message: "Escrow released successfully."
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
+
+exports.getPendingEscrows = async (req, res) => {
+
+    try {
+
+        const escrows = await escrowModel
+            .find({
+                finalReleaseStatus: "pending"
+            })
+            .populate("vendorId", "stageName")
+            .populate("bookingId")
+            .populate("paymentId");
+
+        return res.status(200).json({
+
+            count: escrows.length,
+
+            data: escrows
+
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
+exports.getAllVendorsAdmin = async (req, res) => {
+    try {
+
+        const vendors = await vendorModel.find({
+            isVerified: true,
+            verificationStatus: "approved",
+            isOnboarded: true
+        });
+
+        return res.status(200).json({
+            message: "Vendors fetched successfully",
+            total: vendors.length,
+            data: vendors
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message
+        });
+
+    }
 };
 
 exports.getOneVendorAdmin = async (req, res) => {
@@ -588,6 +709,68 @@ exports.getAllContactMessages = async (req, res) => {
       message: error.message
     });
   }
+};
+
+exports.verifyVendor = async (req, res) => {
+    try {
+
+        const adminId = req.user.id;
+        const { vendorId } = req.params;
+
+        const vendor = await vendorModel.findById(vendorId);
+
+        if (!vendor) {
+            return res.status(404).json({
+                message: "Vendor not found"
+            });
+        }
+
+        if (!vendor.isOnboarded) {
+            return res.status(400).json({
+                message: "Vendor has not completed onboarding"
+            });
+        }
+
+        vendor.isVerified = true;
+        vendor.verificationStatus = "approved";
+        vendor.verifiedBy = adminId;
+        vendor.verifiedAt = new Date();
+
+        await vendor.save();
+
+        res.status(200).json({
+            message: "Vendor verified successfully",
+            data: vendor
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
+
+exports.getPendingVendors = async (req, res) => {
+    try {
+
+        const vendors = await vendorModel.find({
+            isOnboarded: true,
+            verificationStatus: "pending"
+        });
+
+        res.status(200).json({
+            total: vendors.length,
+            data: vendors
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
 };
 
 // exports.getAllVendorPricing = async (req, res) => {

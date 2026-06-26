@@ -80,7 +80,7 @@ pendingUpdate: {
     type: mongoose.Schema.Types.Mixed,
     default: null
 },
-otpVerified: {
+emailVerified: {
   type: Boolean,
   default: false
 },
@@ -181,6 +181,27 @@ onboardingStep: {
    totalReviews: {
     type: Number,
     default: 0
+},
+verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "admins",
+    default: null
+},
+
+verifiedAt: {
+    type: Date,
+    default: null
+},
+
+verificationStatus: {
+    type: String,
+    enum: ["pending", "approved", "rejected"],
+    default: "pending"
+},
+
+rejectionReason: {
+    type: String,
+    default: null
 },
 bankCode: {
   type: String,

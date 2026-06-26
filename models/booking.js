@@ -10,6 +10,26 @@ const bookingSchema = new mongoose.Schema({
         ref: 'vendors',
         required: true
     },
+    isEventConfirmed: {
+        type: Boolean,
+        default: false
+},
+    completedAt: {
+        type: Date,
+        default: null
+},
+    confirmedAt: {
+        type: Date,
+        default: null
+},
+    completedByVendor: {
+        type: Boolean,
+        default: false
+},
+packageAmount: {
+    type: Number,
+    required: true
+},
     pricingId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'pricing'

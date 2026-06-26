@@ -3,7 +3,8 @@ const walletModel = require('../models/wallet');
 const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow');
 const bookingModel = require('../models/booking');
-const paymentModel = require('../models/payment')
+const paymentModel = require('../models/payment');
+const releaseEscrow = require('../utils/releaseEscrow')
 
 exports.getWalletSummary = async (req, res) => {
   try {

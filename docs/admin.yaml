@@ -542,5 +542,6 @@ paths:
                   description: Confirmation of the admin's password
       responses:          
         '200':
-          description: admin's password reset successfully                           
-  
+          description: admin's password reset successfully  
+          
+  /api/v1/admin/escrow-release/{bookingId}:

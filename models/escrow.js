@@ -1,43 +1,85 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const escrowSchema = new mongoose.Schema({
 
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'bookings',
+        ref: "bookings",
         required: true
     },
 
     vendorId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'vendors',
+        ref: "vendors",
         required: true
     },
 
     paymentId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'payment',
+        ref: "payments",
+        required: true
+    },
+    totalAmount: {
+        type: Number,
         required: true
     },
 
-    totalAmount: Number,
+    commissionAmount: {
+        type: Number,
+        required: true
+    },
 
-    commissionAmount: Number,
+    firstReleaseAmount: {
+        type: Number,
+        required: true
+    },
 
-    firstReleaseAmount: Number,
-
-    finalReleaseAmount: Number,
+    finalReleaseAmount: {
+        type: Number,
+        required: true
+    },
 
     firstReleaseStatus: {
         type: String,
-        enum: ['pending','released'],
-        default: 'pending'
+        enum: ["pending", "released"],
+        default: "released"
     },
 
     finalReleaseStatus: {
         type: String,
-        enum: ['pending','released'],
-        default: 'pending'
+        enum: ["pending", "released", "disputed"],
+        default: "pending"
+    },
+
+    releaseReason: {
+        type: String,
+        enum: [
+            "user_confirmation",
+            "auto_release",
+            "admin_release",
+            null
+        ],
+        default: null
+    },
+
+    releaseAt: {
+        type: Date,
+        default: null
+    },
+
+    releaseAt: {
+        type: Date,
+        default: null
+    },
+    releaseReason: {
+        type: String,
+        enum: [ "user_confirmation", "auto_release", "admin_release" ]
+    },
+
+    releasedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "admins",
+        default: null
     }
 
 }, { timestamps: true });
