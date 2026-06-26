@@ -50,7 +50,7 @@ exports.createPricing = async (req, res) => {
 
 exports.updatePricing = async (req, res) => {
     try {
-        const {id} = req.user.id
+        const vendorId = req.user.id
         const { pricingId } = req.params;
         const pricing = await pricingModel.findById(pricingId);
 
@@ -59,12 +59,13 @@ exports.updatePricing = async (req, res) => {
                 message: 'Package not found'
             });
         }
-        if (pricing.vendorId.toString() !== id) {
+        if (pricing.vendorId.toString() !== vendorId) {
             return res.status(403).json({
                 message: 'Unauthorized'
             });
         }
-        const updatedPricing = await pricingModel.findByIdAndUpdate( pricingId,
+        const updatedPricing = await pricingModel.findByIdAndUpdate(
+            pricingId,
             req.body,
             { new: true, runValidators: true }
         );
@@ -74,9 +75,9 @@ exports.updatePricing = async (req, res) => {
             data: updatedPricing
         });
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
         res.status(500).json({
-            message: 'Something went wrong'
+            message: error.message
         });
     }
 };
