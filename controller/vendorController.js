@@ -415,7 +415,8 @@ exports.vendorLogin = async (req, res) => {
     
     if (vendor.isVerified == false) {
       return res.status(400).json({
-        message: 'Please verify your email'
+        message: 'Please verify your email',
+        isVerified: vendor.isVerified
       })
     };
 

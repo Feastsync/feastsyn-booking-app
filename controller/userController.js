@@ -144,7 +144,8 @@ exports.userLogin = async (req, res) => {
     
     if (user.isVerified == false) {
       return res.status(400).json({
-        message: 'Please verify your email'
+        message: 'Please verify your email',
+        isVerified: user.isVerified,
       })
     };
 
