@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const cron = require('node-cron');
 const swagger = require('./swagger');
 const swaggerUi = require('swagger-ui-express');
 // const session = require('express-session')
@@ -29,7 +30,7 @@ const walletRouter = require('./routes/walletRouter')
 
 const rateLimit = require('express-rate-limit');
 
-
+const {releaseExpiredEscrows} = require('./jobs/escrowReleaseJob')
 const app = express();
 const server = http.createServer(app);
 
@@ -100,7 +101,7 @@ app.use('/api/v1/kyc', kycRouter);
 app.use('/api/v1/message', messageRouter);
 app.use('/api/v1/notification', notificationRouter);
 app.use('/api/v1/admin', adminRouter);
-app.use('api/v1/dispute', disputeRouter);
+app.use('/api/v1/dispute', disputeRouter);
 app.use('/api/v1/review', reviewRouter);
 app.use('/api/v1/contact', contactRouter);
 app.use('/api/v1/vendorSetting', vendorSettingRouter);
@@ -111,7 +112,6 @@ app.use('/api/v1/wallet', walletRouter)
     message: 'Route not found'  
   })
 })
-
 
 app.use((err, req, res, next)=>{
 
@@ -141,6 +141,10 @@ if (err.code == 11000) {
 })
 const db = process.env.MONGODB_URI;
 mongoose.connect(db).then(()=> {
+   cron.schedule("*/10 * * * *", async () => {
+        console.log("Checking pending escrows...");
+        await releaseExpiredEscrows();
+    });
     console.log('Database connection has been established successfully');
     server.listen(PORT, ()=>{
     console.log(`Server is running on the PORT: ${PORT}` );  

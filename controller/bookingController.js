@@ -3,9 +3,11 @@ const vendorModel = require('../models/vendor');
 const pricingModel = require('../models/pricing');
 const userModel = require('../models/user');
 const Availability = require('../models/calendar');
-const notificationModel = require('../models/notification')
+const notificationModel = require('../models/notification');
+const escrowModel = require('../models/escrow');
 const {createNotification} = require('../utils/createNotification')
 const {brevo} = require('../utils/brevo')
+const releaseEscrow = require('../utils/releaseEscrow')
 
 exports.createBooking = async (req, res) => {
   try {
@@ -33,6 +35,12 @@ exports.createBooking = async (req, res) => {
         message: 'Vendor not found'
       });
     }
+
+    if (!vendor.isVerified) {
+    return res.status(403).json({
+        message: "This vendor is currently under review and cannot receive bookings."
+    });
+}
 
     const user = await userModel.findById(userId);
     if(!user){
@@ -343,6 +351,156 @@ exports.rejectBooking = async (req, res) => {
 //   }
 // };
 
+exports.markBookingCompleted = async (req, res) => {
+    try {
+        const vendorId = req.user.id;
+        const { bookingId } = req.params;
+        const booking = await bookingModel.findOne({
+            _id: bookingId,
+            vendorId
+        });
+
+        if (!booking) {
+            return res.status(404).json({
+                message: "Booking not found."
+            });
+        }
+
+        if (booking.bookingStatus !== "confirmed") {
+            return res.status(400).json({
+                message: "Only confirmed bookings can be completed."
+            });
+        }
+
+        booking.bookingStatus = "completed";
+
+        booking.completedByVendor = true;
+
+        booking.completedAt = new Date();
+
+        await booking.save();
+
+        const escrow = await escrowModel.findOne({ bookingId });
+
+        if (escrow) {
+            escrow.releaseAt = new Date(
+                Date.now() + (24 * 60 * 60 * 1000)
+            );
+
+            await escrow.save();
+        }
+
+        return res.status(200).json({
+            message: "Booking marked as completed successfully.",
+            data: booking
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
+
+exports.confirmCompletedBooking = async (req, res) => {
+    try {
+
+        const userId = req.user.id;
+        const { bookingId } = req.params;
+
+        const booking = await bookingModel.findOne({
+            _id: bookingId,
+            userId
+        });
+
+        if (!booking) {
+            return res.status(404).json({
+                message: "Booking not found"
+            });
+        }
+
+        if (booking.isEventConfirmed) {
+            return res.status(400).json({
+                message: "Event has already been confirmed."
+            });
+        }
+
+        const escrow = await escrowModel.findOne({
+            bookingId,
+            finalReleaseStatus: "pending"
+        });
+
+        if (!escrow) {
+            return res.status(404).json({
+                message: "Escrow record not found."
+            });
+        }
+
+        const wallet = await walletModel.findOne({
+            vendorId: booking.vendorId
+        });
+
+        if (!wallet) {
+            return res.status(404).json({
+                message: "Vendor wallet not found."
+            });
+        }
+
+        // Release escrow funds
+        wallet.availableBalance += escrow.finalReleaseAmount;
+
+        wallet.escrowBalance -= escrow.finalReleaseAmount;
+
+        await wallet.save();
+
+        booking.bookingStatus = "completed";
+        booking.isEventConfirmed = true;
+        booking.confirmedAt = new Date();
+
+        await booking.save();
+
+        escrow.finalReleaseStatus = "released";
+        escrow.releaseReason = "user_confirmation";
+        escrow.releasedAt = new Date();
+
+        await escrow.save();
+
+        await transactionModel.create({
+
+            vendorId: booking.vendorId,
+
+            walletId: wallet._id,
+
+            bookingId,
+
+            amount: escrow.finalReleaseAmount,
+
+            transactionType: "release",
+
+            description: "Final 30% released by customer confirmation",
+
+            status: "successful"
+
+        });
+
+        return res.status(200).json({
+
+            message: "Booking confirmed successfully. Escrow released."
+
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+};
 
 exports.getClientBookings = async (req, res) => {
   try {

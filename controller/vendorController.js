@@ -11,7 +11,8 @@ const {emailTemplate, resetPasswordTemplate} = require('../email')
 const otpGenerator = require('otp-generator')
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/user');
-const {formatBankName, normalizeEnumValue} = require('../utils/normalize')
+const {formatBankName, normalizeEnumValue} = require('../utils/normalize');
+const releaseEscrow = require('../utils/releaseEscrow')
 
 exports.createVendor = async (req, res, next) => {
     try {
@@ -156,7 +157,7 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    const isOnboarded = nextOnboardingStep >= 7;
+    const isOnboarded = nextOnboardingStep >= 6;
     console.log(isOnboarded)
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
@@ -208,7 +209,6 @@ exports.updateVendor = async (req, res) => {
         req.files.videoCatalogue.map(file => uploadFile(file, "video"))
       );
     } 
-console.log("A")
     const updateData = {
       ...(normalizedBankName && { bankName: normalizedBankName }),
       ...(accountNumber && { accountNumber }),
@@ -226,10 +226,7 @@ console.log("A")
       ...(coverVideo && { coverVideo }),
       ...(photoCatalogue.length && { photoCatalogue }),
       ...(videoCatalogue.length && { videoCatalogue })
-
-      
     };
-    console.log("B")
 
    const updatedVendor = await vendorModel.findByIdAndUpdate(
   id,
@@ -379,7 +376,9 @@ exports.verifyVendorEmail = async (req, res) => {
       })
     };
 
-    vendor.isVerified = true;
+    vendor.emailVerified = true;
+    vendor.otp = null;
+
     await vendor.save();
     return res.status(200).json({
     message: "Email verified successfully"
@@ -429,7 +428,7 @@ exports.vendorLogin = async (req, res) => {
     };
 
     
-    if (vendor.isVerified == false) {
+    if (!vendor.emailVerified) {
       return res.status(400).json({
         message: 'Please verify your email',
         isVerified: vendor.isVerified
@@ -629,19 +628,20 @@ exports.getAllVendors = async (req, res) => {
   try {
     const { category } = req.query;
 
-    const filter = {};
+    const filter = {
+    isVerified: true,
+    isOnboarded: true,
+    verificationStatus: "approved"
+};
 
-    if (category) {
-      filter.category = {
+if (category) {
+    filter.category = {
         $regex: `^${category}$`,
-        $options: 'i'
-      };
-    }
+        $options: "i"
+    };
+}
 
-    const vendors = await vendorModel.find(filter).select('-password').populate({
-        path: 'pricingId',
-        select: 'packagePrice packageName'
-      });
+const vendors = await vendorModel.find(filter)
 
     const formattedVendors = vendors.map(vendor => {
       const basicPackage = vendor.pricingId.find(
@@ -670,7 +670,12 @@ exports.getAllVendors = async (req, res) => {
 exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
-    const vendor = await vendorModel.findOne({ slug }).populate("pricingId").lean();
+    const vendor = await vendorModel.findOne({
+    slug,
+    isVerified: true,
+    isOnboarded: true,
+    verificationStatus: "approved"
+}).populate("pricingId").lean();
 
     if (!vendor) {
       return res.status(404).json({
@@ -708,9 +713,12 @@ exports.getVendorDashboard = async (req, res) => {
     }
 
     return res.status(200).json({
-      vendorUrl,
-      data: vendor
-    });
+    vendorUrl,
+    verificationStatus: vendor.verificationStatus,
+    isVerified: vendor.isVerified,
+    isOnboarded: vendor.isOnboarded,
+    data: vendor
+});
 
   } catch (error) {
     return res.status(500).json({

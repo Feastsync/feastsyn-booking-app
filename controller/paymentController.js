@@ -11,7 +11,8 @@ const transactionModel = require('../models/transaction');
 const escrowModel = require('../models/escrow')
 const crypto = require('crypto');
 const calendarModel = require('../models/calendar');
-const payoutModel = require('../models/payout')
+const payoutModel = require('../models/payout');
+const releaseEscrow = require('../utils/releaseEscrow')
 
 exports.initializePayment = async (req, res) => {
     try {
@@ -166,7 +167,6 @@ if (!['accepted', 'confirmed'].includes(booking.bookingStatus)) {
 exports.verifyWebhook = async (req, res) => {
     try {
         const { event, data } = req.body;
-    
         const hash = crypto.createHmac("sha256", process.env.KORA_API_KEY).update(JSON.stringify(data)).digest("hex");
         
         const signature = req.headers["x-korapay-signature"];
@@ -251,16 +251,30 @@ exports.verifyWebhook = async (req, res) => {
             const existingEscrow = await escrowModel.findOne({ paymentId: payment._id });
             if (!existingEscrow) {
                 await escrowModel.create({
-                    bookingId: payment.bookingId,
-                    vendorId: payment.vendorId,
-                    paymentId: payment._id, 
-                    totalAmount,
-                    commissionAmount,  
-                    firstReleaseAmount,
-                    finalReleaseAmount,
-                    firstReleaseStatus: "released",
-                    finalReleaseStatus: "pending"
-                });
+
+                bookingId: payment.bookingId,
+
+                vendorId: payment.vendorId,
+
+                paymentId: payment._id,
+
+                totalAmount,
+
+                commissionAmount,
+
+                firstReleaseAmount,
+
+                finalReleaseAmount,
+
+                firstReleaseStatus: "released",
+
+                finalReleaseStatus: "pending",
+
+                releaseAt: null,
+
+                releasedAt: null
+
+        });
             }
             // CREATE / UPDATE WALLET
             let wallet = await walletModel.findOne({ vendorId: payment.vendorId });
@@ -411,7 +425,6 @@ exports.payoutFunds = async (req, res) => {
         const { amount } = req.body;
 
         const vendor = await vendorModel.findById(vendorId);
-
         if (!vendor) {
             return res.status(404).json({
                 message: "Vendor not found"
@@ -422,13 +435,12 @@ exports.payoutFunds = async (req, res) => {
         message: "Your bank details are incomplete."
     });
 }
-
         const wallet = await walletModel.findOne({ vendorId });
 
         if (!wallet) {
             return res.status(404).json({
                 message: "Wallet not found"
-            });
+            }); 
         }
 
         const withdrawalAmount = Number(amount);

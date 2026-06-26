@@ -1,7 +1,7 @@
 const express = require('express');
 const router = require('express').Router();
 
-const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getOneVendorAdmin, getOnePayment, getOneBooking } = require('../controller/adminController');
+const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getOneVendorAdmin, getOnePayment, getOneBooking, releaseEscrow, getPendingEscrows } = require('../controller/adminController');
 const { adminAuth, authentication } = require('../middlewares/auth');
 const { createDispute } = require('../controller/disputeController');
 const { createReview } = require('../controller/reviewController');
@@ -46,6 +46,8 @@ router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 // router.get('/notifications', authentication, getNotifications);
 
 router.get('/contact-message', adminAuth, getAllContactMessages);
+router.put('/release-escrow/:bookingId', authentication, adminAuth, releaseEscrow);
+router.get('/pending-escrow', authentication, adminAuth, getPendingEscrows);
 
 //pricingPackage
 // router.get('/all-pricing', getAllVendorPricing);
