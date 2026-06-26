@@ -9,7 +9,7 @@ const releaseEscrow = require('../utils/releaseEscrow');
 
 exports.createAdmin = async (req, res) => {
   try {
-    const { firstName, lastName, email, password} = req.body;
+    const { firstName, lastName, email,phoneNumber, password} = req.body;
     if (!password) {
       return res.status(400).json({
         message: "Please enter password",

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = require('express').Router();
 
-const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getOneVendorAdmin, getOnePayment, getOneBooking, releaseEscrow, getPendingEscrows } = require('../controller/adminController');
+const { getDashboardStats, getAllVendorsAdmin,getPendingKycs, approveKyc, rejectKyc, getAllPayments, getAllBookings, createAdmin,adminLogin, verifyEmail, adminLogout, forgotPassword, resendOtp, resetPassword,resolveDispute, getAllContactMessages, getUserReviews, getVendorReviews, getOneVendorAdmin, getOnePayment, getOneBooking, releaseEscrow, getPendingEscrows, verifyVendor } = require('../controller/adminController');
 const { adminAuth, authentication } = require('../middlewares/auth');
 const { createDispute } = require('../controller/disputeController');
 const { createReview } = require('../controller/reviewController');
@@ -11,7 +11,7 @@ const { resetPasswordValidator } = require('../middlewares/validator');
 router.post('/admin', createAdmin)
 router.post('/verify-admin', verifyEmail);
 router.post('/login-admin', adminLogin);
-router.post('/logout-admin', adminAuth, adminLogout);
+router.post('/logout-admin', authentication,adminAuth, adminLogout);
 
 router.post('/forgot-password-admin', forgotPassword);
 router.post('/resend-otp-admin',resendOtp);
@@ -19,7 +19,7 @@ router.post('/reset-password-admin', resetPasswordValidator, resetPassword);
 
 router.get('/dashboard-stats', adminAuth, getDashboardStats);
 
-router.get('/all-vendors', adminAuth,getAllVendorsAdmin);
+router.get('/all-vendors',authentication ,adminAuth, getAllVendorsAdmin);
 router.get('/one-vendor/:vendorId', authentication, adminAuth, getOneVendorAdmin)
 
 router.get('/all-pending-kyc', adminAuth, getPendingKycs);
@@ -48,6 +48,7 @@ router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 router.get('/contact-message', adminAuth, getAllContactMessages);
 router.put('/release-escrow/:bookingId', authentication, adminAuth, releaseEscrow);
 router.get('/pending-escrow', authentication, adminAuth, getPendingEscrows);
+router.put('/verify-vendor/:vendorId', authentication, adminAuth, verifyVendor);
 
 //pricingPackage
 // router.get('/all-pricing', getAllVendorPricing);

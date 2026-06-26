@@ -21,6 +21,11 @@ const adminSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  phoneNumber: {
+        type: String,
+        require: true,
+        unique: true
+    },
   otp: {
     type: String, 
   },
