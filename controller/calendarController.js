@@ -12,16 +12,9 @@ exports.getCalendar = async (req, res) => {
     const { vendorId } = req.params;
     const { month } = req.query;
 
-    if (!month) {
-      return res.status(400).json({
-        message: 'Month is required. Format: YYYY-MM'
-      });
-    }
-
     const [year, monthNumber] = month.split("-").map(Number);
 
     const startDate = new Date(year, monthNumber - 1, 1);
-
     const endDate = new Date(year, monthNumber, 1);
 
     const calendarEntries = await calendarModel.find({
@@ -41,14 +34,12 @@ exports.getCalendar = async (req, res) => {
       vendorId,
       month,
       bookedDates,
-      totalBookings: bookings.length
+      totalBookings: bookedDates.length
     });
 
   } catch (error) {
     return res.status(500).json({
       message: error.message
     });
-
   }
 };
-
