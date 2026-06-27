@@ -7,9 +7,10 @@ const notificationModel = require('../models/notification');
 const escrowModel = require('../models/escrow');
 const {createNotification} = require('../utils/createNotification');
 const walletModel = require('../models/wallet');
-const paymentModel = require('../models/payment');;
-const {brevo} = require('../utils/brevo')
-const releaseEscrow = require('../utils/releaseEscrow')
+const paymentModel = require('../models/payment');
+const transactionModel = require('../models/transaction');
+const {brevo} = require('../utils/brevo');
+const releaseEscrow = require('../utils/releaseEscrow');
 
 exports.createBooking = async (req, res) => {
   try {
