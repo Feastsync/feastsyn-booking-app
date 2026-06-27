@@ -410,3 +410,16 @@ return `
     `;
 };
 
+
+// email.js
+exports.paymentReleasedTemplate = (name, amount) => `
+<h2>Hello ${name},</h2>
+
+<p>Great news!</p>
+
+<p>Your payment of <strong>₦${amount.toLocaleString()}</strong> has been released to your FeastSync wallet.</p>
+
+<p>You can log in to your dashboard to view your wallet balance or request a withdrawal.</p>
+
+<p>Thank you for using FeastSync.</p>
+`;

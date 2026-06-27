@@ -5,7 +5,9 @@ const userModel = require('../models/user');
 const Availability = require('../models/calendar');
 const notificationModel = require('../models/notification');
 const escrowModel = require('../models/escrow');
-const {createNotification} = require('../utils/createNotification')
+const {createNotification} = require('../utils/createNotification');
+const walletModel = require('../models/wallet');
+const paymentModel = require('../models/payment');;
 const {brevo} = require('../utils/brevo')
 const releaseEscrow = require('../utils/releaseEscrow')
 
@@ -428,6 +430,20 @@ exports.markServiceDelivered = async (req, res) => {
             description: "Final 30% released after customer confirmed service delivery",
             status: "successful"
         });
+        await createNotification({
+            recipientId: booking.vendorId,
+            recipientType: "vendor",
+            title: "Payment Released",
+            message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet after the customer confirmed service delivery.`,
+            emailSubject: "Payment Released"
+});
+          await createNotification({
+            recipientId: booking.userId,
+            recipientType: "user",
+            title: "Service Confirmed",
+            message: `Thank you for confirming that ${vendor.stageName} successfully delivered your event.`,
+            emailSubject: "Service Confirmed"
+});
 
         return res.status(200).json({
             success: true,
