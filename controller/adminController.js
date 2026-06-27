@@ -129,7 +129,16 @@ exports.adminLogin = async (req, res) => {
     admin.loginAttempts = 0;
     await admin.save();
 
-    const token = jwt.sign({ id: admin._id}, process.env.SECRET_KEY, { expiresIn: '1d' });
+    const token = jwt.sign(
+  {
+    id: admin._id,
+    role: admin.role
+  },
+  process.env.SECRET_KEY,
+  {
+    expiresIn: "1d"
+  }
+);
 
     res.status(200).json({
       message: 'Login sucessful',
