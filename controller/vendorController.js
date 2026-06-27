@@ -803,7 +803,7 @@ exports.getVendorDashboard = async (req, res) => {
       });
     }
 
-    const vendorUrl = `https://feastsync.com/vendor/${vendor.slug}`;
+    const vendorUrl = `https://feast-sync.vercel.app/vendor/${vendor.slug}`;
 
     if (!vendor.vendorUrl) {
       vendor.vendorUrl = vendorUrl;
