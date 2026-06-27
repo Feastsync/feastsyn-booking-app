@@ -36,9 +36,9 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    if (!vendor.isVerified) {
+    if (!vendor.isVerified || !vendor.isOnboarded) {
     return res.status(403).json({
-        message: "This vendor is currently under review and cannot receive bookings."
+        message: "Vendor is not available for bookings."
     });
 }
 

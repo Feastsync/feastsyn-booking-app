@@ -48,7 +48,7 @@ router.get('/user-reviews/:userId', authentication, adminAuth, getUserReviews);
 router.get('/contact-message', adminAuth, getAllContactMessages);
 router.put('/release-escrow/:bookingId', authentication, adminAuth, releaseEscrow);
 router.get('/pending-escrow', authentication, adminAuth, getPendingEscrows);
-router.put('/verify-vendor/:vendorId', authentication, adminAuth, verifyVendor);
+// router.put('/verify-vendor/:vendorId', authentication, adminAuth, verifyVendor);
 
 //pricingPackage
 // router.get('/all-pricing', getAllVendorPricing);
