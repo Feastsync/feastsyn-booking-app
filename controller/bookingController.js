@@ -36,9 +36,9 @@ exports.createBooking = async (req, res) => {
       });
     }
 
-    if (!vendor.isVerified || !vendor.isOnboarded) {
+    if (!vendor.isOnboarded) {
     return res.status(403).json({
-        message: "Vendor is not available for bookings."
+        message: "Vendor has not completed onboarding."
     });
 }
 
