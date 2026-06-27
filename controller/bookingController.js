@@ -85,6 +85,7 @@ exports.createBooking = async (req, res) => {
       duration,
       guestCount,
       additionalDetails,
+      packageAmount: selectedPackage.packagePrice,
       bookingStatus: 'pending', 
       paymentStatus: 'unpaid'
     });
