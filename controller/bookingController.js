@@ -15,113 +15,183 @@ const {userPaymentCompletedTemplate, vendorPaymentReleasedTemplate} = require('.
 
 
 exports.createBooking = async (req, res) => {
-  try {
+    try {
 
-    if (!req.user) {
-      return res.status(401).json({
-        message: 'Please login first'
-      });
+        if (!req.user) {
+            return res.status(401).json({
+                message: "Please login first"
+            });
+        }
+
+        const userId = req.user.id;
+
+        const {
+            vendorId,
+            pricingId,
+            eventType,
+            eventLocation,
+            eventDate,
+            duration,
+            guestCount,
+            additionalDetails
+        } = req.body;
+
+        if (
+            !vendorId ||
+            !pricingId ||
+            !eventType ||
+            !eventLocation ||
+            !eventDate ||
+            !duration ||
+            !guestCount ||
+            !additionalDetails
+        ) {
+            return res.status(400).json({
+                message: "All required fields must be provided"
+            });
+        }
+
+        const vendor = await vendorModel.findById(vendorId);
+
+        if (!vendor) {
+            return res.status(404).json({
+                message: "Vendor not found"
+            });
+        }
+
+        if (!vendor.isOnboarded) {
+            return res.status(403).json({
+                message: "Vendor has not completed onboarding."
+            });
+        }
+
+        const user = await userModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        const selectedPackage = await pricingModel.findOne({
+            _id: pricingId,
+            vendorId
+        });
+
+        if (!selectedPackage) {
+            return res.status(404).json({
+                message: "Package not found"
+            });
+        }
+
+        const existingBooking = await bookingModel.findOne({
+            vendorId,
+            eventDate: new Date(eventDate),
+            bookingStatus: {
+                $in: [
+                    "pending",
+                    "accepted",
+                    "confirmed",
+                    "completed"
+                ]
+            }
+        });
+
+        if (existingBooking) {
+            return res.status(400).json({
+                message: "Vendor is already booked on this date"
+            });
+        }
+
+        const booking = await bookingModel.create({
+            userId,
+            vendorId,
+            pricingId,
+
+            packageName: selectedPackage.packageName,
+            packageAmount: selectedPackage.packagePrice,
+            amount: selectedPackage.packagePrice,
+
+            eventType,
+            eventLocation,
+            eventDate: new Date(eventDate),
+            duration,
+            guestCount,
+            additionalDetails,
+
+            bookingStatus: "pending",
+            paymentStatus: "unpaid"
+        });
+
+
+      // NOTIFY VENDOR
+    await createNotification({
+    recipientId: vendor._id,
+    recipientType: "vendor",
+    recipientModel: "vendors",
+
+    senderId: user._id,
+    senderModel: "users",
+
+    bookingId: booking._id,
+    notificationType: "booking_request",
+
+    title: "New Booking Request",
+    message: `${user.firstName} ${user.lastName} sent you a booking request.`,
+
+    emailSubject: "New Booking Request",
+
+    emailBody: `
+    Hello ${vendor.stageName},
+
+    You have received a new booking request from ${user.firstName} ${user.lastName}.
+
+    Please log in to FeastSync to review and accept or decline the request.
+`
+});
+
+    // NOTIFY USER
+      await createNotification({
+    recipientId: user._id,
+    recipientType: "user",
+    recipientModel: "users",
+
+    senderId: vendor._id,
+    senderModel: "vendors",
+
+    bookingId: booking._id,
+    notificationType: "booking_request",
+
+    title: "Booking Request Sent",
+    message: `Your booking request has been sent to ${vendor.stageName}. Awaiting the vendor's response.`,
+
+    emailSubject: "Booking Request Submitted",
+
+    emailBody: `
+    Hello ${user.firstName},
+
+Your booking request has been successfully submitted to ${vendor.stageName}.
+
+The vendor will review your request and either accept or decline it.
+
+You will be notified once they respond.
+
+Thank you for choosing FeastSync.
+`
+});
+
+        return res.status(201).json({
+            message: "Booking created successfully",
+            data: booking
+        });
+
+    } catch (error) {
+        console.log(error);
+
+        return res.status(500).json({
+            message: error.message
+        });
     }
-
-    const userId = req.user.id;
-
-    const {vendorId,pricingId,eventType,eventLocation,eventDate,duration,guestCount,additionalDetails} = req.body;
-
-    if (!vendorId || !pricingId || !eventType || !eventLocation || !eventDate || !duration || !guestCount || !additionalDetails ) {
-      return res.status(400).json({
-        message: 'All required fields must be provided'
-      });
-    }
-
-    const vendor = await vendorModel.findById(vendorId);
-
-    if (!vendor) {
-      return res.status(404).json({
-        message: 'Vendor not found'
-      });
-    }
-
-    if (!vendor.isOnboarded) {
-    return res.status(403).json({
-        message: "Vendor has not completed onboarding."
-    });
-}
-
-    const user = await userModel.findById(userId);
-    if(!user){
-      return res.status(404).json({
-        message: 'User not found'
-      });
-    }
-
-    const selectedPackage = await pricingModel.findOne({
-      _id: pricingId,
-      vendorId
-    });
-
-    if (!selectedPackage) {
-      return res.status(404).json({
-        message: 'Package not found'
-      });
-    }
-
-    const existingBooking = await bookingModel.findOne({
-      vendorId,
-      eventDate: new Date(eventDate),
-      bookingStatus: {
-        $in: ['pending', 'accepted', 'confirmed', 'completed']
-      }
-    });
-
-    if (existingBooking) {
-      return res.status(400).json({
-        message: 'Vendor is already booked on this date'
-      });
-    }
-
-    const booking = await bookingModel.create({
-      userId, 
-      vendorId,
-      packageId: pricingId,
-      pricingId,
-      // Snapshot of package details at the time of booking
-      packageName: selectedPackage.packageName,
-      amount: selectedPackage.packagePrice,
-      eventType,
-      eventLocation,
-      eventDate: new Date(eventDate),
-      duration,
-      guestCount,
-      additionalDetails,
-      packageAmount: selectedPackage.packagePrice,
-      bookingStatus: 'pending', 
-      amount: selectedPackage.packagePrice,
-      paymentStatus: 'unpaid'
-    });
-
-    await notificationModel.create({
-      recipientId: vendorId,
-      recipientType: 'vendor',
-      senderId: userId,
-      bookingId: booking._id,
-      notificationType: 'booking_request',
-      title: 'New Booking Request',
-      message: `${user.firstName} ${user.lastName} sent you a booking request`
-    });
-
-
-    return res.status(201).json({
-      message: 'Booking created successfully',
-      data: booking
-    });
-
-  } catch (error) {
-    console.log(error);
-
-    return res.status(500).json({
-      message: error.message
-    });
-  }
 };
 
 
@@ -414,6 +484,13 @@ exports.markServiceDelivered = async (req, res) => {
                 message: "Vendor not found"
             });
         }
+        const user = await userModel.findById(booking.userId);
+
+        if (!user) {
+          return res.status(404).json({
+           message: "User not found"
+    });
+}
 
         // Release escrow funds
         wallet.availableBalance += escrow.finalReleaseAmount;
@@ -468,7 +545,7 @@ exports.markServiceDelivered = async (req, res) => {
 
     senderId: booking.vendorId,
     senderModel: "vendors",
-    
+
     bookingId: booking._id,
     notificationType: "payment_completed",
     title: "Payment Completed",
