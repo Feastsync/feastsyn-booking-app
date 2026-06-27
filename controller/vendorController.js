@@ -157,7 +157,7 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    const isOnboarded = nextOnboardingStep >= 6;
+    const isOnboarded = nextOnboardingStep >= 7;
     console.log(isOnboarded)
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
