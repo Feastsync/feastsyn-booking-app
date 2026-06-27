@@ -80,7 +80,7 @@ pendingUpdate: {
     type: mongoose.Schema.Types.Mixed,
     default: null
 },
-emailVerified: {
+isVerified: {
   type: Boolean,
   default: false
 },

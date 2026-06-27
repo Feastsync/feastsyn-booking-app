@@ -209,24 +209,35 @@ exports.updateVendor = async (req, res) => {
         req.files.videoCatalogue.map(file => uploadFile(file, "video"))
       );
     } 
-    const updateData = {
-      ...(normalizedBankName && { bankName: normalizedBankName }),
-      ...(accountNumber && { accountNumber }),
-      ...(bankCode !== undefined && { bankCode }),
-      ...(bio && { bio }),
-      ...(servicesOffered && { servicesOffered }),
-      ...(normalizedState && { stateOfResidence: normalizedState }),
-      vendorUrl: publicUrl,
-      onboardingStep: nextOnboardingStep,
-      isOnboarded,
-      ...(categoryToUpdate && { category: categoryToUpdate }),
-      ...(slug && { slug }),
-      ...(profilePicture && { profilePicture }),
-      ...(coverPhoto && { coverPhoto }),
-      ...(coverVideo && { coverVideo }),
-      ...(photoCatalogue.length && { photoCatalogue }),
-      ...(videoCatalogue.length && { videoCatalogue })
-    };
+console.log("A")
+   const updateData = {
+  ...(normalizedBankName && { bankName: normalizedBankName }),
+  ...(accountNumber && { accountNumber }),
+  ...(bankCode !== undefined && { bankCode }),
+  ...(bio && { bio }),
+  ...(servicesOffered && { servicesOffered }),
+  ...(normalizedState && { stateOfResidence: normalizedState }),
+
+  vendorUrl: publicUrl,
+
+  onboardingStep: nextOnboardingStep,
+  isOnboarded,
+
+  // Automatically approve vendor after onboarding
+  ...(isOnboarded && {
+    verificationStatus: "approved"
+  }),
+
+  ...(categoryToUpdate && { category: categoryToUpdate }),
+  ...(slug && { slug }),
+  ...(profilePicture && { profilePicture }),
+  ...(coverPhoto && { coverPhoto }),
+  ...(coverVideo && { coverVideo }),
+  ...(photoCatalogue.length && { photoCatalogue }),
+  ...(videoCatalogue.length && { videoCatalogue })
+};
+
+    console.log("B")
 
    const updatedVendor = await vendorModel.findByIdAndUpdate(
   id,
@@ -376,9 +387,7 @@ exports.verifyVendorEmail = async (req, res) => {
       })
     };
 
-    vendor.emailVerified = true;
-    vendor.otp = null;
-
+    vendor.isVerified = true;
     await vendor.save();
     return res.status(200).json({
     message: "Email verified successfully"
@@ -428,7 +437,7 @@ exports.vendorLogin = async (req, res) => {
     };
 
     
-    if (!vendor.emailVerified) {
+    if (vendor.isVerified == false) {
       return res.status(400).json({
         message: 'Please verify your email',
         isVerified: vendor.isVerified
@@ -628,20 +637,23 @@ exports.getAllVendors = async (req, res) => {
   try {
     const { category } = req.query;
 
-    const filter = {
-    isVerified: true,
-    isOnboarded: true,
-    verificationStatus: "approved"
+   const filter = {
+  isVerified: true,
+  isOnboarded: true,
+  verificationStatus: "approved"
 };
 
 if (category) {
-    filter.category = {
-        $regex: `^${category}$`,
-        $options: "i"
-    };
+  filter.category = {
+    $regex: `^${category}$`,
+    $options: "i"
+  };
 }
 
-const vendors = await vendorModel.find(filter)
+    const vendors = await vendorModel.find(filter).select('-password').populate({
+        path: 'pricingId',
+        select: 'packagePrice packageName'
+      });
 
     const formattedVendors = vendors.map(vendor => {
       const basicPackage = vendor.pricingId.find(
@@ -670,12 +682,7 @@ const vendors = await vendorModel.find(filter)
 exports.getOneVendor = async (req, res) => {
   try {
     const { slug } = req.params;
-    const vendor = await vendorModel.findOne({
-    slug,
-    isVerified: true,
-    isOnboarded: true,
-    verificationStatus: "approved"
-}).populate("pricingId").lean();
+    const vendor = await vendorModel.findOne({ slug }).populate("pricingId").lean();
 
     if (!vendor) {
       return res.status(404).json({
@@ -713,12 +720,9 @@ exports.getVendorDashboard = async (req, res) => {
     }
 
     return res.status(200).json({
-    vendorUrl,
-    verificationStatus: vendor.verificationStatus,
-    isVerified: vendor.isVerified,
-    isOnboarded: vendor.isOnboarded,
-    data: vendor
-});
+      vendorUrl,
+      data: vendor
+    });
 
   } catch (error) {
     return res.status(500).json({
