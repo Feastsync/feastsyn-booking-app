@@ -2,6 +2,7 @@ const notificationModel = require("../models/notification");
 const userModel = require("../models/user");
 const vendorModel = require("../models/vendor");
 const {brevo} = require("../utils/brevo");
+const {paymentReleasedTemplate} = require('../email')
 
 exports.createNotification = async ({recipientId,recipientType,title,message, emailSubject}) => {
   let recipient;
@@ -29,9 +30,12 @@ exports.createNotification = async ({recipientId,recipientType,title,message, em
     const response = await brevo(
     recipient.email,
     recipient.firstName || recipient.stageName || "Vendor",
-    message,
-    emailSubject || title
-  );
+    paymentReleasedTemplate(
+        recipient.firstName || recipient.stageName,
+        escrow.finalReleaseAmount
+    ),
+    "Payment Released"
+);
   } catch (error) {
      console.error("Brevo failed:");
      console.error(error.message);
