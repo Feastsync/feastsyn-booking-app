@@ -9,7 +9,7 @@ router.get('/booking-details/:bookingId', authentication ,getBookingDetails),
 router.put('/accept/:bookingId', authentication,acceptBooking);
 router.put('/reject/:bookingId', authentication,rejectBooking);
 router.put('complete-task/:bookingId', authentication, markBookingCompleted);
-router.put('/confirm-banking', authentication, confirmCompletedBooking);
+router.put('/confirm-booking', authentication, confirmCompletedBooking);
 // router.get('/vendor/:vendorId', getVendorBookings); 
 router.get('/client/',authentication, getClientBookings);
 router.get('/single/:bookingId', getSingleBooking);
