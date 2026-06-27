@@ -6,11 +6,13 @@ const { brevo } = require("../utils/brevo");
 exports.createNotification = async ({
     recipientId,
     recipientType,
+    recipientModel,
     title,
     message,
     emailSubject,
     emailBody,
     bookingId = null,
+    senderModel = null,
     senderId = null,
     notificationType = null
 }) => {
@@ -32,6 +34,8 @@ exports.createNotification = async ({
     const notification = await notificationModel.create({
         recipientId,
         recipientType,
+        recipientModel,
+        senderModel,
         bookingId,
         senderId,
         notificationType,

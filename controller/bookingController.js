@@ -447,6 +447,11 @@ exports.markServiceDelivered = async (req, res) => {
        await createNotification({
     recipientId: booking.vendorId,
     recipientType: "vendor",
+    recipientModel: "vendors",
+
+    senderId: booking.userId,
+    senderModel: "users",
+
     bookingId: booking._id,
     notificationType: "payment_released",
     title: "Payment Released",
@@ -459,6 +464,11 @@ exports.markServiceDelivered = async (req, res) => {
         await createNotification({
     recipientId: booking.userId,
     recipientType: "user",
+    recipientModel: "users",
+
+    senderId: booking.vendorId,
+    senderModel: "vendors",
+    
     bookingId: booking._id,
     notificationType: "payment_completed",
     title: "Payment Completed",
