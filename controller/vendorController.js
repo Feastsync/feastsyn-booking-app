@@ -706,39 +706,59 @@ exports.vendorResetPassword = async (req, res) => {
 
 exports.getAllVendors = async (req, res) => {
   try {
-    const { category } = req.query;
+    const { search, category } = req.query;
 
-   const filter = {
-    isOnboarded: true
-};
+    const filter = {
+      isVerified: true,
+      isOnboarded: true
+    };
 
-if (category) {
-    filter.category = {
+    if (category) {
+      filter.category = {
         $regex: `^${category}$`,
         $options: "i"
-    };
-}
+      };
+    }
 
-const vendors = await vendorModel.find(filter)
-.select("-password")
-.populate({
-    path: "pricingId",
-    select: "packagePrice packageName"
-});
+    if (search) {
+      filter.$or = [
+        {
+          stageName: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+        {
+          firstName: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+        {
+          lastName: {
+            $regex: search,
+            $options: "i"
+          }
+        }
+      ];
+    }
+
+    const vendors = await vendorModel.find(filter).select("-password").populate({
+        path: "pricingId",
+        select: "packageName packagePrice"
+      });
 
     const formattedVendors = vendors.map(vendor => {
       const basicPackage = vendor.pricingId.find(
-        item => item.packageName === 'Basic Package'
+        item => item.packageName === "Basic Package"
       );
 
       return {
-        ...vendor.toObject(),
-        basicPrice: basicPackage?.packagePrice || null
-      };
+        ...vendor.toObject(), basicPrice: basicPackage?.packagePrice || null};
     });
 
     return res.status(200).json({
-      message: "Successfully retrieved vendors",
+      success: true,
       count: formattedVendors.length,
       data: formattedVendors
     });

@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const calendarModel = require('../models/calendar');
 const payoutModel = require('../models/payout');
 const releaseEscrow = require('../utils/releaseEscrow')
+const {userPaymentCompletedTemplate, vendorPaymentReleasedTemplate} = require('../email');
 
 exports.initializePayment = async (req, res) => {
     try {
