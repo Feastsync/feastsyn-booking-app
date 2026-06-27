@@ -6,6 +6,10 @@ const {brevo} = require('../utils/brevo')
 const {emailTemplate, resetPasswordTemplate} = require('../email')
 const jwt = require('jsonwebtoken');
 const releaseEscrow = require('../utils/releaseEscrow');
+const vendorModel = require('../models/vendor');
+const userModel = require('../models/user');
+const bookingModel = require('../models/booking')
+
 
 exports.createAdmin = async (req, res) => {
   try {
