@@ -11,6 +11,8 @@ const paymentModel = require('../models/payment');
 const transactionModel = require('../models/transaction');
 const {brevo} = require('../utils/brevo');
 const releaseEscrow = require('../utils/releaseEscrow');
+const {userPaymentCompletedTemplate, vendorPaymentReleasedTemplate} = require('../email');
+
 
 exports.createBooking = async (req, res) => {
   try {
@@ -442,22 +444,28 @@ exports.markServiceDelivered = async (req, res) => {
         });
 
         // Notify Vendor
-        await createNotification({
-            recipientId: booking.vendorId,
-            recipientType: "vendor",
-            title: "Payment Released",
-            message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet.`,
-            emailSubject: "Payment Released"
-        });
+       await createNotification({
+    recipientId: booking.vendorId,
+    recipientType: "vendor",
+    bookingId: booking._id,
+    notificationType: "payment_released",
+    title: "Payment Released",
+    message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet.`,
+    emailSubject: "Payment Released",
+    emailBody: vendorPaymentReleasedTemplate(vendor.stageName, escrow.finalReleaseAmount)
+});
 
         // Notify User
         await createNotification({
-            recipientId: booking.userId,
-            recipientType: "user",
-            title: "Payment Completed",
-            message: `Your payment has been successfully released to ${vendor.stageName}. Thank you for using FeastSync.`,
-            emailSubject: "Payment Completed"
-        });
+    recipientId: booking.userId,
+    recipientType: "user",
+    bookingId: booking._id,
+    notificationType: "payment_completed",
+    title: "Payment Completed",
+    message: `Your payment has been released to ${vendor.stageName}.`,
+    emailSubject: "Payment Completed",
+    emailBody: userPaymentCompletedTemplate(user.firstName, vendor.stageName)
+});
 
         return res.status(200).json({
             success: true,

@@ -412,14 +412,66 @@ return `
 
 
 // email.js
-exports.paymentReleasedTemplate = (name, amount) => `
+exports.vendorPaymentReleasedTemplate = (name, amount) => `
 <h2>Hello ${name},</h2>
 
 <p>Great news!</p>
 
-<p>Your payment of <strong>₦${amount.toLocaleString()}</strong> has been released to your FeastSync wallet.</p>
+<p>Your payment of <strong>₦${Number(amount).toLocaleString()}</strong> has been released to your FeastSync wallet after the customer confirmed successful service delivery.</p>
 
-<p>You can log in to your dashboard to view your wallet balance or request a withdrawal.</p>
+<p>You can now withdraw your earnings from your wallet.</p>
 
-<p>Thank you for using FeastSync.</p>
+<p>Thank you for providing an excellent service.</p>
+
+<p><b>FeastSync Team</b></p>
+`;
+
+exports.userPaymentCompletedTemplate = (name, vendorName) => `
+<h2>Hello ${name},</h2>
+
+<p>Thank you for confirming that your event was successfully delivered.</p>
+
+<p>Your payment has now been released to <strong>${vendorName}</strong>.</p>
+
+<p>We appreciate you for trusting FeastSync.</p>
+
+<p>We hope to serve you again.</p>
+
+<p><b>FeastSync Team</b></p>
+`;
+
+exports.vendorReviewReceivedTemplate = (
+    vendorName,
+    customerName,
+    rating,
+    comment
+) => `
+<h2>Hello ${vendorName},</h2>
+
+<p>You have received a new review from <strong>${customerName}</strong>.</p>
+
+<p><strong>Rating:</strong> ⭐ ${rating}/5</p>
+
+<p><strong>Comment:</strong></p>
+
+<p>${comment || "No comment provided."}</p>
+
+<p>Keep delivering amazing experiences!</p>
+
+<p><b>FeastSync Team</b></p>
+`;
+
+exports.userReviewSubmittedTemplate = (
+    userName,
+    vendorName
+) => `
+<h2>Hello ${userName},</h2>
+
+<p>Thank you for taking the time to review <strong>${vendorName}</strong>.</p>
+
+<p>Your feedback helps other customers make informed decisions and helps vendors improve their services.</p>
+
+<p>We appreciate your support.</p>
+
+<p><b>FeastSync Team</b></p>
 `;

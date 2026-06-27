@@ -5,6 +5,7 @@ const bookingModel = require('../models/booking');
 const cloudinary = require('../utils/cloudinary');
 const fs = require('fs');
 const {createNotification} = require('../utils/createNotification');
+const { vendorReviewReceivedTemplate, userReviewSubmittedTemplate} = require('../email')
 
 exports.createReview = async (req, res) => {
     try {
@@ -87,23 +88,36 @@ exports.createReview = async (req, res) => {
         const user = await userModel.findById(req.user.id);
 
         // Notify Vendor
-        await createNotification({
-            recipientId: booking.vendorId,
-            recipientType: "vendor",
-            title: "New Review Received",
-            message: `${user.firstName} ${user.lastName} left you a ${rating}-star review.`,
-            emailSubject: "New Review Received"
-        });
+       await createNotification({
+    recipientId: booking.vendorId,
+    recipientType: "vendor",
+    bookingId: booking._id,
+    notificationType: "review_received",
+    title: "New Review",
+    message: `${user.firstName} left you a ${rating}-star review.`,
+    emailSubject: "New Review Received",
+    emailBody: vendorReviewReceivedTemplate(
+        vendor.stageName,
+        `${user.firstName} ${user.lastName}`,
+        rating,
+        comment
+    )
+});
 
         // Notify User
         await createNotification({
-            recipientId: booking.userId,
-            recipientType: "user",
-            title: "Review Submitted",
-            message: `Thank you! Your review for ${vendor.stageName} has been submitted successfully.`,
-            emailSubject: "Review Submitted"
-        });
-
+    recipientId: booking.userId,
+    recipientType: "user",
+    bookingId: booking._id,
+    notificationType: "review_submitted",
+    title: "Review Submitted",
+    message: `Your review for ${vendor.stageName} has been submitted successfully.`,
+    emailSubject: "Review Submitted",
+    emailBody: userReviewSubmittedTemplate(
+        user.firstName,
+        vendor.stageName
+    )
+});
         return res.status(201).json({
             message: "Review submitted successfully.",
             data: review
