@@ -93,6 +93,7 @@ exports.createBooking = async (req, res) => {
       additionalDetails,
       packageAmount: selectedPackage.packagePrice,
       bookingStatus: 'pending', 
+      amount: selectedPackage.packagePrice,
       paymentStatus: 'unpaid'
     });
 
@@ -404,24 +405,35 @@ exports.markServiceDelivered = async (req, res) => {
             });
         }
 
-        // Release escrow
+        const vendor = await vendorModel.findById(booking.vendorId);
+
+        if (!vendor) {
+            return res.status(404).json({
+                message: "Vendor not found."
+            });
+        }
+
+        // Release escrow funds
         wallet.availableBalance += escrow.finalReleaseAmount;
         wallet.escrowBalance -= escrow.finalReleaseAmount;
 
         await wallet.save();
 
+        // Update booking
         booking.bookingStatus = "completed";
         booking.isEventConfirmed = true;
         booking.confirmedAt = new Date();
 
         await booking.save();
 
+        // Update escrow
         escrow.finalReleaseStatus = "released";
         escrow.releaseReason = "user_confirmation";
         escrow.releasedAt = new Date();
 
         await escrow.save();
 
+        // Create transaction
         await transactionModel.create({
             vendorId: booking.vendorId,
             walletId: wallet._id,
@@ -431,20 +443,24 @@ exports.markServiceDelivered = async (req, res) => {
             description: "Final 30% released after customer confirmed service delivery",
             status: "successful"
         });
+
+        // Notify vendor
         await createNotification({
             recipientId: booking.vendorId,
             recipientType: "vendor",
             title: "Payment Released",
             message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet after the customer confirmed service delivery.`,
             emailSubject: "Payment Released"
-});
-          await createNotification({
+        });
+
+        // Notify customer
+        await createNotification({
             recipientId: booking.userId,
             recipientType: "user",
             title: "Service Confirmed",
             message: `Thank you for confirming that ${vendor.stageName} successfully delivered your event.`,
             emailSubject: "Service Confirmed"
-});
+        });
 
         return res.status(200).json({
             success: true,
@@ -453,11 +469,9 @@ exports.markServiceDelivered = async (req, res) => {
         });
 
     } catch (error) {
-
         return res.status(500).json({
             message: error.message
         });
-
     }
 };
 
