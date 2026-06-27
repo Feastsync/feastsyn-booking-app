@@ -409,7 +409,7 @@ exports.markServiceDelivered = async (req, res) => {
 
         if (!vendor) {
             return res.status(404).json({
-                message: "Vendor not found."
+                message: "Vendor not found"
             });
         }
 
@@ -419,21 +419,18 @@ exports.markServiceDelivered = async (req, res) => {
 
         await wallet.save();
 
-        // Update booking
         booking.bookingStatus = "completed";
         booking.isEventConfirmed = true;
         booking.confirmedAt = new Date();
 
         await booking.save();
 
-        // Update escrow
         escrow.finalReleaseStatus = "released";
         escrow.releaseReason = "user_confirmation";
         escrow.releasedAt = new Date();
 
         await escrow.save();
 
-        // Create transaction
         await transactionModel.create({
             vendorId: booking.vendorId,
             walletId: wallet._id,
@@ -444,22 +441,22 @@ exports.markServiceDelivered = async (req, res) => {
             status: "successful"
         });
 
-        // Notify vendor
+        // Notify Vendor
         await createNotification({
             recipientId: booking.vendorId,
             recipientType: "vendor",
             title: "Payment Released",
-            message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet after the customer confirmed service delivery.`,
+            message: `Your payment of ₦${escrow.finalReleaseAmount.toLocaleString()} has been released to your wallet.`,
             emailSubject: "Payment Released"
         });
 
-        // Notify customer
+        // Notify User
         await createNotification({
             recipientId: booking.userId,
             recipientType: "user",
-            title: "Service Confirmed",
-            message: `Thank you for confirming that ${vendor.stageName} successfully delivered your event.`,
-            emailSubject: "Service Confirmed"
+            title: "Payment Completed",
+            message: `Your payment has been successfully released to ${vendor.stageName}. Thank you for using FeastSync.`,
+            emailSubject: "Payment Completed"
         });
 
         return res.status(200).json({
@@ -469,9 +466,11 @@ exports.markServiceDelivered = async (req, res) => {
         });
 
     } catch (error) {
+
         return res.status(500).json({
             message: error.message
         });
+
     }
 };
 
