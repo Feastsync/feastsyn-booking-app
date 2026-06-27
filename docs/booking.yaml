@@ -109,7 +109,7 @@ paths:
         "500": 
           description: Something went wrong  
 
-  /api/v1/confirm-booking/{bookingId}:
+  /api/v1/service-delivered/{bookingId}:
     put:
       summary: User confirms that the vendor completed the event
       tags: [bookings]
@@ -131,29 +131,7 @@ paths:
           description: Booking not found
         '500':
           description: Server error  
-
-  /api/v1/complete-task/{bookingId}:
-    put:
-      summary: Vendor marks to have completed task for the event
-      tags: [bookings]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: bookingId
-          required: true
-          schema:
-            type: string
-          description: Booking ID
-      responses:
-        '200':
-          description: Event confirmed and escrow released successfully
-        '400':
-          description: Event already confirmed
-        '404':
-          description: Booking not found
-        '500':
-          description: Server error             
+             
 
   /api/v1/bookings/vendor/{vendorId}:
     get:

@@ -352,62 +352,8 @@ exports.rejectBooking = async (req, res) => {
 //   }
 // };
 
-exports.markBookingCompleted = async (req, res) => {
+exports.markServiceDelivered = async (req, res) => {
     try {
-        const vendorId = req.user.id;
-        const { bookingId } = req.params;
-        const booking = await bookingModel.findOne({
-            _id: bookingId,
-            vendorId
-        });
-
-        if (!booking) {
-            return res.status(404).json({
-                message: "Booking not found."
-            });
-        }
-
-        if (booking.bookingStatus !== "confirmed") {
-            return res.status(400).json({
-                message: "Only confirmed bookings can be completed."
-            });
-        }
-
-        booking.bookingStatus = "completed";
-
-        booking.completedByVendor = true;
-
-        booking.completedAt = new Date();
-
-        await booking.save();
-
-        const escrow = await escrowModel.findOne({ bookingId });
-
-        if (escrow) {
-            escrow.releaseAt = new Date(
-                Date.now() + (24 * 60 * 60 * 1000)
-            );
-
-            await escrow.save();
-        }
-
-        return res.status(200).json({
-            message: "Booking marked as completed successfully.",
-            data: booking
-        });
-
-    } catch (error) {
-
-        return res.status(500).json({
-            message: error.message
-        });
-
-    }
-};
-
-exports.confirmCompletedBooking = async (req, res) => {
-    try {
-
         const userId = req.user.id;
         const { bookingId } = req.params;
 
@@ -422,9 +368,15 @@ exports.confirmCompletedBooking = async (req, res) => {
             });
         }
 
+        if (booking.bookingStatus !== "confirmed") {
+            return res.status(400).json({
+                message: "Only confirmed bookings can be marked as delivered."
+            });
+        }
+
         if (booking.isEventConfirmed) {
             return res.status(400).json({
-                message: "Event has already been confirmed."
+                message: "Service has already been confirmed."
             });
         }
 
@@ -449,9 +401,8 @@ exports.confirmCompletedBooking = async (req, res) => {
             });
         }
 
-        // Release escrow funds
+        // Release escrow
         wallet.availableBalance += escrow.finalReleaseAmount;
-
         wallet.escrowBalance -= escrow.finalReleaseAmount;
 
         await wallet.save();
@@ -469,35 +420,25 @@ exports.confirmCompletedBooking = async (req, res) => {
         await escrow.save();
 
         await transactionModel.create({
-
             vendorId: booking.vendorId,
-
             walletId: wallet._id,
-
             bookingId,
-
             amount: escrow.finalReleaseAmount,
-
             transactionType: "release",
-
-            description: "Final 30% released by customer confirmation",
-
+            description: "Final 30% released after customer confirmed service delivery",
             status: "successful"
-
         });
 
         return res.status(200).json({
-
-            message: "Booking confirmed successfully. Escrow released."
-
+            success: true,
+            message: "Service delivery confirmed successfully. Vendor has been paid.",
+            booking
         });
 
     } catch (error) {
 
         return res.status(500).json({
-
             message: error.message
-
         });
 
     }
