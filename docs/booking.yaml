@@ -109,7 +109,7 @@ paths:
         "500": 
           description: Something went wrong  
 
-  /api/v1/bookings/{bookingId}/confirm:
+  /api/v1/confirm-booking/{bookingId}:
     put:
       summary: User confirms that the vendor completed the event
       tags: [bookings]
