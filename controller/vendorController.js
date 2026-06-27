@@ -217,17 +217,9 @@ console.log("A")
   ...(bio && { bio }),
   ...(servicesOffered && { servicesOffered }),
   ...(normalizedState && { stateOfResidence: normalizedState }),
-
   vendorUrl: publicUrl,
-
   onboardingStep: nextOnboardingStep,
   isOnboarded,
-
-  // Automatically approve vendor after onboarding
-  ...(isOnboarded && {
-    verificationStatus: "approved"
-  }),
-
   ...(categoryToUpdate && { category: categoryToUpdate }),
   ...(slug && { slug }),
   ...(profilePicture && { profilePicture }),
@@ -638,22 +630,22 @@ exports.getAllVendors = async (req, res) => {
     const { category } = req.query;
 
    const filter = {
-  isVerified: true,
-  isOnboarded: true,
-  verificationStatus: "approved"
+    isOnboarded: true
 };
 
 if (category) {
-  filter.category = {
-    $regex: `^${category}$`,
-    $options: "i"
-  };
+    filter.category = {
+        $regex: `^${category}$`,
+        $options: "i"
+    };
 }
 
-    const vendors = await vendorModel.find(filter).select('-password').populate({
-        path: 'pricingId',
-        select: 'packagePrice packageName'
-      });
+const vendors = await vendorModel.find(filter)
+.select("-password")
+.populate({
+    path: "pricingId",
+    select: "packagePrice packageName"
+});
 
     const formattedVendors = vendors.map(vendor => {
       const basicPackage = vendor.pricingId.find(
