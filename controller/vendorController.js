@@ -157,7 +157,7 @@ exports.updateVendor = async (req, res) => {
       );
     }
 
-    const isOnboarded = nextOnboardingStep >= 7;
+    const isOnboarded = nextOnboardingStep >= 6;
     console.log(isOnboarded)
     const uploadFile = async (file, resourceType = "image") => {
       const absolutePath = path.resolve(file.path);
@@ -246,6 +246,85 @@ console.log("A")
   data: updatedVendor
 });
 console.log("c")
+
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+exports.uploadVendorMedia = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+
+    const vendor = await vendorModel.findById(vendorId);
+
+    if (!vendor) {
+      return res.status(404).json({
+        message: "Vendor not found"
+      });
+    }
+
+    const uploadFile = async (file, resourceType = "image") => {
+      const uploaded = await cloudinary.uploader.upload(file.path, {
+        resource_type: resourceType
+      });
+
+      await fs.promises.unlink(file.path);
+
+      return {
+        secureUrl: uploaded.secure_url,
+        publicId: uploaded.public_id
+      };
+    };
+
+    // Upload additional photos
+    if (req.files?.photoCatalogue?.length) {
+      const uploadedPhotos = await Promise.all(
+        req.files.photoCatalogue.map(file =>
+          uploadFile(file, "image")
+        )
+      );
+
+      if (
+        vendor.photoCatalogue.length + uploadedPhotos.length >
+        4
+      ) {
+        return res.status(400).json({
+          message: "Maximum of 4 catalogue photos allowed."
+        });
+      }
+
+      vendor.photoCatalogue.push(...uploadedPhotos);
+    }
+
+    // Upload additional videos
+    if (req.files?.videoCatalogue?.length) {
+      const uploadedVideos = await Promise.all(
+        req.files.videoCatalogue.map(file =>
+          uploadFile(file, "video")
+        )
+      );
+
+      if (
+        vendor.videoCatalogue.length + uploadedVideos.length >
+        2
+      ) {
+        return res.status(400).json({
+          message: "Maximum of 2 catalogue videos allowed."
+        });
+      }
+
+      vendor.videoCatalogue.push(...uploadedVideos);
+    }
+
+    await vendor.save();
+
+    return res.status(200).json({
+      message: "Media uploaded successfully.",
+      data: vendor
+    });
 
   } catch (error) {
     return res.status(500).json({

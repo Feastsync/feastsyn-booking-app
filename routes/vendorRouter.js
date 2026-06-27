@@ -1,4 +1,4 @@
-const { createVendor, updateVendor, verifyVendorEmail, vendorLogin, vendorLogout, getAllVendors, getOneVendor, getVendorDashboard, vendorVerifyResetOtp, vendorForgotPassword, vendorResendOtp, vendorResetPassword, replaceVendorMedia } = require('../controller/vendorController');
+const { createVendor, updateVendor, verifyVendorEmail, vendorLogin, vendorLogout, getAllVendors, getOneVendor, getVendorDashboard, vendorVerifyResetOtp, vendorForgotPassword, vendorResendOtp, vendorResetPassword, replaceVendorMedia, uploadVendorMedia } = require('../controller/vendorController');
 const { authentication, adminAuth } = require('../middlewares/auth');
 const {upload} = require('../middlewares/multer');
 const {signupVendorValidator, resetPasswordValidator, changePasswordValidator, updateVendorValidator} = require('../middlewares/validator');
@@ -25,6 +25,11 @@ router.put("/update-profile/:id", (req, res) => {
     updateVendor(req, res);
   });
 });   
+
+router.put('/upload-media/:vendorId', upload.fields([
+  {name: 'photoCatalogue', maxCount: 4},
+  { name: 'videoCatalogue', maxCount: 2}
+]), authentication, uploadVendorMedia);
 
 router.put('/replace-media/:vendorId', upload.single('file'), replaceVendorMedia);
 
