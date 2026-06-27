@@ -1,11 +1,11 @@
-const userModel = require('../models/user');
-const vendorModel = require('../models/vendor');
-const reviewModel = require('../models/review');
-const bookingModel = require('../models/booking');
-const cloudinary = require('../utils/cloudinary');
-const fs = require('fs');
-const {createNotification} = require('../utils/createNotification');
-const { vendorReviewReceivedTemplate, userReviewSubmittedTemplate} = require('../email')
+const userModel = require("../models/user");
+const vendorModel = require("../models/vendor");
+const reviewModel = require("../models/review");
+const bookingModel = require("../models/booking");
+const cloudinary = require("../utils/cloudinary");
+const fs = require("fs");
+const { createNotification } = require("../utils/createNotification");
+const { vendorReviewReceivedTemplate, userReviewSubmittedTemplate} = require("../email");
 
 exports.createReview = async (req, res) => {
     try {
@@ -20,13 +20,18 @@ exports.createReview = async (req, res) => {
             });
         }
 
+        // Ensure logged-in user owns the booking
         if (booking.userId.toString() !== req.user.id) {
             return res.status(403).json({
                 message: "Unauthorized"
             });
         }
 
-        if (!booking.isEventConfirmed || booking.bookingStatus !== "completed") {
+        // Only completed bookings can be reviewed
+        if (
+            !booking.isEventConfirmed ||
+            booking.bookingStatus !== "completed"
+        ) {
             return res.status(400).json({
                 message: "You can only review a completed service."
             });
@@ -38,6 +43,7 @@ exports.createReview = async (req, res) => {
             });
         }
 
+        // Prevent duplicate review
         const existingReview = await reviewModel.findOne({
             bookingId
         });
@@ -48,6 +54,7 @@ exports.createReview = async (req, res) => {
             });
         }
 
+        // Upload helper
         const uploadFile = async (file, resourceType = "image") => {
             const uploaded = await cloudinary.uploader.upload(file.path, {
                 resource_type: resourceType
@@ -64,16 +71,24 @@ exports.createReview = async (req, res) => {
         let images = [];
         let video = null;
 
+        // Upload Images
         if (req.files?.images?.length) {
             images = await Promise.all(
-                req.files.images.map(file => uploadFile(file, "image"))
+                req.files.images.map(file =>
+                    uploadFile(file, "image")
+                )
             );
         }
 
+        // Upload Video
         if (req.files?.video?.length) {
-            video = await uploadFile(req.files.video[0], "video");
+            video = await uploadFile(
+                req.files.video[0],
+                "video"
+            );
         }
 
+        // Create Review
         const review = await reviewModel.create({
             bookingId,
             vendorId: booking.vendorId,
@@ -85,40 +100,72 @@ exports.createReview = async (req, res) => {
         });
 
         const vendor = await vendorModel.findById(booking.vendorId);
-        const user = await userModel.findById(req.user.id);
+        const user = await userModel.findById(booking.userId);
 
+        if (!vendor || !user) {
+            return res.status(404).json({
+                message: "User or Vendor not found."
+            });
+        }
+
+        // ============================
         // Notify Vendor
-       await createNotification({
-    recipientId: booking.vendorId,
-    recipientType: "vendor",
-    bookingId: booking._id,
-    notificationType: "review_received",
-    title: "New Review",
-    message: `${user.firstName} left you a ${rating}-star review.`,
-    emailSubject: "New Review Received",
-    emailBody: vendorReviewReceivedTemplate(
-        vendor.stageName,
-        `${user.firstName} ${user.lastName}`,
-        rating,
-        comment
-    )
-});
-
-        // Notify User
+        // ============================
         await createNotification({
-    recipientId: booking.userId,
-    recipientType: "user",
-    bookingId: booking._id,
-    notificationType: "review_submitted",
-    title: "Review Submitted",
-    message: `Your review for ${vendor.stageName} has been submitted successfully.`,
-    emailSubject: "Review Submitted",
-    emailBody: userReviewSubmittedTemplate(
-        user.firstName,
-        vendor.stageName
-    )
-});
+            recipientId: vendor._id,
+            recipientType: "vendor",
+            recipientModel: "vendors",
+
+            senderId: user._id,
+            senderModel: "users",
+
+            bookingId: booking._id,
+
+            notificationType: "review_received",
+
+            title: "New Review Received",
+
+            message: `${user.firstName} ${user.lastName} left you a ${rating}-star review.`,
+
+            emailSubject: "New Review Received",
+
+            emailBody: vendorReviewReceivedTemplate(
+                vendor.stageName,
+                `${user.firstName} ${user.lastName}`,
+                rating,
+                comment
+            )
+        });
+
+        // ============================
+        // Notify User
+        // ============================
+        await createNotification({
+            recipientId: user._id,
+            recipientType: "user",
+            recipientModel: "users",
+
+            senderId: vendor._id,
+            senderModel: "vendors",
+
+            bookingId: booking._id,
+
+            notificationType: "review_submitted",
+
+            title: "Review Submitted",
+
+            message: `Thank you! Your review for ${vendor.stageName} has been submitted successfully.`,
+
+            emailSubject: "Review Submitted",
+
+            emailBody: userReviewSubmittedTemplate(
+                user.firstName,
+                vendor.stageName
+            )
+        });
+
         return res.status(201).json({
+            success: true,
             message: "Review submitted successfully.",
             data: review
         });
@@ -127,6 +174,7 @@ exports.createReview = async (req, res) => {
         console.log(error);
 
         return res.status(500).json({
+            success: false,
             message: error.message
         });
     }
